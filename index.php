@@ -1217,7 +1217,7 @@ if ($showmap=="yes") {
                 $avg_kph = $avg_speed[0] * 3.6;
                 $rounds      = 1;
                 $total_miles = 0;
-                $leg_time    = 0;
+                $total_time = 0;
                 if ($tripname == "Any")
                 {
                 $tripnameText = $trip_any_text;
@@ -1237,23 +1237,23 @@ if ($showmap=="yes") {
                     $ft      = $row['Altitude'] * 3.2808399;
                     $meters  = $row['Altitude'];
                     $html .= "            var point = new GLatLng(" . $row['Latitude'] . "," . $row['Longitude'] . ");\n";
+
+                    if($rounds == 1)
+                    {
+                        $holdtime = $row['DateOccurred'];
+                    }
+                    else
+                    {
+                        $leg_miles        = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
+                        $total_miles      = $total_miles + $leg_miles;
+                        $total_kilometers = $total_miles * 1.6;
+                        $leg_time         = $row['DateOccurred'];
+                        $total_time       = get_elapsed_time($holdtime, $leg_time);
+                    }
+                    $total_time       = gmdate("H:i:s", $total_time);
+
                     if($row['FK_Icons_ID'] > 0)
                     {
-                        if($rounds == 1)
-                        {
-                            $holdtime = $row['DateOccurred'];
-                            $total_time = 0;
-                            $display_total_time = gmdate("H:i:s", $total_time);
-                        }
-                        else
-                        {
-                            $leg_miles        = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
-                            $total_miles      = $total_miles + $leg_miles;
-                            $total_kilometers = $total_miles * 1.6;
-                            $leg_time         = $row['DateOccurred'];
-                            $total_time       = get_elapsed_time($holdtime, $leg_time);
-                            $total_time       = gmdate("H:i:s", $total_time);
-                        }
                         $find_icons = mysql_query("SELECT * FROM icons WHERE ID = '$row[FK_Icons_ID]' LIMIT 1");
                         $found_icon = mysql_fetch_array($find_icons);
                         $icon_shadow = str_replace( '.png', '.shadow.png', $found_icon['URL']);
@@ -1317,18 +1317,9 @@ if ($showmap=="yes") {
                             $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
                         }
                         $html .= "<tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
-                        $holdtime = $row['DateOccurred'];
-                        $total_time = 0;
-                        $display_total_time = gmdate("H:i:s", $total_time);
                     }
                     elseif($rounds > 1  && $rounds < $count[0])
                     {
-                        $leg_miles   = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
-                        $total_miles = $total_miles + $leg_miles;
-                        $total_kilometers = $total_miles * 1.6;
-                        $leg_time    = $row['DateOccurred'];
-                        $total_time  = get_elapsed_time($holdtime, $leg_time);
-                        $total_time  = gmdate("H:i:s", $total_time);
                         $html .= "        var polyline = new GPolyline([  new GLatLng(" . $holdlat . ", " . $holdlong . "),  new GLatLng(" . $row['Latitude'] . ", " . $row['Longitude'] . ")], \"#000000\", 3, 1);";
                         $html .= "        map.addOverlay(polyline);";
 						if ($show_bearings == "yes") {
@@ -1381,12 +1372,6 @@ if ($showmap=="yes") {
                     }
                     else
                     {
-                        $leg_miles = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
-                        $total_miles = $total_miles + $leg_miles;
-                        $total_kilometers = $total_miles * 1.6;
-                        $leg_time    = $row['DateOccurred'];
-                        $total_time  = get_elapsed_time($holdtime, $leg_time);
-                        $total_time  = gmdate("H:i:s", $total_time);
                         $html .= "        var polyline = new GPolyline([  new GLatLng(" . $holdlat . ", " . $holdlong . "),  new GLatLng(" . $row['Latitude'] . ", " . $row['Longitude'] . ")], \"#000000\", 3, 1);";
                         $html .= "        map.addOverlay(polyline);";
                         $html .= "        var marker = createRedMarker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
