@@ -641,8 +641,6 @@ if(!isset($startday) || trim($startday) == "") //if startday is blank then looku
 					}
 }
 
-$avg_mph = $avg_speed[0] * 2.236936292054;
-$avg_kph = $avg_speed[0] * 3.6;
 $rounds      = 1;
 $total_miles = 0;
 $leg_time    = 0;
@@ -676,7 +674,6 @@ $tripstartdate = mysql_fetch_array($tripstartdatesql);
 $tripenddate = mysql_fetch_array($tripenddatesql);
 	$trips= $tripstartdate[DateOccurred];
 	$tripe= $tripenddate[DateOccurred];
-	$tripTot=number_format($total_miles,2);
  $startday = $tripstartdate[DateOccurred];
  $endday = $tripenddate[DateOccurred];
 if(isset($_REQUEST[last_location]))
