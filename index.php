@@ -589,21 +589,15 @@ if(!isset($startday) || trim($startday) == "") //if startday is blank then looku
                 $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
 				}
                 elseif($tripname == "None"){
-					$photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != ''");
-					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != ''");
 					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL ORDER BY DateOccurred LIMIT 1");
 					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL ORDER BY DateOccurred");				}
                 elseif($tripname == "Any"){
-				    $photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND ImageURL != ''");
-					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND Comments != ''");
 					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID ORDER BY DateOccurred LIMIT 1");
 					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred");
 				}
 				else {
-					$photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '';");
-					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '';");
 					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip ORDER BY DateOccurred LIMIT 1");
 					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' ORDER BY DateOccurred");
@@ -616,21 +610,15 @@ if(!isset($startday) || trim($startday) == "") //if startday is blank then looku
                 $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
 				}
                 elseif($tripname == "None"){
-					$photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
-					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
 					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
 					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");				}
                 elseif($tripname == "Any"){
-				    $photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
-					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
 					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
 					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
 				}
 				else {
-					$photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
-					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != ''AND DateOccurred BETWEEN '$startday' AND '$endday';");
 					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
 					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
@@ -640,12 +628,18 @@ if(!isset($startday) || trim($startday) == "") //if startday is blank then looku
 $rounds      = 1;
 $total_miles = 0;
 $leg_time    = 0;
+                $pcount=0;
+                $ccount=0;
 	while($row = mysql_fetch_array($result))
 	{
 		$mph     = $row['Speed'] * 2.2369362920544;
 		$kph     = $row['Speed'] * 3.6;
 		$ft      = $row['Altitude'] * 3.2808399;
 		$meters  = $row['Altitude'];
+                    if ($row['ImageURL'] != '')
+                        $pcount++;
+                    if ($row['Comments'] != '')
+                        $ccount++;
 
 			if($rounds == 1)
 			{
@@ -676,13 +670,6 @@ if(isset($_REQUEST[last_location]))
 	{
 	$pcount=0;
 	$ccount=0;
-	}
-	else
-	{
-	$photocnt = mysql_fetch_array($photocount);
-	$commentcnt = mysql_fetch_array($commentcount);
-	$pcount=$photocnt[0];
-	$ccount=$commentcnt[0];
 	}
 
 				if(isset($_REQUEST[last_location]))   //if we are in live tracking then display this in center
