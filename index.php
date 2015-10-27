@@ -574,34 +574,30 @@ $html .= "                </FORM> <br>    \n";
                 $html .= "                        <input type=\"hidden\" name=\"storestartdate\" value=\"$storestartdate\">\n";
                 $html .= "                        <input type=\"hidden\" name=\"storeenddate\" value=\"$storeenddate\">\n";
 			}
-if(!isset($startday) || trim($startday) == "") //if startday is blank then lookup the start and end of entire trip
-{
-		if(isset($_REQUEST[last_location]))
+
+                if(isset($_REQUEST[last_location]))
                 {
-                $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
-				}
-                elseif($tripname == "None"){
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL ORDER BY DateOccurred");				}
-                elseif($tripname == "Any"){
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred");
-				}
-				else {
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' ORDER BY DateOccurred");
-					}
-} else {   // lookup the start and end of trip based on dates given
-		if(isset($_REQUEST[last_location]))
+                    $limit = "DESC LIMIT 1";
+                    $where = "";
+                }
+                else
                 {
-                $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
-				}
-                elseif($tripname == "None"){
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");				}
-                elseif($tripname == "Any"){
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-				}
-				else {
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-					}
-}
+                    $limit = "";
+                    if ($tripname == "None")
+                        $where = " AND FK_Trips_ID is NULL";
+                    elseif ($tripname != "Any")
+                        $where = " AND FK_Trips_ID = '$trip'";
+                    else
+                        $where = "";
+
+                    // if startday is not blank then don't lookup the start and end of entire trip
+                    if (isset($startday) && trim($startday) != "")
+                        $where .= " AND DateOccurred BETWEEN '$startday' AND '$endday'";
+                }
+
+                $result = mysql_query("SELECT * FROM positions " .
+                                      "WHERE FK_Users_ID='$ID' $where " .
+                                      "ORDER BY DateOccurred $limit");
 
 $rounds      = 1;
 $total_miles = 0;
