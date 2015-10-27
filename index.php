@@ -584,43 +584,27 @@ if(!isset($startday) || trim($startday) == "") //if startday is blank then looku
 {
 		if(isset($_REQUEST[last_location]))
                 {
-				$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID  ORDER BY DateOccurred DESC LIMIT 1");
-				$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID  ORDER BY DateOccurred DESC LIMIT 1");
                 $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
 				}
                 elseif($tripname == "None"){
-					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL ORDER BY DateOccurred LIMIT 1");
-					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL ORDER BY DateOccurred");				}
                 elseif($tripname == "Any"){
-					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID ORDER BY DateOccurred LIMIT 1");
-					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred");
 				}
 				else {
-					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip ORDER BY DateOccurred LIMIT 1");
-					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' ORDER BY DateOccurred");
 					}
 } else {   // lookup the start and end of trip based on dates given
 		if(isset($_REQUEST[last_location]))
                 {
-				$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID  ORDER BY DateOccurred DESC LIMIT 1");
-				$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID  ORDER BY DateOccurred DESC LIMIT 1");
                 $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
 				}
                 elseif($tripname == "None"){
-					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
-					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");				}
                 elseif($tripname == "Any"){
-					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
-					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
 				}
 				else {
-					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
-					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
 					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
 					}
 }
@@ -641,11 +625,12 @@ $leg_time    = 0;
                     if ($row['Comments'] != '')
                         $ccount++;
 
+                    $endday = $row['DateOccurred'];
 			if($rounds == 1)
 			{
-				$holdtime = $row['DateOccurred'];
 				$total_time = 0;
 				$display_total_time = gmdate("H:i:s", $total_time);
+                        $startday = $endday;
 			}
 			else
 			{
@@ -653,19 +638,13 @@ $leg_time    = 0;
 				$total_miles      = $total_miles + $leg_miles;
 				$total_kilometers = $total_miles * 1.6;
 				$leg_time         = $row['DateOccurred'];
-				$total_time       = get_elapsed_time($holdtime, $leg_time);
+				$total_time       = get_elapsed_time($startday, $leg_time);
 				$total_time       = gmdate("H:i:s", $total_time);
 			}
 		$rounds++;
 		$holdlat  = $row['Latitude'];
 		$holdlong = $row['Longitude'];
 	}
-$tripstartdate = mysql_fetch_array($tripstartdatesql);
-$tripenddate = mysql_fetch_array($tripenddatesql);
-	$trips= $tripstartdate[DateOccurred];
-	$tripe= $tripenddate[DateOccurred];
- $startday = $tripstartdate[DateOccurred];
- $endday = $tripenddate[DateOccurred];
 if(isset($_REQUEST[last_location]))
 	{
 	$pcount=0;
