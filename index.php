@@ -189,36 +189,29 @@
         }
         else
         {
-            if($public_page != "yes" && $action == "logout")
+            if($public_page != "yes")
             {
-                setcookie("username", "",time()-3600);
-                setcookie("password", "",time()-3600);
-                $logged_in = "no";
-            }
-            elseif($public_page != "yes" && isset($_COOKIE["username"]) && isset($_COOKIE["password"]))
-            {
-                $username = preg_replace("/[^a-zA-Z0-9._]/", "", $_COOKIE["username"]);
-                $password = preg_replace("/[^a-zA-Z0-9]/", "", $_COOKIE["password"]);
-            }
-
-            if($public_page != "yes" && isset($username) && isset($password))
-            {
-                if (preg_match("/^([a-zA-Z0-9._])+$/", "$_REQUEST[username]"))
+                if ($action == "logout")
                 {
-                    $loggedin =  "no";
+                    unset($_SESSION['ID']);
+                }
+
+                if(isset($username) && isset($password))
+                {
+                    if (preg_match("/^([a-zA-Z0-9._])+$/", "$_REQUEST[username]"))
+                    {
                     $finduser=mysql_query("Select ID FROM users WHERE username = '$username' and password='$password'");
 	                if ( $founduser=mysql_fetch_array($finduser) )
-	                {
+                        {
         	    		$loggedin = "yes";
 		    	        $ID       = $founduser["ID"];
-                        setcookie ("username", "$username",time()+3600);
-                        setcookie ("password", "$password",time()+3600);
-                        $logged_in = "yes";
-	                }
-	            }
+                            $_SESSION['ID']       = $founduser["ID"];
+                        }
+                    }
+                }
             }
 
-            if($loggedin == "yes" || $public_page == "yes")
+            if(isset($_SESSION['ID']) || $public_page == "yes")
             {
                 $html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
                 $html .= "    <head>\n";
@@ -1413,9 +1406,7 @@ if ($showmap=="yes") {
 			}
             else
             {
-                setcookie ("username", "",time()-3600);
-                setcookie ("password", "",time()-3600);
-                $logged_in = "no";
+                unset($_SESSION['ID']);
 		$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
                 $html .= "    <head>\n";
                 $html .= "        <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n";
