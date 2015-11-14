@@ -919,7 +919,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $html .= "                iconArrow315.infoWindowAnchor = new GPoint(5, 1);\n";
 
                 $html .= "                var geocoder = null;\n";
-                $html .= "                var map = null;\n";
                 $html .= "                var online = true;\n";
                 $html .= "                var bounds = new GLatLngBounds();\n";
                 $html .= "                var map = new GMap2(document.getElementById(\"map\"));\n";
