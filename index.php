@@ -56,15 +56,10 @@
           header('Location: '.$siteroot);
         }
 
-
-        $empty_users       = mysql_query("SELECT COUNT(*) FROM users");
-        $empty_users       = mysql_fetch_array($empty_users);
-        $empty_trips       = mysql_query("SELECT COUNT(*) FROM trips");
-        $empty_trips       = mysql_fetch_array($empty_trips);
-        $empty_positions   = mysql_query("SELECT COUNT(*) FROM positions");
-        $empty_positions   = mysql_fetch_array($empty_positions);
-        $empty_icons       = mysql_query("SELECT COUNT(*) FROM icons");
-        $empty_icons       = mysql_fetch_array($empty_icons);
+        $num_users = get_count("users");
+        $num_trips = get_count("trips");
+        $num_positions = get_count("positions");
+        $num_icons = get_count("icons");
 
 
         $filter            = $_REQUEST["filter"];
@@ -161,7 +156,7 @@
             $custom_view      = "yes";
         }
 
-        if ($empty_users[0] < 1 || $empty_trips[0] < 1 || $empty_positions[0] < 1 || $empty_icons[0] < 1)
+        if ($num_users < 1 || $num_trips < 1 || $num_positions < 1 || $num_icons < 1)
         {
             $html  = "    <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
             $html .= "        <head>\n";
@@ -1504,5 +1499,14 @@ if ($showmap=="yes") {
         $elapsed_time = sprintf( "%0.{$decimals}f", $elapsed_time );
 
         return $elapsed_time;
+    }
+
+    // Database related functions
+
+    function get_count($statement)
+    {
+        $stmt = mysql_query("SELECT COUNT(*) FROM $statement");
+        $result = mysql_fetch_array($stmt);
+        return $result[0][0];
     }
 ?>
