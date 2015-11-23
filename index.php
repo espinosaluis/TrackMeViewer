@@ -1,5 +1,7 @@
 <?php
 
+    session_start();
+
 	Require_once("config.php");
 
 
