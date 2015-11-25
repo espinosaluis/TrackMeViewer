@@ -830,6 +830,14 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $html .= "                iconLtBlue.iconAnchor = new GPoint(6, 19);\n";
                 $html .= "                iconLtBlue.infoWindowAnchor = new GPoint(5, 1);\n";
 
+                $html .= "                var iconLtYellow = new GIcon();\n";
+                $html .= "                iconLtYellow.image = '".$siteroot."mm_20_yellow.png';\n";
+                $html .= "                iconLtYellow.shadow = '".$siteroot."mm_20_shadow.png';\n";
+                $html .= "                iconLtYellow.iconSize = new GSize(12, 20);\n";
+                $html .= "                iconLtYellow.shadowSize = new GSize(22, 20);\n";
+                $html .= "                iconLtYellow.iconAnchor = new GPoint(6, 19);\n";
+                $html .= "                iconLtYellow.infoWindowAnchor = new GPoint(5, 1);\n";
+
                 $html .= "                var iconGreen = new GIcon();\n";
                 $html .= "                iconGreen.image = '".$siteroot."green-dot.png';\n";
                 $html .= "                iconGreen.shadow = '".$siteroot."msmarker.shadow.png';\n";
@@ -1049,7 +1057,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         if (is_null($row['Angle']))
                             $parameter = "getIcon({})";
                         else
-                            $parameter = "getIcon({bearing: $row[Angle]})";
+                            $parameter = "getIcon({bearing: $row[Angle], comment: '$row[Comments]'})";
                     }
                     else
                     {
