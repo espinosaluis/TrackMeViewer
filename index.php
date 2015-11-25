@@ -1040,7 +1040,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         }
                         else
                         {
-                            $count = get_count("SELECT COUNT(*) FROM  positions " .
+                            $count = get_count("positions " .
                                                "WHERE FK_Users_ID='$ID' AND " .
                                                "FK_Trips_ID='$trip' AND " .
                                                "DateOccurred BETWEEN '$startday' AND '$endday'");
