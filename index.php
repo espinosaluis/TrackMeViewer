@@ -574,34 +574,30 @@ $html .= "                </FORM> <br>    \n";
                 $html .= "                        <input type=\"hidden\" name=\"storestartdate\" value=\"$storestartdate\">\n";
                 $html .= "                        <input type=\"hidden\" name=\"storeenddate\" value=\"$storeenddate\">\n";
 			}
-if(!isset($startday) || trim($startday) == "") //if startday is blank then lookup the start and end of entire trip
-{
-		if(isset($_REQUEST[last_location]))
+
+                if(isset($_REQUEST[last_location]))
                 {
-                $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
-				}
-                elseif($tripname == "None"){
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL ORDER BY DateOccurred");				}
-                elseif($tripname == "Any"){
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred");
-				}
-				else {
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' ORDER BY DateOccurred");
-					}
-} else {   // lookup the start and end of trip based on dates given
-		if(isset($_REQUEST[last_location]))
+                    $limit = "DESC LIMIT 1";
+                    $where = "";
+                }
+                else
                 {
-                $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
-				}
-                elseif($tripname == "None"){
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");				}
-                elseif($tripname == "Any"){
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-				}
-				else {
-					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-					}
-}
+                    $limit = "";
+                    if ($tripname == "None")
+                        $where = " AND FK_Trips_ID is NULL";
+                    elseif ($tripname != "Any")
+                        $where = " AND FK_Trips_ID = '$trip'";
+                    else
+                        $where = "";
+
+                    // if startday is not blank then don't lookup the start and end of entire trip
+                    if (isset($startday) && trim($startday) != "")
+                        $where .= " AND DateOccurred BETWEEN '$startday' AND '$endday'";
+                }
+
+                $result = mysql_query("SELECT * FROM positions " .
+                                      "WHERE FK_Users_ID='$ID' $where " .
+                                      "ORDER BY DateOccurred $limit");
 
 $rounds      = 1;
 $total_miles = 0;
@@ -995,176 +991,91 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $html .= "                    return marker;\n";
                 $html .= "                };\n";
 
-                if(isset($_REQUEST[last_location]))
+
+                if (isset($_REQUEST[last_location]))  //show last location is on
                 {
-                    $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
-                    $avg_speed = mysql_fetch_array($speeds);
-                    $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
-                    $count[0] = 1;
-                }
-                elseif($tripname == "Any")
-                {
-                    if($filter == "Photo")
-                    {
-                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
-                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                    }
-                    elseif($filter == "Comment")
-                    {
-                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
-                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                    }
-                    elseif($filter == "PhotoComment")
-                    {
-                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND Comments != '' OR FK_Users_ID='$ID' AND Comments != ''  AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND Comments != '' OR FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
-                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND ImageURL != '' OR FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                    }
-                    elseif($filter == "Last20")
-                    {
-							$speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-							$count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-							$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-                    }
-                    else
-                    {
-                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ");
-                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                    }
-                    $avg_speed = mysql_fetch_array($speeds);
-                    $count  = mysql_fetch_array($count);
-                }
-                elseif($tripname == "None")
-                {
-                    if($filter == "Photo")
-                    {
-                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
-                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                    }
-                    elseif($filter == "Comment")
-                    {
-                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
-                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                    }
-                    elseif($filter == "PhotoComment")
-                    {
-                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
-                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                    }
-                    elseif($filter == "Last20")
-                    {
-							$speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-							$count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-							$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-                    }
-                    else
-                    {
-                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday'");
-                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                    }
-                    $avg_speed = mysql_fetch_array($speeds);
-                    $count  = mysql_fetch_array($count);
+                    $where = "";
+                    $limit = 1;
+                    $showmapdata = 1;
                 }
                 else
                 {
-                    $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                    $count  = mysql_fetch_array($count);
-                    if($count[0] > 0)
+                    if($filter == "Photo")
                     {
-                        if($filter == "Photo")
-                        {
-                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        }
-                        elseif($filter == "Comment")
-                        {
-                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != ''AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        }
-                        elseif($filter == "PhotoComment")
-                        {
-                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        }
-						elseif($filter == "Last20")
-						{
-							$speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-							$count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-							$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-						}
-                        else
-                        {
-                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        }
-                        $avg_speed = mysql_fetch_array($speeds);
-                        $count  = mysql_fetch_array($count);
+                        $where = "ImageURL != ''";
+                        $limit = 0;
+                    }
+                    elseif($filter == "Comment")
+                    {
+                        $where = "Comments != ''";
+                        $limit = 0;
+                    }
+                    elseif($filter == "PhotoComment")
+                    {
+                        $where = "(Comments != '' OR ImageURL != '')";
+                        $limit = 0;
+                    }
+                    elseif($filter == "Last20")
+                    {
+                        $where = "";
+                        $limit = 20;
                     }
                     else
                     {
-                        if($filter == "Photo")
+                        $where = "";
+                        $limit = 0;
+                    }
+                    if ($where != "")
+                        $where .= " AND";
+                    if ($limit > 0)
+                        $limit = " DESC $limit";
+                    else
+                        $limit = "";
+
+                    if ($tripname != "Any")
+                    {
+                        if ($tripname == "None")
                         {
-                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count = 0;
                         }
-                        elseif($filter == "Comment")
-                        {
-                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        }
-                        elseif($filter == "PhotoComment")
-                        {
-                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                        }
-						elseif($filter == "Last20")
-						{
-							$speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-							$count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-							$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
-						}
                         else
                         {
-                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
-                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday';");
-                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count = get_count("SELECT COUNT(*) FROM  positions " .
+                                               "WHERE FK_Users_ID='$ID' AND " .
+                                               "FK_Trips_ID='$trip' AND " .
+                                               "DateOccurred BETWEEN '$startday' AND '$endday'");
                         }
-                        $avg_speed = mysql_fetch_array($speeds);
-                        $count  = mysql_fetch_array($count);
+                        if ($count == 0)
+                            $where .= " FK_Trips_ID is NULL AND";
+                        else
+                            $where .= " FK_Trips_ID='$trip' AND";
                     }
+                    $where .= " DateOccurred BETWEEN '$startday' AND '$endday' AND";
                 }
-//don't lookup map data the until the show button is pressed.
-if(isset($_REQUEST[last_location])) //show last location is on
-	{
-	$showmapdata = 1;
-	}
-if ($showmap=="yes") {
-	//because of config file settings, leave map data as is
-	}
-	else
-	{
-		if($showmapdata<>1)
-			{
-                    $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='ZZ' ORDER BY DateOccurred DESC LIMIT 1");
-                    $avg_speed = mysql_fetch_array($speeds);
-                    $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='ZZ' ORDER BY DateOccurred DESC LIMIT 1");
-                    $count[0] = 1;
-			}
-	}
+
+                if ($showmap != "yes" && $showmapdata != 1)
+                    $users_id .= 'ZZ';
+                else
+                    $users_id = $ID;
+
+                $queries = array();
+                foreach (array('avg(speed)', 'COUNT(*)', '*') as $selected_column)
+                {
+                    if ($selected_column === '*')
+                    {
+                        $selected_column = 'positions.*, icons.URL';
+                        $join = "LEFT JOIN icons ON positions.FK_Icons_ID=icons.ID";
+                    }
+                    else
+                        $join = "";
+                    $queries[] = mysql_query("SELECT $selected_column FROM positions $join " .
+                                             "WHERE $where FK_Users_ID='$users_id' " .
+                                             "ORDER BY DateOccurred $limit");
+                }
+                $avg_speed = mysql_fetch_array($queries[0]);
+                $count  = mysql_fetch_array($queries[1]);
+                $result = $queries[2];
+
                 $avg_mph = $avg_speed[0] * 2.236936292054;
                 $avg_kph = $avg_speed[0] * 3.6;
                 $rounds      = 1;
@@ -1204,13 +1115,11 @@ if ($showmap=="yes") {
                     }
                     $total_time       = gmdate("H:i:s", $total_time);
 
-                    if($row['FK_Icons_ID'] > 0)
+                    if (!is_null($row['URL']))
                     {
-                        $find_icons = mysql_query("SELECT * FROM icons WHERE ID = '$row[FK_Icons_ID]' LIMIT 1");
-                        $found_icon = mysql_fetch_array($find_icons);
-                        $icon_shadow = str_replace( '.png', '.shadow.png', $found_icon['URL']);
+                        $icon_shadow = str_replace( '.png', '.shadow.png', $row['URL']);
                         $html .= "        var iconCustom" . $rounds . " = new GIcon();\n";
-                        $html .= "        iconCustom" . $rounds . ".image = '" . $found_icon['URL'] . "';\n";
+                        $html .= "        iconCustom" . $rounds . ".image = '" . $row['URL'] . "';\n";
                         $html .= "        iconCustom" . $rounds . ".shadow = '" . $icon_shadow . "';\n";
                         $html .= "        iconCustom" . $rounds . ".iconSize = new GSize(32, 32);\n";
                         $html .= "        iconCustom" . $rounds . ".shadowSize = new GSize(59, 32);\n";
