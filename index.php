@@ -224,6 +224,7 @@
                 $html .= "        <script type=\"text/javascript\" src=\"lang/calendar-en.js\"></script>\n";
                 $html .= "        <script type=\"text/javascript\" src=\"calendar-setup.js\"></script>\n";
 		$html .= "        <script src=\"https://maps.google.com/maps?file=api&amp;v=2.x&amp;key=$googleapikey\" type=\"text/javascript\"></script>\n";
+                $html .= "        <script type=\"text/javascript\" src=\"main.js\"></script>\n";
 		$html .= "    </head>\n";
 
 if(isset($_REQUEST[last_location])){
@@ -1112,6 +1113,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
              	{
                 $tripnameText = $tripname;
               	}
+                $html .= "            var trip = new Trip('$tripnameText', '$username');\n";
                 while($row = $result->fetch())
                 {
                     $mph     = $row['Speed'] * 2.2369362920544;
@@ -1151,11 +1153,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         $html .= "            GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
                         $html .= "            return marker;\n";
                         $html .= "        };\n";
-                        if($rounds > 1)
-                        {
-                            $html .= "    var polyline = new GPolyline([  new GLatLng(" . $holdlat . ", " . $holdlong . "),  new GLatLng(" . $row['Latitude'] . ", " . $row['Longitude'] . ")], \"#000000\", 3, 1);\n";
-                            $html .= "    map.addOverlay(polyline);\n";
-                        }
                         $html .= "        var marker = createCustom" . $rounds . "Marker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>"; //trackmeIT
                         if($units == "metric")
                         {
@@ -1200,8 +1197,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     }
                     elseif($rounds > 1  && $rounds < $count[0])
                     {
-                        $html .= "        var polyline = new GPolyline([  new GLatLng(" . $holdlat . ", " . $holdlong . "),  new GLatLng(" . $row['Latitude'] . ", " . $row['Longitude'] . ")], \"#000000\", 3, 1);";
-                        $html .= "        map.addOverlay(polyline);";
 						if ($show_bearings == "yes") {
 								//set bearing icon
 								$angle=$row['Angle'];
@@ -1252,8 +1247,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     }
                     else
                     {
-                        $html .= "        var polyline = new GPolyline([  new GLatLng(" . $holdlat . ", " . $holdlong . "),  new GLatLng(" . $row['Latitude'] . ", " . $row['Longitude'] . ")], \"#000000\", 3, 1);";
-                        $html .= "        map.addOverlay(polyline);";
                         $html .= "        var marker = createRedMarker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
                         if($units == "metric")
                         {
@@ -1277,9 +1270,17 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $rounds++;
                     $holdlat  = $row['Latitude'];
                     $holdlong = $row['Longitude'];
+                    $html .= "        trip.markers.push(marker);\n";
                     $html .= "        map.addOverlay(marker);\n";
                     $html .= "        bounds.extend(marker.getPoint());\n";
                 }
+                $html .= "        if (trip.markers.length > 1) {\n";
+                $html .= "            var points = [];\n";
+                $html .= "            for (i = 0; i < trip.markers.length; i++)\n";
+                $html .= "                points.push(trip.markers[i].getPoint());\n";
+                $html .= "            var polyline = new GPolyline(points, \"#000000\", 3, 1);\n";
+                $html .= "            map.addOverlay(polyline);\n";
+                $html .= "        }\n";
 
 		if(isset($_REQUEST[last_location])) //show last location is on
                                 {
