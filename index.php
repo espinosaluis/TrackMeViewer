@@ -888,34 +888,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $html .= "            map.addControl(new GOverviewMapControl());\n";
                     $html .= "            GEvent.addListener(map, \"move\", function() { setCenterCross(); } );\n";
                 }
-                $html .= "                function createGreenMarker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconGreen);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-                $html .= "                function createGrayMarker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconLtBlue);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-                $html .= "                function createRedMarker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconRed);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-                $html .= "                function createArrowMarker(point, angle, html)\n";
-                $html .= "                {\n";
-                $html .= "                    var direction = Math.floor((angle + 22.5) / 45) % 8;\n";
-                $html .= "                    var marker = new GMarker(point, arrowIcons[direction]);\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
 
 
                 $params = array();
@@ -1060,14 +1032,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         $html .= "        iconCustom" . $rounds . ".shadowSize = new GSize(59, 32);\n";
                         $html .= "        iconCustom" . $rounds . ".iconAnchor = new GPoint(15, 32);\n";
                         $html .= "        iconCustom" . $rounds . ".infoWindowAnchor = new GPoint(5, 1);\n";
-                        $html .= "        function createCustom" . $rounds . "Marker(point, number)\n";
-                        $html .= "        {\n";
-                        $html .= "            var marker = new GMarker(point, iconCustom" . $rounds . ");\n";
-                        $html .= "            var html = number;\n";
-                        $html .= "            GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                        $html .= "            return marker;\n";
-                        $html .= "        };\n";
-                        $html .= "        var marker = createCustom" . $rounds . "Marker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>"; //trackmeIT
+                        $html .= "        var marker = trip.appendMarker(point, iconCustom$rounds,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>"; //trackmeIT
                         if($units == "metric")
                         {
                             $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
@@ -1089,7 +1054,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     }
                     elseif($rounds == 1)
                     {
-                        $html .= "        var marker = createGreenMarker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
+                        $html .= "        var marker = trip.appendMarker(point, iconGreen, '<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
                         if($units == "metric")
                         {
                             $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
@@ -1118,12 +1083,12 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                                                     $angle = "";
                                                 }
                                                 if ($angle=="") {
-                                                        $gMarker = 'createGrayMarker(point, ';
+                                                        $gMarker = 'iconLtBlue';
                                                 } else {
-                                                        $gMarker = "createArrowMarker(point, $angle, ";
+                                                        $gMarker = 'arrowIcons[' . floor(($angle + 22.5) / 45.0) % 8 . ']';
                                                 }
 
-                        $html .= "        var marker = ".$gMarker."'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";   //trackmeIT
+                        $html .= "        var marker = trip.appendMarker(point, ".$gMarker.", '<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";   //trackmeIT
                         if($units == "metric")
                         {
                             $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
@@ -1145,7 +1110,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     }
                     else
                     {
-                        $html .= "        var marker = createRedMarker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
+                        $html .= "        var marker = trip.appendMarker(point, iconRed, '<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
                         if($units == "metric")
                         {
                             $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
@@ -1168,9 +1133,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $rounds++;
                     $holdlat  = $row['Latitude'];
                     $holdlong = $row['Longitude'];
-                    $html .= "        trip.markers.push(marker);\n";
-                    $html .= "        map.addOverlay(marker);\n";
-                    $html .= "        bounds.extend(marker.getPoint());\n";
                 }
                 $html .= "        if (trip.markers.length > 1) {\n";
                 $html .= "            var points = [];\n";
