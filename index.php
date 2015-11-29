@@ -1167,7 +1167,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         }
                         if($row['Comments'] != "")
                         {
-                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . mysql_real_escape_string($row['Comments']) . "<\/td><\/tr>";
+                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . $row['Comments'] . "<\/td><\/tr>";
                         }
                         $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
                         if($row['ImageURL'])
@@ -1189,7 +1189,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         }
                         if($row['Comments'] != "")
                         {
-                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . mysql_real_escape_string($row['Comments']) . "<\/td><\/tr>";
+                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . $row['Comments'] . "<\/td><\/tr>";
                         }
                         $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
                         if($row['ImageURL'])
@@ -1241,7 +1241,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         }
                         if($row['Comments'] != "")
                         {
-                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . mysql_real_escape_string($row['Comments']) . "<\/td><\/tr>";
+                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . $row['Comments'] . "<\/td><\/tr>";
                         }
                         $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
                         if($row['ImageURL'])
@@ -1265,7 +1265,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         }
                         if($row['Comments'] != "")
                         {
-                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:</b> " . mysql_real_escape_string($row['Comments']) . "<\/td><\/tr>";
+                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:</b> " . $row['Comments'] . "<\/td><\/tr>";
                         }
                         $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
                         if($row['ImageURL'])
