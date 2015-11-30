@@ -19,3 +19,16 @@ Trip.prototype.appendMarker = function(point, icon, data)
     this.markers.push(marker);
     return marker;
 }
+
+function getIcon(data)
+{
+    if (showBearings && 'bearing' in data)
+    {
+        var direction = Math.floor((data.bearing + 22.5) / 45) % 8;
+        return arrowIcons[direction];
+    }
+    else
+    {
+        return iconLtBlue;
+    }
+}
