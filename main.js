@@ -29,7 +29,7 @@ function getIcon(data)
     }
     else if (data['photo'] || data['comment'])
     {
-        return iconLtYellow;
+        return iconLtPurple;
     }
     else
     {
