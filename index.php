@@ -837,6 +837,14 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $html .= "                iconLtYellow.shadowSize = new GSize(22, 20);\n";
                 $html .= "                iconLtYellow.iconAnchor = new GPoint(6, 19);\n";
                 $html .= "                iconLtYellow.infoWindowAnchor = new GPoint(5, 1);\n";
+                
+                $html .= "                var iconLtPurple = new GIcon();\n";
+                $html .= "                iconLtPurple.image = '".$siteroot."mm_20_purple.png';\n";
+                $html .= "                iconLtPurple.shadow = '".$siteroot."mm_20_shadow.png';\n";
+                $html .= "                iconLtPurple.iconSize = new GSize(12, 20);\n";
+                $html .= "                iconLtPurple.shadowSize = new GSize(22, 20);\n";
+                $html .= "                iconLtPurple.iconAnchor = new GPoint(6, 19);\n";
+                $html .= "                iconLtPurple.infoWindowAnchor = new GPoint(5, 1);\n";
 
                 $html .= "                var iconGreen = new GIcon();\n";
                 $html .= "                iconGreen.image = '".$siteroot."green-dot.png';\n";
