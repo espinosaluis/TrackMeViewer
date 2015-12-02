@@ -838,53 +838,16 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $html .= "                iconGreen.iconAnchor = new GPoint(15, 32);\n";
                 $html .= "                iconGreen.infoWindowAnchor = new GPoint(5, 1);\n";
 
-                $html .= "                var iconArrow0 = new GIcon();\n";
-                $html .= "                iconArrow0.image = '".$siteroot."arrow0.png';\n";
-                $html .= "                iconArrow0.iconSize = new GSize(16, 16);\n";
-                 $html .= "                iconArrow0.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                iconArrow0.infoWindowAnchor = new GPoint(5, 1);\n";
-
-                $html .= "                var iconArrow45 = new GIcon();\n";
-                $html .= "                iconArrow45.image = '".$siteroot."arrow45.png';\n";
-                $html .= "                iconArrow45.iconSize = new GSize(16, 16);\n";
-                $html .= "                iconArrow45.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                iconArrow45.infoWindowAnchor = new GPoint(5, 1);\n";
-
-                $html .= "                var iconArrow90 = new GIcon();\n";
-                $html .= "                iconArrow90.image = '".$siteroot."arrow90.png';\n";
-                $html .= "                iconArrow90.iconSize = new GSize(16, 16);\n";
-                 $html .= "                iconArrow90.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                iconArrow90.infoWindowAnchor = new GPoint(5, 1);\n";
-
-                $html .= "                var iconArrow135 = new GIcon();\n";
-                $html .= "                iconArrow135.image = '".$siteroot."arrow135.png';\n";
-                $html .= "                iconArrow135.iconSize = new GSize(16, 16);\n";
-                $html .= "                iconArrow135.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                iconArrow135.infoWindowAnchor = new GPoint(5, 1);\n";
-
-                $html .= "                var iconArrow180 = new GIcon();\n";
-                $html .= "                iconArrow180.image = '".$siteroot."arrow180.png';\n";
-                $html .= "                iconArrow180.iconSize = new GSize(16, 16);\n";
-                $html .= "                iconArrow180.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                iconArrow180.infoWindowAnchor = new GPoint(5, 1);\n";
-
-                $html .= "                var iconArrow225 = new GIcon();\n";
-                $html .= "                iconArrow225.image = '".$siteroot."arrow225.png';\n";
-                $html .= "                iconArrow225.iconSize = new GSize(16, 16);\n";
-                $html .= "                iconArrow225.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                iconArrow225.infoWindowAnchor = new GPoint(5, 1);\n";
-
-                $html .= "                var iconArrow270 = new GIcon();\n";
-                $html .= "                iconArrow270.image = '".$siteroot."arrow270.png';\n";
-                $html .= "                iconArrow270.iconSize = new GSize(16, 16);\n";
-                $html .= "                iconArrow270.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                iconArrow270.infoWindowAnchor = new GPoint(5, 1);\n";
-
-                $html .= "                var iconArrow315 = new GIcon();\n";
-                $html .= "                iconArrow315.image = '".$siteroot."arrow315.png';\n";
-                $html .= "                iconArrow315.iconSize = new GSize(16, 16);\n";
-                $html .= "                iconArrow315.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                iconArrow315.infoWindowAnchor = new GPoint(5, 1);\n";
+                $html .= "                var arrowIcons = [];\n";
+                $html .= "                for (angle = 0; angle < 360; angle += 45)\n";
+                $html .= "                {\n";
+                $html .= "                    var icon = new GIcon();\n";
+                $html .= "                    icon.image = '".$siteroot."arrow' + angle + '.png';\n";
+                $html .= "                    icon.iconSize = new GSize(16, 16);\n";
+                $html .= "                    icon.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                    icon.infoWindowAnchor = new GPoint(5, 1);\n";
+                $html .= "                    arrowIcons.push(icon);\n";
+                $html .= "                }\n";
 
                 $html .= "                var geocoder = null;\n";
                 $html .= "                var online = true;\n";
@@ -925,84 +888,13 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $html .= "            map.addControl(new GOverviewMapControl());\n";
                     $html .= "            GEvent.addListener(map, \"move\", function() { setCenterCross(); } );\n";
                 }
-                $html .= "                function createGreenMarker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconGreen);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-                $html .= "                function createGrayMarker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconLtBlue);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-                $html .= "                function createRedMarker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconRed);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-                $html .= "                function createArrow0Marker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconArrow0);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-                $html .= "                function createArrow45Marker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconArrow45);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-	  	    $html .= "                function createArrow90Marker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconArrow90);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-		    $html .= "                function createArrow135Marker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconArrow135);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-	 	    $html .= "                function createArrow180Marker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconArrow180);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-		    $html .= "                function createArrow225Marker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconArrow225);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-		    $html .= "                function createArrow270Marker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconArrow270);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
-		    $html .= "                function createArrow315Marker(point, number)\n";
-                $html .= "                {\n";
-                $html .= "                    var marker = new GMarker(point, iconArrow315);\n";
-                $html .= "                    var html = number;\n";
-                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                $html .= "                    return marker;\n";
-                $html .= "                };\n";
 
+                // Write configuration to JS
+                if ($show_bearings == "yes") {
+                    $html .= "                showBearings = true;\n";
+                } else {
+                    $html .= "                showBearings = false;\n";
+                }
 
                 $params = array();
                 if (isset($_REQUEST[last_location]))  //show last location is on
@@ -1146,133 +1038,46 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         $html .= "        iconCustom" . $rounds . ".shadowSize = new GSize(59, 32);\n";
                         $html .= "        iconCustom" . $rounds . ".iconAnchor = new GPoint(15, 32);\n";
                         $html .= "        iconCustom" . $rounds . ".infoWindowAnchor = new GPoint(5, 1);\n";
-                        $html .= "        function createCustom" . $rounds . "Marker(point, number)\n";
-                        $html .= "        {\n";
-                        $html .= "            var marker = new GMarker(point, iconCustom" . $rounds . ");\n";
-                        $html .= "            var html = number;\n";
-                        $html .= "            GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
-                        $html .= "            return marker;\n";
-                        $html .= "        };\n";
-                        $html .= "        var marker = createCustom" . $rounds . "Marker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>"; //trackmeIT
-                        if($units == "metric")
-                        {
-                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
-                        }
-                        else
-                        {
-                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
-                        }
-                        if($row['Comments'] != "")
-                        {
-                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . $row['Comments'] . "<\/td><\/tr>";
-                        }
-                        $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
-                        if($row['ImageURL'])
-                        {
-                            $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
-                        }
-			$html .= "        <tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
+                        $parameter = "iconCustom$rounds";
                     }
                     elseif($rounds == 1)
                     {
-                        $html .= "        var marker = createGreenMarker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
-                        if($units == "metric")
-                        {
-                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
-                        }
-                        else
-                        {
-                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
-                        }
-                        if($row['Comments'] != "")
-                        {
-                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . $row['Comments'] . "<\/td><\/tr>";
-                        }
-                        $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
-                        if($row['ImageURL'])
-                        {
-                            $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
-                        }
-                        $html .= "<tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
+                        $parameter = "iconGreen";
                     }
                     elseif($rounds > 1  && $rounds < $count[0])
                     {
-						if ($show_bearings == "yes") {
-								//set bearing icon
-								$angle=$row['Angle'];
-								if ($angle=="") {
-									$gMarker = 'createGrayMarker';
-								} elseif ($angle < 22.5) {
-									$gMarker = 'createArrow0Marker';
-								} elseif ($angle < 67.5) {
-									$gMarker = 'createArrow45Marker';
-								} elseif ($angle < 112.5) {
-									$gMarker = 'createArrow90Marker';
-								} elseif ($angle < 157.5) {
-									$gMarker = 'createArrow135Marker';
-								} elseif ($angle < 202.5) {
-									$gMarker = 'createArrow180Marker';
-								} elseif ($angle < 247.5) {
-									$gMarker = 'createArrow225Marker';
-								} elseif ($angle < 292.5) {
-									$gMarker = 'createArrow270Marker';
-								} elseif ($angle < 337.5) {
-									$gMarker = 'createArrow315Marker';
-								} else {
-									$gMarker = 'createArrow0Marker';
-								}
-						} else {
-							$gMarker = 'createGrayMarker';
-						}
-
-                        $html .= "        var marker = ".$gMarker."(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";   //trackmeIT
-                        if($units == "metric")
-                        {
-                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
-                        }
+                        if (is_null($row['Angle']))
+                            $parameter = "getIcon({})";
                         else
-                        {
-                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
-                        }
-                        if($row['Comments'] != "")
-                        {
-                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . $row['Comments'] . "<\/td><\/tr>";
-                        }
-                        $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
-                        if($row['ImageURL'])
-                        {
-                            $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
-                        }
-			$html .= "        <tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
+                            $parameter = "getIcon({bearing: $row[Angle]})";
                     }
                     else
                     {
-                        $html .= "        var marker = createRedMarker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
-                        if($units == "metric")
-                        {
-                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
-                        }
-                        else
-                        {
-                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
-                        }
-                        if($row['Comments'] != "")
-                        {
-                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:</b> " . $row['Comments'] . "<\/td><\/tr>";
-                        }
-                        $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
-                        if($row['ImageURL'])
-                        {
-                            $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
-                        }
-			$html .= "        <tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
+                        $parameter = "iconRed";
                     }
+
+                    $html .= "        trip.appendMarker(point, $parameter, '<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
+                    if($units == "metric")
+                    {
+                        $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
+                    }
+                    else
+                    {
+                        $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
+                    }
+                    if($row['Comments'] != "")
+                    {
+                        $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . $row['Comments'] . "<\/td><\/tr>";
+                    }
+                    $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
+                    if($row['ImageURL'])
+                    {
+                        $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
+                    }
+                    $html .= "<tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
                     $rounds++;
                     $holdlat  = $row['Latitude'];
                     $holdlong = $row['Longitude'];
-                    $html .= "        trip.markers.push(marker);\n";
-                    $html .= "        map.addOverlay(marker);\n";
-                    $html .= "        bounds.extend(marker.getPoint());\n";
                 }
                 $html .= "        if (trip.markers.length > 1) {\n";
                 $html .= "            var points = [];\n";
