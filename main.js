@@ -27,7 +27,11 @@ function getIcon(data)
         var direction = Math.floor((data.bearing + 22.5) / 45) % 8;
         return arrowIcons[direction];
     }
-    else if (data['photo'] || data['comment'])
+    else if (data['photo'])
+    {
+        return iconLtYellow;
+    }
+    else if (data['photo'])
     {
         return iconLtPurple;
     }
