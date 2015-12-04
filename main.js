@@ -1,8 +1,25 @@
+var info = new google.maps.InfoWindow();
+var iconRed = 'red-dot.png';
+var iconLtBlue = 'mm_20_gray.png';
+var iconLtYellow = 'mm_20_yellow.png';
+var iconLtPurple = 'mm_20_purple.png';
+var iconGreen = 'green-dot.png';
+
+var arrowIcons = [];
+for (angle = 0; angle < 360; angle += 45)
+{
+    arrowIcons.push('arrow' + angle + '.png');
+}
+
 function Trip(name, user)
 {
     this.name = name;
     this.user = user;
     this.markers = [];
+    this.polyline = new google.maps.Polyline({strokeColor: "#000000",
+                                              strokeWeight: 3,
+                                              strokeOpacity: 1,
+                                              map: map});
 }
 
 Trip.prototype.lastMarker = function()
@@ -12,11 +29,16 @@ Trip.prototype.lastMarker = function()
 
 Trip.prototype.appendMarker = function(point, icon, data)
 {
-    var marker = new GMarker(point, icon);
-    GEvent.addListener(marker, "click", function() {marker.openInfoWindowHtml(data);});
-    map.addOverlay(marker);
-    bounds.extend(marker.getPoint());
+    var marker = new google.maps.Marker({position: point,
+                                         icon: icon});
+    marker.addListener("click", function() {
+        info.setContent(data);
+        info.open(map, marker);
+    });
+    marker.setMap(map);
+    bounds.extend(marker.getPosition());
     this.markers.push(marker);
+    this.polyline.getPath().push(point);
     return marker;
 }
 

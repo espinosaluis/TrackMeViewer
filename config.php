@@ -29,8 +29,8 @@
     // or just leave blank if you do not want to use it
     $googleanalyticsaccount="";
 
-    // Google Maps default view (G_NORMAL_MAP,G_SATELLITE_MAP, G_HYBRID_MAP or G_PHYSICAL_MAP)
-    $googleview   = "G_NORMAL_MAP";
+    // Google Maps default view (ROADMAP, SATELLITE, HYBRID or TERRAIN)
+    $googleview   = "ROADMAP";
     //to show all map points when you arrive at the page and when you change trips (yes or no)
     $showmap="yes";
 
@@ -52,9 +52,6 @@
 
     // Click to center map (yes or no)
     $clickcenter  = "yes";
-
-    // Display map overview (yes or no)
-    $overview     = "yes";
 
     // Map auto-refresh in seconds (0 for manual refresh)
     $refresh      = "120";
