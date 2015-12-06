@@ -798,8 +798,8 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 elseif ($googleview === "G_PHYSICAL_MAP")
                     $googleview = "TERRAIN";
 
-                if ($googleview !== "ROADMAP" || $googleview !== "SATELLITE" ||
-                        $googleview !== "HYBRID" || $googleview !== "TERRAIN")
+                if ($googleview !== "ROADMAP" && $googleview !== "SATELLITE" &&
+                        $googleview !== "HYBRID" && $googleview !== "TERRAIN")
                     // Invalid option
                     $googleview = "ROADMAP";
 
