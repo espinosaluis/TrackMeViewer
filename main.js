@@ -53,7 +53,7 @@ function getIcon(data)
     {
         return iconLtYellow;
     }
-    else if (data['photo'])
+    else if (data['comment'])
     {
         return iconLtPurple;
     }
