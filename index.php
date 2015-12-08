@@ -941,7 +941,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $avg_mph = $avg_speed[0] * 2.236936292054;
                 $avg_kph = $avg_speed[0] * 3.6;
                 $rounds      = 1;
-                $total_distance = 0;
+                $total_miles = 0;
                 $total_time = 0;
                 if ($tripname == "Any")
                 {
@@ -970,10 +970,9 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     }
                     else
                     {
-                        $leg_distance     = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "k");
-                        $total_distance  += $leg_distance;
-                        $total_miles      = $total_distance / 1.6;
-                        $total_kilometers = $total_distance;
+                        $leg_miles        = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
+                        $total_miles      = $total_miles + $leg_miles;
+                        $total_kilometers = $total_miles * 1.6;
                         $leg_time         = $row['DateOccurred'];
                         $total_time       = get_elapsed_time($holdtime, $leg_time);
                     }
