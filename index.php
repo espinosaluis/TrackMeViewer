@@ -114,6 +114,19 @@
                 $clickcenter = $storeclickcenter;
             }
 
+			if($_REQUEST["setoverview"])
+            {
+                $overview    = "yes";
+            }
+            elseif($action == "form_display")
+            {
+                $overview    = "no";
+            }
+            else
+            {
+                $overview    = $storeoverview;
+            }
+
 			if($_REQUEST["setshowbearings"])
             {
                 $show_bearings    = "yes";
@@ -140,6 +153,7 @@
 
 	    $storecrosshair   = $crosshair;
             $storeclickcenter = $clickcenter;
+            $storeoverview    = $overview;
             $storeunits       = $units;
             $storelanguage    = $language;
    	    $storeshowbearings = $show_bearings;
@@ -153,7 +167,7 @@
             $html .= "            <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
 			$html .= "            <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
             $html .= "            <title>$title_text (v" . $version_text . ")</title>\n";
-            $html .= "            <script src=\"https://maps.googleapis.com/maps/api/js?key=$googleapikey\" type=\"text/javascript\"></script>\n";
+            $html .= "            <script src=\"https://maps.google.com/maps?file=api&amp;v=2.x&amp;key=$googleapikey\" type=\"text/javascript\"></script>\n";
 			$html .= "        </head>\n";
             $html .= "        <body bgcolor=\"$bgcolor\">\n";
             $html .= "            <div align=center>\n";
@@ -167,7 +181,7 @@
             $html .= "            <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
 			$html .= "            <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
             $html .= "            <title>$title_text (v" . $version_text . ")</title>\n";
-            $html .= "            <script src=\"https://maps.googleapis.com/maps/api/js?key=$googleapikey\" type=\"text/javascript\"></script>\n";
+            $html .= "            <script src=\"https://maps.google.com/maps?file=api&amp;v=2.x&amp;key=$googleapikey\" type=\"text/javascript\"></script>\n";
 			$html .= "        </head>\n";
             $html .= "        <body bgcolor=\"$bgcolor\">\n";
             $html .= "            <div align=center>\n";
@@ -209,7 +223,7 @@
                 $html .= "        <script type=\"text/javascript\" src=\"calendar.js\"></script>\n";
                 $html .= "        <script type=\"text/javascript\" src=\"lang/calendar-en.js\"></script>\n";
                 $html .= "        <script type=\"text/javascript\" src=\"calendar-setup.js\"></script>\n";
-		$html .= "        <script src=\"https://maps.googleapis.com/maps/api/js?key=$googleapikey\" type=\"text/javascript\"></script>\n";
+		$html .= "        <script src=\"https://maps.google.com/maps?file=api&amp;v=2.x&amp;key=$googleapikey\" type=\"text/javascript\"></script>\n";
                 $html .= "        <script type=\"text/javascript\" src=\"main.js\"></script>\n";
 		$html .= "    </head>\n";
 
@@ -744,6 +758,14 @@ if(isset($_REQUEST[last_location]))
                     {
                         $html .= "                    <input type=\"checkbox\" name=\"setclickcenter\"> $display_clickcenter_text<br>\n";
                     }
+                    if($overview == "yes")
+                    {
+                        $html .= "                    <input type=\"checkbox\" name=\"setoverview\" CHECKED> $display_overview_text<br>\n";
+                    }
+                    else
+                    {
+                        $html .= "                    <input type=\"checkbox\" name=\"setoverview\"> $display_overview_text<br><br>\n";
+                    }
                     $html .= "                        <select name=\"language\" class=\"pulldownlayout\">\n";
                     $html .= "                            <option value=\"english\""; if($language == "english") { $html .= " SELECTED"; } $html .= ">English</option>\n";
                     $html .= "                            <option value=\"italian\""; if($language == "italian") { $html .= " SELECTED"; } $html .= ">Italian</option>\n";
@@ -789,54 +811,98 @@ if(isset($_REQUEST[last_location]))
 sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $html .= " </div>/n";
 
-                if ($googleview === "G_NORMAL_MAP")
-                    $googleview = "ROADMAP";
-                elseif ($googleview === "G_SATELLITE_MAP")
-                    $googleview = "SATELLITE";
-                elseif ($googleview === "G_HYBRID_MAP")
-                    $googleview = "HYBRID";
-                elseif ($googleview === "G_PHYSICAL_MAP")
-                    $googleview = "TERRAIN";
-
-                if ($googleview !== "ROADMAP" || $googleview !== "SATELLITE" ||
-                        $googleview !== "HYBRID" || $googleview !== "TERRAIN")
-                    // Invalid option
-                    $googleview = "ROADMAP";
 
                 $html .= "            <script type=\"text/javascript\">\n";
                 $html .= "            //<![CDATA[\n";
+                $html .= "                var iconRed = new GIcon();\n";
+                $html .= "                iconRed.image = '".$siteroot."red-dot.png';\n";
+                $html .= "                iconRed.shadow = '".$siteroot."msmarker.shadow.png';\n";
+                $html .= "                iconRed.iconSize = new GSize(32, 32);\n";
+                $html .= "                iconRed.shadowSize = new GSize(59, 32);\n";
+                $html .= "                iconRed.iconAnchor = new GPoint(15, 32);\n";
+                $html .= "                iconRed.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconLtBlue = new GIcon();\n";
+                $html .= "                iconLtBlue.image = '".$siteroot."mm_20_gray.png';\n";
+                $html .= "                iconLtBlue.shadow = '".$siteroot."mm_20_shadow.png';\n";
+                $html .= "                iconLtBlue.iconSize = new GSize(12, 20);\n";
+                $html .= "                iconLtBlue.shadowSize = new GSize(22, 20);\n";
+                $html .= "                iconLtBlue.iconAnchor = new GPoint(6, 19);\n";
+                $html .= "                iconLtBlue.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconLtYellow = new GIcon();\n";
+                $html .= "                iconLtYellow.image = '".$siteroot."mm_20_yellow.png';\n";
+                $html .= "                iconLtYellow.shadow = '".$siteroot."mm_20_shadow.png';\n";
+                $html .= "                iconLtYellow.iconSize = new GSize(12, 20);\n";
+                $html .= "                iconLtYellow.shadowSize = new GSize(22, 20);\n";
+                $html .= "                iconLtYellow.iconAnchor = new GPoint(6, 19);\n";
+                $html .= "                iconLtYellow.infoWindowAnchor = new GPoint(5, 1);\n";
+                
+                $html .= "                var iconLtPurple = new GIcon();\n";
+                $html .= "                iconLtPurple.image = '".$siteroot."mm_20_purple.png';\n";
+                $html .= "                iconLtPurple.shadow = '".$siteroot."mm_20_shadow.png';\n";
+                $html .= "                iconLtPurple.iconSize = new GSize(12, 20);\n";
+                $html .= "                iconLtPurple.shadowSize = new GSize(22, 20);\n";
+                $html .= "                iconLtPurple.iconAnchor = new GPoint(6, 19);\n";
+                $html .= "                iconLtPurple.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconGreen = new GIcon();\n";
+                $html .= "                iconGreen.image = '".$siteroot."green-dot.png';\n";
+                $html .= "                iconGreen.shadow = '".$siteroot."msmarker.shadow.png';\n";
+                $html .= "                iconGreen.iconSize = new GSize(32, 32);\n";
+                $html .= "                iconGreen.shadowSize = new GSize(59, 32);\n";
+                $html .= "                iconGreen.iconAnchor = new GPoint(15, 32);\n";
+                $html .= "                iconGreen.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var arrowIcons = [];\n";
+                $html .= "                for (angle = 0; angle < 360; angle += 45)\n";
+                $html .= "                {\n";
+                $html .= "                    var icon = new GIcon();\n";
+                $html .= "                    icon.image = '".$siteroot."arrow' + angle + '.png';\n";
+                $html .= "                    icon.iconSize = new GSize(16, 16);\n";
+                $html .= "                    icon.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                    icon.infoWindowAnchor = new GPoint(5, 1);\n";
+                $html .= "                    arrowIcons.push(icon);\n";
+                $html .= "                }\n";
+
                 $html .= "                var geocoder = null;\n";
                 $html .= "                var online = true;\n";
-                $html .= "                var bounds = new google.maps.LatLngBounds();\n";
-                $html .= "                var map = new google.maps.Map(document.getElementById(\"map\"),\n";
-                $html .= "                                              {center: new google.maps.LatLng(0, 0),\n";
-                $html .= "                                               mapTypeId: google.maps.MapTypeId.$googleview,\n";
-                $html .= "                                               mapTypeControl: true,\n";
-                $html .= "                                               scrollwheel: true,\n";
-                $html .= "                                               scaleControl: true});\n";
-
+                $html .= "                var bounds = new GLatLngBounds();\n";
+                $html .= "                var map = new GMap2(document.getElementById(\"map\"));\n";
+                $html .= "                map.setCenter(new GLatLng(0, 0), 0, $googleview);\n";
+                $html .= "                map.addControl(new GLargeMapControl());\n";
+                $html .= "                map.addControl(new GMapTypeControl());\n";
+                $html .= "                map.addControl(new GScaleControl());\n";
+                $html .= "                map.addMapType(G_PHYSICAL_MAP);\n";
+                $html .= "                map.enableScrollWheelZoom(); \n";
+                $html .= "            var centerCrosshair = new GIcon();\n";
                 if($crosshair == "yes")
                 {
-                    $html .= "            var centerCrosshair = {\n";
-                    $html .= "                url: 'crosshair.gif',\n";
-                    $html .= "                size: new google.maps.Size(17, 17),\n";
-                    $html .= "                anchor: new google.maps.Point(8, 8)\n";
-                    $html .= "            };\n";
-                    $html .= "            centerCross = new google.maps.Marker({position: map.getCenter(),\n";
-                    $html .= "                                                  icon: centerCrosshair,\n";
-                    $html .= "                                                  clickable: false });\n";
-                    $html .= "            centerCross.setMap(map);\n";
-                    $html .= "            function setCenterCross() {\n";
-                    $html .= "                centerCross.setPosition(map.getCenter());\n";
-                    $html .= "            };\n";
-                    $html .= "            map.addListener(\"drag\", setCenterCross);\n";
-                    $html .= "            map.addListener(\"resize\", setCenterCross);\n";
-                    $html .= "            map.addListener(\"zoom_changed\", setCenterCross);\n";
-                    $html .= "            map.addListener(\"center_changed\", setCenterCross);\n";
+                    $html .= "            centerCrosshair.image = 'crosshair.gif';\n";
                 }
+                else
+                {
+                    $html .= "            centerCrosshair.image = '';\n";
+                }
+                $html .= "            centerCrosshair.iconSize = new GSize(17, 17);\n";
+                $html .= "            centerCrosshair.iconAnchor = new GPoint(8, 8);\n";
+                $html .= "            centerCross = new GMarker(map.getCenter(), { icon: centerCrosshair, clickable: false }); map.addOverlay(centerCross);\n";
+                $html .= "            GEvent.addListener(map, \"drag\", function() { setCenterCross(); } );\n";
+                $html .= "            GEvent.addListener(map, \"resize\", function() { setCenterCross(); } );\n";
+                $html .= "            GEvent.addListener(map, \"zoomend\", function() { setCenterCross(); } );\n";
+                $html .= "            GEvent.addListener(map, \"wheelup\", function() { setCenterCross(); } );\n";
+                $html .= "            GEvent.addListener(map, \"wheeldown\", function() { setCenterCross(); } );\n";
+                $html .= "            function setCenterCross() {\n";
+                $html .= "                centerCross.setPoint(map.getCenter());\n";
+                $html .= "            };\n";
                 if($clickcenter == "yes")
                 {
-                    $html .= "            map.addListener(\"click\", function(e) { map.panTo(e.latLng); } );\n";
+                    $html .= "            GEvent.addListener(map, \"click\", function(marker, point) { if(! marker) { map.panTo(point); map.setCenter(point); setCenterCross(); } } );\n";
+                }
+                if($overview == "yes")
+                {
+                    $html .= "            map.addControl(new GOverviewMapControl());\n";
+                    $html .= "            GEvent.addListener(map, \"move\", function() { setCenterCross(); } );\n";
                 }
 
                 // Write configuration to JS
@@ -962,7 +1028,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $kph     = $row['Speed'] * 3.6;
                     $ft      = $row['Altitude'] * 3.2808399;
                     $meters  = $row['Altitude'];
-                    $html .= "            var point = new google.maps.LatLng(" . $row['Latitude'] . "," . $row['Longitude'] . ");\n";
+                    $html .= "            var point = new GLatLng(" . $row['Latitude'] . "," . $row['Longitude'] . ");\n";
 
                     if($rounds == 1)
                     {
@@ -980,7 +1046,15 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
 
                     if (!is_null($row['URL']))
                     {
-                        $parameter = $row['URL'];
+                        $icon_shadow = str_replace( '.png', '.shadow.png', $row['URL']);
+                        $html .= "        var iconCustom" . $rounds . " = new GIcon();\n";
+                        $html .= "        iconCustom" . $rounds . ".image = '" . $row['URL'] . "';\n";
+                        $html .= "        iconCustom" . $rounds . ".shadow = '" . $icon_shadow . "';\n";
+                        $html .= "        iconCustom" . $rounds . ".iconSize = new GSize(32, 32);\n";
+                        $html .= "        iconCustom" . $rounds . ".shadowSize = new GSize(59, 32);\n";
+                        $html .= "        iconCustom" . $rounds . ".iconAnchor = new GPoint(15, 32);\n";
+                        $html .= "        iconCustom" . $rounds . ".infoWindowAnchor = new GPoint(5, 1);\n";
+                        $parameter = "iconCustom$rounds";
                     }
                     elseif($rounds == 1)
                     {
@@ -1021,12 +1095,22 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $holdlat  = $row['Latitude'];
                     $holdlong = $row['Longitude'];
                 }
+                $html .= "        if (trip.markers.length > 1) {\n";
+                $html .= "            var points = [];\n";
+                $html .= "            for (i = 0; i < trip.markers.length; i++)\n";
+                $html .= "                points.push(trip.markers[i].getPoint());\n";
+                $html .= "            var polyline = new GPolyline(points, \"#000000\", 3, 1);\n";
+                $html .= "            map.addOverlay(polyline);\n";
+                $html .= "        }\n";
 
-                $html .= "        map.fitBounds(bounds); \n";
 		if(isset($_REQUEST[last_location])) //show last location is on
                                 {
 		$html .= "      document.zoomform.zoom.value = getValue(\"zoomlevel\"); \n";
-                $html .= " 	map.setZoom(map.getZoom()-document.zoomform.zoom.value); \n";
+                $html .= " 	map.setZoom(map.getBoundsZoomLevel(bounds)-document.zoomform.zoom.value); \n";
+			        }
+				else
+				{
+                $html .= "                map.setZoom(map.getBoundsZoomLevel(bounds)-2); \n";
 			        }
                 $html .= "                map.setCenter(bounds.getCenter());\n";
                 $html .= "            //]]>\n";
