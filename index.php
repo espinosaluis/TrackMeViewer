@@ -1,8 +1,7 @@
 <?php
 
-    session_start();
+	Require_once("config.php");
 
-    require_once("database.php");
 
 
   if (dirname($_SERVER['PHP_SELF'])=="/") {
@@ -23,10 +22,8 @@
 
     require_once('language.php');
 
-    try {
-        $db = connect();
-    } catch (PDOException $e) {
-        $db = null;
+    if(!@mysql_connect("$DBIP","$DBUSER","$DBPASS"))
+    {
         $html  = " <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
         $html .= "        <head>\n";
         $html .= "            <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
@@ -37,35 +34,35 @@
         $html .= "            <div align=center>\n";
 	$html .= "                $database_fail_text<br>\n";
         $html .= "                <br>\n";
-        $html .= "                $e->getMessage()<br>\n";
+        $html .= "                <br>\n";
         $html .= "                <br>\n";
         $html .= "                <br>\n";
         $html .= "                <br>\n";
         $html .= "                <br>\n";
     }
-
-    if (!is_null($db))
+    else
     {
+        mysql_select_db("$DBNAME");
+
         // Delete trip
         if (isset($_GET['deleteTrip']) && is_numeric($_GET['deleteTrip'])) {
           $tripId = (int)$_GET['deleteTrip'];
 
-            try {
-                $db->beginTransaction();
-                $db->exec_sql("DELETE FROM `trips` WHERE `ID` = ?", $tripId);
-                $db->exec_sql("DELETE FROM `positions` WHERE `FK_Trips_ID` = ?", $tripId);
-                $db->commit();
-            } catch (Exception $e) {
-                $db->rollback();
-            }
+          mysql_query(sprintf("DELETE FROM `trips` WHERE `ID` = %d", $tripId));
+          mysql_query(sprintf("DELETE FROM `positions` WHERE `FK_Trips_ID` = %d", $tripId));
 
           header('Location: '.$siteroot);
         }
 
-        $num_users = $db->get_count("users");
-        $num_trips = $db->get_count("trips");
-        $num_positions = $db->get_count("positions");
-        $num_icons = $db->get_count("icons");
+
+        $empty_users       = mysql_query("SELECT COUNT(*) FROM users");
+        $empty_users       = mysql_fetch_array($empty_users);
+        $empty_trips       = mysql_query("SELECT COUNT(*) FROM trips");
+        $empty_trips       = mysql_fetch_array($empty_trips);
+        $empty_positions   = mysql_query("SELECT COUNT(*) FROM positions");
+        $empty_positions   = mysql_fetch_array($empty_positions);
+        $empty_icons       = mysql_query("SELECT COUNT(*) FROM icons");
+        $empty_icons       = mysql_fetch_array($empty_icons);
 
 
         $filter            = $_REQUEST["filter"];
@@ -73,6 +70,8 @@
         $ID                = $_REQUEST["ID"];
         $username          = $_REQUEST["username"];
         $password          = $_REQUEST["password"];
+        $salt              = "trackmeuser";
+        $password          = MD5($salt.$password);
         $action            = $_REQUEST["action"];
         $storeshowbearings = $_REQUEST["storeshowbearings"];
         $storecrosshair    = $_REQUEST["storecrosshair"];
@@ -160,7 +159,7 @@
             $custom_view      = "yes";
         }
 
-        if ($num_users < 1 || $num_trips < 1 || $num_positions < 1 || $num_icons < 1)
+        if ($empty_users[0] < 1 || $empty_trips[0] < 1 || $empty_positions[0] < 1 || $empty_icons[0] < 1)
         {
             $html  = "    <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
             $html .= "        <head>\n";
@@ -190,28 +189,36 @@
         }
         else
         {
-            if($public_page != "yes")
+            if($public_page != "yes" && $action == "logout")
             {
-                if ($action == "logout")
-                {
-                    unset($_SESSION['ID']);
-                }
-
-                if(isset($username) && isset($password))
-                {
-                    if (preg_match("/^([a-zA-Z0-9._])+$/", "$_REQUEST[username]"))
-                    {
-                        $login_id = $db->valid_login($username, $password);
-                        if ($login_id >= 0)
-                        {
-                            $ID       = $login_id;
-                            $_SESSION['ID'] = $login_id;
-                        }
-                    }
-                }
+                setcookie("username", "",time()-3600);
+                setcookie("password", "",time()-3600);
+                $logged_in = "no";
+            }
+            elseif($public_page != "yes" && isset($_COOKIE["username"]) && isset($_COOKIE["password"]))
+            {
+                $username = preg_replace("/[^a-zA-Z0-9._]/", "", $_COOKIE["username"]);
+                $password = preg_replace("/[^a-zA-Z0-9]/", "", $_COOKIE["password"]);
             }
 
-            if(isset($_SESSION['ID']) || $public_page == "yes")
+            if($public_page != "yes" && isset($username) && isset($password))
+            {
+                if (preg_match("/^([a-zA-Z0-9._])+$/", "$_REQUEST[username]"))
+                {
+                    $loggedin =  "no";
+                    $finduser=mysql_query("Select ID FROM users WHERE username = '$username' and password='$password'");
+	                if ( $founduser=mysql_fetch_array($finduser) )
+	                {
+        	    		$loggedin = "yes";
+		    	        $ID       = $founduser["ID"];
+                        setcookie ("username", "$username",time()+3600);
+                        setcookie ("password", "$password",time()+3600);
+                        $logged_in = "yes";
+	                }
+	            }
+            }
+
+            if($loggedin == "yes" || $public_page == "yes")
             {
                 $html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
                 $html .= "    <head>\n";
@@ -224,7 +231,6 @@
                 $html .= "        <script type=\"text/javascript\" src=\"lang/calendar-en.js\"></script>\n";
                 $html .= "        <script type=\"text/javascript\" src=\"calendar-setup.js\"></script>\n";
 		$html .= "        <script src=\"https://maps.google.com/maps?file=api&amp;v=2.x&amp;key=$googleapikey\" type=\"text/javascript\"></script>\n";
-                $html .= "        <script type=\"text/javascript\" src=\"main.js\"></script>\n";
 		$html .= "    </head>\n";
 
 if(isset($_REQUEST[last_location])){
@@ -314,8 +320,8 @@ if($public_page == "yes")
    {
    $html .= "      <form name=\"form_user\" action=\"index.php\" method=\"post\">\n";
    $html .= "      <select name=\"ID\" class=\"pulldownlayout\">\n";
-                $findusers = $db->exec_sql("Select * FROM users ORDER BY username");
-                while($founduser = $findusers->fetch())
+   $findusers=mysql_query("Select * FROM users ORDER BY username");
+        while($founduser=mysql_fetch_array($findusers))
         {
           if(!isset($ID))
               {
@@ -354,8 +360,8 @@ if($public_page == "yes")
                   }
      $html .= "</form>\n";
 } else {
-                $finduser = $db->exec_sql("Select * FROM users WHERE ID = ? LIMIT 1", $ID);
-                $founduser = $finduser->fetch();
+       $finduser=mysql_query("Select * FROM users WHERE ID = '$ID' LIMIT 1");
+       $founduser=mysql_fetch_array($finduser);
        $html .= "                 $trip_data<br>\n";
        $html .= "                    " . $founduser["username"] . " (<a href=\"index.php?action=logout\">log out</a>)\n";
        if ($public_page == "no")
@@ -408,8 +414,8 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
                 {
                     $html .= "                            <option value=\"Any\">$trip_any_text</option>\n";
                 }
-                $findtrips = $db->exec_sql("Select * FROM trips WHERE FK_Users_ID = ? ORDER BY ID DESC", $ID);
-                while($foundtrip = $findtrips->fetch())
+                $findtrips=mysql_query("Select * FROM trips WHERE FK_Users_ID = $ID ORDER BY ID DESC");
+                while($foundtrip=mysql_fetch_array($findtrips))
                 {
                     if(!isset($trip) || trim($trip) == "")
                     {
@@ -578,61 +584,80 @@ $html .= "                </FORM> <br>    \n";
                 $html .= "                        <input type=\"hidden\" name=\"storestartdate\" value=\"$storestartdate\">\n";
                 $html .= "                        <input type=\"hidden\" name=\"storeenddate\" value=\"$storeenddate\">\n";
 			}
-
-                $params = array($ID);
-                if(isset($_REQUEST[last_location]))
+if(!isset($startday) || trim($startday) == "") //if startday is blank then lookup the start and end of entire trip
+{
+		if(isset($_REQUEST[last_location]))
                 {
-                    $limit = "DESC LIMIT 1";
-                    $where = "";
-                }
-                else
+				$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID  ORDER BY DateOccurred DESC LIMIT 1");
+				$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID  ORDER BY DateOccurred DESC LIMIT 1");
+                $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
+				}
+                elseif($tripname == "None"){
+					$photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != ''");
+					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != ''");
+					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL ORDER BY DateOccurred LIMIT 1");
+					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL ORDER BY DateOccurred DESC LIMIT 1");
+					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL ORDER BY DateOccurred");				}
+                elseif($tripname == "Any"){
+				    $photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND ImageURL != ''");
+					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND Comments != ''");
+					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID ORDER BY DateOccurred LIMIT 1");
+					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID ORDER BY DateOccurred DESC LIMIT 1");
+					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred");
+				}
+				else {
+					$photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '';");
+					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '';");
+					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip ORDER BY DateOccurred LIMIT 1");
+					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip ORDER BY DateOccurred DESC LIMIT 1");
+					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' ORDER BY DateOccurred");
+					}
+} else {   // lookup the start and end of trip based on dates given
+		if(isset($_REQUEST[last_location]))
                 {
-                    $limit = "";
-                    if ($tripname == "None")
-                        $where = " AND FK_Trips_ID is NULL";
-                    elseif ($tripname != "Any")
-                    {
-                        $where = " AND FK_Trips_ID = ?";
-                        $params[] = $trip;
-                    }
-                    else
-                        $where = "";
+				$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID  ORDER BY DateOccurred DESC LIMIT 1");
+				$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID  ORDER BY DateOccurred DESC LIMIT 1");
+                $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
+				}
+                elseif($tripname == "None"){
+					$photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
+					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
+					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");				}
+                elseif($tripname == "Any"){
+				    $photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
+					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
+					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+				}
+				else {
+					$photocount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
+					$commentcount  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != ''AND DateOccurred BETWEEN '$startday' AND '$endday';");
+					$tripstartdatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred LIMIT 1");
+					$tripenddatesql=mysql_query("Select DateOccurred FROM positions WHERE FK_Users_ID = $ID AND FK_Trips_ID= $trip AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC LIMIT 1");
+					$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+					}
+}
 
-                    // if startday is not blank then don't lookup the start and end of entire trip
-                    if (isset($startday) && trim($startday) != "")
-                    {
-                        $where .= " AND DateOccurred BETWEEN ? AND ?";
-                        $params[] = $startday;
-                        $params[] = $endday;
-                    }
-                }
-
-                $result = $db->exec_sql("SELECT * FROM positions " .
-                                        "WHERE FK_Users_ID=? $where " .
-                                        "ORDER BY DateOccurred $limit", $params);
-
+$avg_mph = $avg_speed[0] * 2.236936292054;
+$avg_kph = $avg_speed[0] * 3.6;
 $rounds      = 1;
 $total_miles = 0;
 $leg_time    = 0;
-                $pcount=0;
-                $ccount=0;
-                while($row = $result->fetch())
+	while($row = mysql_fetch_array($result))
 	{
 		$mph     = $row['Speed'] * 2.2369362920544;
 		$kph     = $row['Speed'] * 3.6;
 		$ft      = $row['Altitude'] * 3.2808399;
 		$meters  = $row['Altitude'];
-                    if ($row['ImageURL'] != '')
-                        $pcount++;
-                    if ($row['Comments'] != '')
-                        $ccount++;
 
-                    $endday = $row['DateOccurred'];
 			if($rounds == 1)
 			{
+				$holdtime = $row['DateOccurred'];
 				$total_time = 0;
 				$display_total_time = gmdate("H:i:s", $total_time);
-                        $startday = $endday;
 			}
 			else
 			{
@@ -640,17 +665,31 @@ $leg_time    = 0;
 				$total_miles      = $total_miles + $leg_miles;
 				$total_kilometers = $total_miles * 1.6;
 				$leg_time         = $row['DateOccurred'];
-				$total_time       = get_elapsed_time($startday, $leg_time);
+				$total_time       = get_elapsed_time($holdtime, $leg_time);
 				$total_time       = gmdate("H:i:s", $total_time);
 			}
 		$rounds++;
 		$holdlat  = $row['Latitude'];
 		$holdlong = $row['Longitude'];
 	}
+$tripstartdate = mysql_fetch_array($tripstartdatesql);
+$tripenddate = mysql_fetch_array($tripenddatesql);
+	$trips= $tripstartdate[DateOccurred];
+	$tripe= $tripenddate[DateOccurred];
+	$tripTot=number_format($total_miles,2);
+ $startday = $tripstartdate[DateOccurred];
+ $endday = $tripenddate[DateOccurred];
 if(isset($_REQUEST[last_location]))
 	{
 	$pcount=0;
 	$ccount=0;
+	}
+	else
+	{
+	$photocnt = mysql_fetch_array($photocount);
+	$commentcnt = mysql_fetch_array($commentcount);
+	$pcount=$photocnt[0];
+	$ccount=$commentcnt[0];
 	}
 
 				if(isset($_REQUEST[last_location]))   //if we are in live tracking then display this in center
@@ -830,22 +869,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $html .= "                iconLtBlue.iconAnchor = new GPoint(6, 19);\n";
                 $html .= "                iconLtBlue.infoWindowAnchor = new GPoint(5, 1);\n";
 
-                $html .= "                var iconLtYellow = new GIcon();\n";
-                $html .= "                iconLtYellow.image = '".$siteroot."mm_20_yellow.png';\n";
-                $html .= "                iconLtYellow.shadow = '".$siteroot."mm_20_shadow.png';\n";
-                $html .= "                iconLtYellow.iconSize = new GSize(12, 20);\n";
-                $html .= "                iconLtYellow.shadowSize = new GSize(22, 20);\n";
-                $html .= "                iconLtYellow.iconAnchor = new GPoint(6, 19);\n";
-                $html .= "                iconLtYellow.infoWindowAnchor = new GPoint(5, 1);\n";
-                
-                $html .= "                var iconLtPurple = new GIcon();\n";
-                $html .= "                iconLtPurple.image = '".$siteroot."mm_20_purple.png';\n";
-                $html .= "                iconLtPurple.shadow = '".$siteroot."mm_20_shadow.png';\n";
-                $html .= "                iconLtPurple.iconSize = new GSize(12, 20);\n";
-                $html .= "                iconLtPurple.shadowSize = new GSize(22, 20);\n";
-                $html .= "                iconLtPurple.iconAnchor = new GPoint(6, 19);\n";
-                $html .= "                iconLtPurple.infoWindowAnchor = new GPoint(5, 1);\n";
-
                 $html .= "                var iconGreen = new GIcon();\n";
                 $html .= "                iconGreen.image = '".$siteroot."green-dot.png';\n";
                 $html .= "                iconGreen.shadow = '".$siteroot."msmarker.shadow.png';\n";
@@ -854,18 +877,56 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $html .= "                iconGreen.iconAnchor = new GPoint(15, 32);\n";
                 $html .= "                iconGreen.infoWindowAnchor = new GPoint(5, 1);\n";
 
-                $html .= "                var arrowIcons = [];\n";
-                $html .= "                for (angle = 0; angle < 360; angle += 45)\n";
-                $html .= "                {\n";
-                $html .= "                    var icon = new GIcon();\n";
-                $html .= "                    icon.image = '".$siteroot."arrow' + angle + '.png';\n";
-                $html .= "                    icon.iconSize = new GSize(16, 16);\n";
-                $html .= "                    icon.iconAnchor = new GPoint(15, 15);\n";
-                $html .= "                    icon.infoWindowAnchor = new GPoint(5, 1);\n";
-                $html .= "                    arrowIcons.push(icon);\n";
-                $html .= "                }\n";
+                $html .= "                var iconArrow0 = new GIcon();\n";
+                $html .= "                iconArrow0.image = '".$siteroot."arrow0.png';\n";
+                $html .= "                iconArrow0.iconSize = new GSize(16, 16);\n";
+                 $html .= "                iconArrow0.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                iconArrow0.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconArrow45 = new GIcon();\n";
+                $html .= "                iconArrow45.image = '".$siteroot."arrow45.png';\n";
+                $html .= "                iconArrow45.iconSize = new GSize(16, 16);\n";
+                $html .= "                iconArrow45.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                iconArrow45.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconArrow90 = new GIcon();\n";
+                $html .= "                iconArrow90.image = '".$siteroot."arrow90.png';\n";
+                $html .= "                iconArrow90.iconSize = new GSize(16, 16);\n";
+                 $html .= "                iconArrow90.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                iconArrow90.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconArrow135 = new GIcon();\n";
+                $html .= "                iconArrow135.image = '".$siteroot."arrow135.png';\n";
+                $html .= "                iconArrow135.iconSize = new GSize(16, 16);\n";
+                $html .= "                iconArrow135.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                iconArrow135.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconArrow180 = new GIcon();\n";
+                $html .= "                iconArrow180.image = '".$siteroot."arrow180.png';\n";
+                $html .= "                iconArrow180.iconSize = new GSize(16, 16);\n";
+                $html .= "                iconArrow180.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                iconArrow180.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconArrow225 = new GIcon();\n";
+                $html .= "                iconArrow225.image = '".$siteroot."arrow225.png';\n";
+                $html .= "                iconArrow225.iconSize = new GSize(16, 16);\n";
+                $html .= "                iconArrow225.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                iconArrow225.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconArrow270 = new GIcon();\n";
+                $html .= "                iconArrow270.image = '".$siteroot."arrow270.png';\n";
+                $html .= "                iconArrow270.iconSize = new GSize(16, 16);\n";
+                $html .= "                iconArrow270.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                iconArrow270.infoWindowAnchor = new GPoint(5, 1);\n";
+
+                $html .= "                var iconArrow315 = new GIcon();\n";
+                $html .= "                iconArrow315.image = '".$siteroot."arrow315.png';\n";
+                $html .= "                iconArrow315.iconSize = new GSize(16, 16);\n";
+                $html .= "                iconArrow315.iconAnchor = new GPoint(15, 15);\n";
+                $html .= "                iconArrow315.infoWindowAnchor = new GPoint(5, 1);\n";
 
                 $html .= "                var geocoder = null;\n";
+                $html .= "                var map = null;\n";
                 $html .= "                var online = true;\n";
                 $html .= "                var bounds = new GLatLngBounds();\n";
                 $html .= "                var map = new GMap2(document.getElementById(\"map\"));\n";
@@ -904,111 +965,259 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $html .= "            map.addControl(new GOverviewMapControl());\n";
                     $html .= "            GEvent.addListener(map, \"move\", function() { setCenterCross(); } );\n";
                 }
+                $html .= "                function createGreenMarker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconGreen);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+                $html .= "                function createGrayMarker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconLtBlue);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+                $html .= "                function createRedMarker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconRed);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+                $html .= "                function createArrow0Marker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconArrow0);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+                $html .= "                function createArrow45Marker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconArrow45);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+	  	    $html .= "                function createArrow90Marker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconArrow90);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+		    $html .= "                function createArrow135Marker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconArrow135);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+	 	    $html .= "                function createArrow180Marker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconArrow180);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+		    $html .= "                function createArrow225Marker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconArrow225);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+		    $html .= "                function createArrow270Marker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconArrow270);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
+		    $html .= "                function createArrow315Marker(point, number)\n";
+                $html .= "                {\n";
+                $html .= "                    var marker = new GMarker(point, iconArrow315);\n";
+                $html .= "                    var html = number;\n";
+                $html .= "                    GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                $html .= "                    return marker;\n";
+                $html .= "                };\n";
 
-                // Write configuration to JS
-                if ($show_bearings == "yes") {
-                    $html .= "                showBearings = true;\n";
-                } else {
-                    $html .= "                showBearings = false;\n";
-                }
-
-                $params = array();
-                if (isset($_REQUEST[last_location]))  //show last location is on
+                if(isset($_REQUEST[last_location]))
                 {
-                    $where = "";
-                    $limit = 1;
-                    $showmapdata = 1;
+                    $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
+                    $avg_speed = mysql_fetch_array($speeds);
+                    $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' ORDER BY DateOccurred DESC LIMIT 1");
+                    $count[0] = 1;
                 }
-                else
+                elseif($tripname == "Any")
                 {
                     if($filter == "Photo")
                     {
-                        $where = "ImageURL != ''";
-                        $limit = 0;
+                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
                     }
                     elseif($filter == "Comment")
                     {
-                        $where = "Comments != ''";
-                        $limit = 0;
+                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
                     }
                     elseif($filter == "PhotoComment")
                     {
-                        $where = "(Comments != '' OR ImageURL != '')";
-                        $limit = 0;
+                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND Comments != '' OR FK_Users_ID='$ID' AND Comments != ''  AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND Comments != '' OR FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND ImageURL != '' OR FK_Users_ID='$ID' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
                     }
                     elseif($filter == "Last20")
                     {
-                        $where = "";
-                        $limit = 20;
+							$speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+							$count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+							$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
                     }
                     else
                     {
-                        $where = "";
-                        $limit = 0;
+                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ");
+                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
                     }
-                    if ($where != "")
-                        $where .= " AND";
-                    if ($limit > 0)
-                        $limit = " DESC $limit";
-                    else
-                        $limit = "";
-
-                    if ($tripname != "Any")
-                    {
-                        if ($tripname == "None")
-                        {
-                            $count = 0;
-                        }
-                        else
-                        {
-                            // TODO: use parameters
-                            $count = $db->get_count("positions " .
-                                                    "WHERE FK_Users_ID='$ID' AND " .
-                                                    "FK_Trips_ID='$trip' AND " .
-                                                    "DateOccurred BETWEEN '$startday' AND '$endday'");
-                        }
-                        if ($count == 0)
-                            $where .= " FK_Trips_ID is NULL AND";
-                        else
-                        {
-                            $where .= " FK_Trips_ID=? AND";
-                            $params[] = $trip;
-                        }
-                    }
-                    $where .= " DateOccurred BETWEEN ? AND ? AND";
-                    $params[] = $startday;
-                    $params[] = $endday;
+                    $avg_speed = mysql_fetch_array($speeds);
+                    $count  = mysql_fetch_array($count);
                 }
-
-                if ($showmap != "yes" && $showmapdata != 1)
-                    $params[] = 'ZZ';
-                else
-                    $params[] = $ID;
-
-                $queries = array();
-                foreach (array('avg(speed)', 'COUNT(*)', '*') as $selected_column)
+                elseif($tripname == "None")
                 {
-                    if ($selected_column === '*')
+                    if($filter == "Photo")
                     {
-                        $selected_column = 'positions.*, icons.URL';
-                        $join = "LEFT JOIN icons ON positions.FK_Icons_ID=icons.ID";
+                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                    }
+                    elseif($filter == "Comment")
+                    {
+                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                    }
+                    elseif($filter == "PhotoComment")
+                    {
+                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday'");
+                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                    }
+                    elseif($filter == "Last20")
+                    {
+							$speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+							$count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+							$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
                     }
                     else
-                        $join = "";
-                    $queries[] = $db->exec_sql("SELECT $selected_column FROM positions $join " .
-                                               "WHERE $where FK_Users_ID=? " .
-                                               "ORDER BY DateOccurred $limit",
-                                               $params);
+                    {
+                        $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday'");
+                        $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                    }
+                    $avg_speed = mysql_fetch_array($speeds);
+                    $count  = mysql_fetch_array($count);
                 }
-                $avg_speed = $queries[0]->fetch();
-                $count  = $queries[1]->fetch();
-                $result = $queries[2];
-
+                else
+                {
+                    $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                    $count  = mysql_fetch_array($count);
+                    if($count[0] > 0)
+                    {
+                        if($filter == "Photo")
+                        {
+                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        }
+                        elseif($filter == "Comment")
+                        {
+                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != ''AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        }
+                        elseif($filter == "PhotoComment")
+                        {
+                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        }
+						elseif($filter == "Last20")
+						{
+							$speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+							$count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+							$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+						}
+                        else
+                        {
+                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID='$trip' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        }
+                        $avg_speed = mysql_fetch_array($speeds);
+                        $count  = mysql_fetch_array($count);
+                    }
+                    else
+                    {
+                        if($filter == "Photo")
+                        {
+                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        }
+                        elseif($filter == "Comment")
+                        {
+                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        }
+                        elseif($filter == "PhotoComment")
+                        {
+                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND ImageURL != '' OR FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND Comments != '' AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        }
+						elseif($filter == "Last20")
+						{
+							$speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+							$count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+							$result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred DESC Limit 20");
+						}
+                        else
+                        {
+                            $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                            $count  = mysql_query("SELECT COUNT(*) FROM  positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday';");
+                            $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='$ID' AND FK_Trips_ID is NULL AND DateOccurred BETWEEN '$startday' AND '$endday' ORDER BY DateOccurred");
+                        }
+                        $avg_speed = mysql_fetch_array($speeds);
+                        $count  = mysql_fetch_array($count);
+                    }
+                }
+//don't lookup map data the until the show button is pressed.
+if(isset($_REQUEST[last_location])) //show last location is on
+	{
+	$showmapdata = 1;
+	}
+if ($showmap=="yes") {
+	//because of config file settings, leave map data as is
+	}
+	else
+	{
+		if($showmapdata<>1)
+			{
+                    $speeds = mysql_query("SELECT avg(speed) FROM positions WHERE FK_Users_ID='ZZ' ORDER BY DateOccurred DESC LIMIT 1");
+                    $avg_speed = mysql_fetch_array($speeds);
+                    $result = mysql_query("SELECT * FROM positions WHERE FK_Users_ID='ZZ' ORDER BY DateOccurred DESC LIMIT 1");
+                    $count[0] = 1;
+			}
+	}
                 $avg_mph = $avg_speed[0] * 2.236936292054;
                 $avg_kph = $avg_speed[0] * 3.6;
                 $rounds      = 1;
                 $total_miles = 0;
-                $total_time = 0;
+                $leg_time    = 0;
                 if ($tripname == "Any")
                 {
                 $tripnameText = $trip_any_text;
@@ -1021,87 +1230,191 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
              	{
                 $tripnameText = $tripname;
               	}
-                $html .= "            var trip = new Trip('$tripnameText', '$username');\n";
-                while($row = $result->fetch())
+                while($row = mysql_fetch_array($result))
                 {
                     $mph     = $row['Speed'] * 2.2369362920544;
                     $kph     = $row['Speed'] * 3.6;
                     $ft      = $row['Altitude'] * 3.2808399;
                     $meters  = $row['Altitude'];
                     $html .= "            var point = new GLatLng(" . $row['Latitude'] . "," . $row['Longitude'] . ");\n";
-
-                    if($rounds == 1)
+                    if($row['FK_Icons_ID'] > 0)
                     {
-                        $holdtime = $row['DateOccurred'];
-                    }
-                    else
-                    {
-                        $leg_miles        = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
-                        $total_miles      = $total_miles + $leg_miles;
-                        $total_kilometers = $total_miles * 1.6;
-                        $leg_time         = $row['DateOccurred'];
-                        $total_time       = get_elapsed_time($holdtime, $leg_time);
-                    }
-                    $total_time       = gmdate("H:i:s", $total_time);
-
-                    if (!is_null($row['URL']))
-                    {
-                        $icon_shadow = str_replace( '.png', '.shadow.png', $row['URL']);
+                        if($rounds == 1)
+                        {
+                            $holdtime = $row['DateOccurred'];
+                            $total_time = 0;
+                            $display_total_time = gmdate("H:i:s", $total_time);
+                        }
+                        else
+                        {
+                            $leg_miles        = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
+                            $total_miles      = $total_miles + $leg_miles;
+                            $total_kilometers = $total_miles * 1.6;
+                            $leg_time         = $row['DateOccurred'];
+                            $total_time       = get_elapsed_time($holdtime, $leg_time);
+                            $total_time       = gmdate("H:i:s", $total_time);
+                        }
+                        $find_icons = mysql_query("SELECT * FROM icons WHERE ID = '$row[FK_Icons_ID]' LIMIT 1");
+                        $found_icon = mysql_fetch_array($find_icons);
+                        $icon_shadow = str_replace( '.png', '.shadow.png', $found_icon['URL']);
                         $html .= "        var iconCustom" . $rounds . " = new GIcon();\n";
-                        $html .= "        iconCustom" . $rounds . ".image = '" . $row['URL'] . "';\n";
+                        $html .= "        iconCustom" . $rounds . ".image = '" . $found_icon['URL'] . "';\n";
                         $html .= "        iconCustom" . $rounds . ".shadow = '" . $icon_shadow . "';\n";
                         $html .= "        iconCustom" . $rounds . ".iconSize = new GSize(32, 32);\n";
                         $html .= "        iconCustom" . $rounds . ".shadowSize = new GSize(59, 32);\n";
                         $html .= "        iconCustom" . $rounds . ".iconAnchor = new GPoint(15, 32);\n";
                         $html .= "        iconCustom" . $rounds . ".infoWindowAnchor = new GPoint(5, 1);\n";
-                        $parameter = "iconCustom$rounds";
+                        $html .= "        function createCustom" . $rounds . "Marker(point, number)\n";
+                        $html .= "        {\n";
+                        $html .= "            var marker = new GMarker(point, iconCustom" . $rounds . ");\n";
+                        $html .= "            var html = number;\n";
+                        $html .= "            GEvent.addListener(marker, \"click\", function() {marker.openInfoWindowHtml(html);});\n";
+                        $html .= "            return marker;\n";
+                        $html .= "        };\n";
+                        if($rounds > 1)
+                        {
+                            $html .= "    var polyline = new GPolyline([  new GLatLng(" . $holdlat . ", " . $holdlong . "),  new GLatLng(" . $row['Latitude'] . ", " . $row['Longitude'] . ")], \"#000000\", 3, 1);\n";
+                            $html .= "    map.addOverlay(polyline);\n";
+                        }
+                        $html .= "        var marker = createCustom" . $rounds . "Marker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>"; //trackmeIT
+                        if($units == "metric")
+                        {
+                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
+                        }
+                        else
+                        {
+                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
+                        }
+                        if($row['Comments'] != "")
+                        {
+                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . mysql_real_escape_string($row['Comments']) . "<\/td><\/tr>";
+                        }
+                        $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
+                        if($row['ImageURL'])
+                        {
+                            $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
+                        }
+			$html .= "        <tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
                     }
                     elseif($rounds == 1)
                     {
-                        $parameter = "iconGreen";
+                        $html .= "        var marker = createGreenMarker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
+                        if($units == "metric")
+                        {
+                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
+                        }
+                        else
+                        {
+                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
+                        }
+                        if($row['Comments'] != "")
+                        {
+                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . mysql_real_escape_string($row['Comments']) . "<\/td><\/tr>";
+                        }
+                        $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
+                        if($row['ImageURL'])
+                        {
+                            $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
+                        }
+                        $html .= "<tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
+                        $holdtime = $row['DateOccurred'];
+                        $total_time = 0;
+                        $display_total_time = gmdate("H:i:s", $total_time);
                     }
                     elseif($rounds > 1  && $rounds < $count[0])
                     {
-                        if (is_null($row['Angle']))
-                            $parameter = "getIcon({})";
-                        else
-                            $parameter = "getIcon({bearing: $row[Angle], comment: '$row[Comments]'})";
-                    }
-                    else
-                    {
-                        $parameter = "iconRed";
-                    }
+                        $leg_miles   = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
+                        $total_miles = $total_miles + $leg_miles;
+                        $total_kilometers = $total_miles * 1.6;
+                        $leg_time    = $row['DateOccurred'];
+                        $total_time  = get_elapsed_time($holdtime, $leg_time);
+                        $total_time  = gmdate("H:i:s", $total_time);
+                        $html .= "        var polyline = new GPolyline([  new GLatLng(" . $holdlat . ", " . $holdlong . "),  new GLatLng(" . $row['Latitude'] . ", " . $row['Longitude'] . ")], \"#000000\", 3, 1);";
+                        $html .= "        map.addOverlay(polyline);";
+						if ($show_bearings == "yes") {
+								//set bearing icon
+								$angle=$row['Angle'];
+								if ($angle=="") {
+									$gMarker = 'createGrayMarker';
+								} elseif ($angle < 22.5) {
+									$gMarker = 'createArrow0Marker';
+								} elseif ($angle < 67.5) {
+									$gMarker = 'createArrow45Marker';
+								} elseif ($angle < 112.5) {
+									$gMarker = 'createArrow90Marker';
+								} elseif ($angle < 157.5) {
+									$gMarker = 'createArrow135Marker';
+								} elseif ($angle < 202.5) {
+									$gMarker = 'createArrow180Marker';
+								} elseif ($angle < 247.5) {
+									$gMarker = 'createArrow225Marker';
+								} elseif ($angle < 292.5) {
+									$gMarker = 'createArrow270Marker';
+								} elseif ($angle < 337.5) {
+									$gMarker = 'createArrow315Marker';
+								} else {
+									$gMarker = 'createArrow0Marker';
+								}
+						} else {
+							$gMarker = 'createGrayMarker';
+						}
 
-                    $html .= "        trip.appendMarker(point, $parameter, '<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
-                    if($units == "metric")
-                    {
-                        $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
+                        $html .= "        var marker = ".$gMarker."(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";   //trackmeIT
+                        if($units == "metric")
+                        {
+                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
+                        }
+                        else
+                        {
+                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
+                        }
+                        if($row['Comments'] != "")
+                        {
+                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . mysql_real_escape_string($row['Comments']) . "<\/td><\/tr>";
+                        }
+                        $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
+                        if($row['ImageURL'])
+                        {
+                            $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
+                        }
+			$html .= "        <tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
                     }
                     else
                     {
-                        $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
+                        $leg_miles = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
+                        $total_miles = $total_miles + $leg_miles;
+                        $total_kilometers = $total_miles * 1.6;
+                        $leg_time    = $row['DateOccurred'];
+                        $total_time  = get_elapsed_time($holdtime, $leg_time);
+                        $total_time  = gmdate("H:i:s", $total_time);
+                        $html .= "        var polyline = new GPolyline([  new GLatLng(" . $holdlat . ", " . $holdlong . "),  new GLatLng(" . $row['Latitude'] . ", " . $row['Longitude'] . ")], \"#000000\", 3, 1);";
+                        $html .= "        map.addOverlay(polyline);";
+                        $html .= "        var marker = createRedMarker(point,'<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
+                        if($units == "metric")
+                        {
+                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
+                        }
+                        else
+                        {
+                            $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
+                        }
+                        if($row['Comments'] != "")
+                        {
+                            $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:</b> " . mysql_real_escape_string($row['Comments']) . "<\/td><\/tr>";
+                        }
+                        $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
+                        if($row['ImageURL'])
+                        {
+                            $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
+                        }
+			$html .= "        <tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
                     }
-                    if($row['Comments'] != "")
-                    {
-                        $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> " . $row['Comments'] . "<\/td><\/tr>";
-                    }
-                    $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
-                    if($row['ImageURL'])
-                    {
-                        $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
-                    }
-                    $html .= "<tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
                     $rounds++;
                     $holdlat  = $row['Latitude'];
                     $holdlong = $row['Longitude'];
+                    $html .= "        map.addOverlay(marker);\n";
+                    $html .= "        bounds.extend(marker.getPoint());\n";
                 }
-                $html .= "        if (trip.markers.length > 1) {\n";
-                $html .= "            var points = [];\n";
-                $html .= "            for (i = 0; i < trip.markers.length; i++)\n";
-                $html .= "                points.push(trip.markers[i].getPoint());\n";
-                $html .= "            var polyline = new GPolyline(points, \"#000000\", 3, 1);\n";
-                $html .= "            map.addOverlay(polyline);\n";
-                $html .= "        }\n";
 
 		if(isset($_REQUEST[last_location])) //show last location is on
                                 {
@@ -1118,7 +1431,9 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
 			}
             else
             {
-                unset($_SESSION['ID']);
+                setcookie ("username", "",time()-3600);
+                setcookie ("password", "",time()-3600);
+                $logged_in = "no";
 		$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
                 $html .= "    <head>\n";
                 $html .= "        <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n";
@@ -1196,7 +1511,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
     $html .= "            </body>\n";
     $html .= "        </html>\n";
 
-    $db = null;  // Close database
     print $html;
 
     // Function to calculate distance between points

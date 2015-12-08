@@ -1,6 +1,6 @@
 <?php
 
-    require_once('database.php');
+	require_once('config.php');
 	
   $requireddb = urldecode($_GET["db"]);     
   if ( $requireddb == "" || $requireddb < 7 )
@@ -9,18 +9,25 @@
     	die;
   }		
 	
-    $db = connect_save();
-    if (is_null($db))
+	if(!@mysql_connect("$DBIP","$DBUSER","$DBPASS"))
 	{
 		echo "Result:4";
 		die();
 	}
 	
+	mysql_select_db("$DBNAME");
+	
 	$username = urldecode($_GET["u"]);
 	$password = urldecode($_GET["p"]);
+	$salt = "trackmeuser";
+	$password = MD5($salt.$password);
 	
-    $userid = $db->valid_login($username, $password);
-    if ($user_id < 0)
+	$result=mysql_query("Select ID FROM users WHERE username = '$username' and password='$password'");
+	if ( $row=mysql_fetch_array($result) )
+	{
+			$userid=$row['ID'];		// Good, user and password are correct.
+	}
+	else
 	{
 		echo "Result:1";
 		die;		
