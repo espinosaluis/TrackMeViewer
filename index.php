@@ -989,10 +989,10 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     }
                     elseif($rounds > 1  && $rounds < $count[0])
                     {
-                        $parameter = "getIcon({photo: '$row[ImageURL]', comment: '$row[Comments]'";
-                        if (!is_null($row['Angle']))
-                            $parameter .= ", bearing: $row[Angle]";
-                        $parameter .= "})";
+                        if (is_null($row['Angle']))
+                            $parameter = "getIcon({})";
+                        else
+                            $parameter = "getIcon({bearing: $row[Angle], comment: '$row[Comments]'})";
                     }
                     else
                     {
