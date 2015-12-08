@@ -1,14 +1,15 @@
 <?php
 
-require_once("database.php");
+require_once("config.php");
 
-$db = connect_save();
-
-if ($db === null)
+if(!@mysql_connect("$DBIP","$DBUSER","$DBPASS"))
 {
 	echo "Result:4";
 	die();
 }
+
+mysql_select_db("$DBNAME");
+	
 
 if ($_REQUEST["myl"] != "") 
 {
@@ -32,10 +33,10 @@ if ( $mcc == "" || $mnc == "" || $lac == "" || $cid == "" )
 }
 
 
-$result = $db->exec_sql("SELECT Latitude, Longitude FROM cellids WHERE CellID=? ORDER BY DateAdded DESC LIMIT 0,1", "$mcc-$mnc-$lac-$cid");
+$result=mysql_query("Select latitude,longitude FROM cellids WHERE cellid='$mcc-$mnc-$lac-$cid' order by dateadded desc limit 0,1");
 	
-if ( $row=$result->fetch() )
-        echo "Result:0|$row[Latitude]|$row[Longitude]";
+if ( $row=mysql_fetch_array($result) )
+	echo "Result:0|".$row['latitude']."|".$row['longitude'];	
 else
 	echo "Result:6"; // No lat/long for specified CellID
 
