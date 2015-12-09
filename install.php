@@ -122,7 +122,7 @@
             $fp = fwrite($configfile,"    // or just leave blank if you do not want to use\r\n");
             $fp = fwrite($configfile,"    \$googleanalyticsaccount   = \"$googleanalyticsaccount\";\r\n");
             $fp = fwrite($configfile,"    \r\n");
-            $fp = fwrite($configfile,"    // Google Maps default view (G_NORMAL_MAP,G_SATELLITE_MAP, G_HYBRID_MAP or G_PHYSICAL_MAP)\r\n");
+            $fp = fwrite($configfile,"    // Google Maps default view (ROADMAP, SATELLITE, HYBRID or TERRAIN)\r\n");
             $fp = fwrite($configfile,"    \$googleview   = \"$googleview\";\r\n");
             $fp = fwrite($configfile,"    \r\n");
             $fp = fwrite($configfile,"    //to show all map points when you arrive at the page and when you change trips\r\n");
@@ -146,9 +146,6 @@
             $fp = fwrite($configfile,"    \r\n");
             $fp = fwrite($configfile,"    // Click to center map (yes or no)\r\n");
             $fp = fwrite($configfile,"    \$clickcenter  = \"$clickcenter\";\r\n");
-            $fp = fwrite($configfile,"    \r\n");
-            $fp = fwrite($configfile,"    // Display map overview (yes or no) (yes or no)\r\n");
-            $fp = fwrite($configfile,"    \$overview     = \"$overview\";\r\n");
             $fp = fwrite($configfile,"    \r\n");
             $fp = fwrite($configfile,"    // Map auto-refresh in seconds (0 for manual refresh)\r\n");
             $fp = fwrite($configfile,"    \$refresh      = \"$refresh\";\r\n");
@@ -264,10 +261,10 @@
         $html .= "                  </td>\n";
         $html .= "                  <td align=\"left\">\n";
         $html .= "                      <select name=\"googleview\">\n";
-        $html .= "                          <option value=\"G_NORMAL_MAP\" SELECTED>Normal</option>\n";
-        $html .= "                          <option value=\"G_SATELLITE_MAP\">Satellite</option>\n";
-        $html .= "                          <option value=\"G_HYBRID_MAP\">Hybrid</option>\n";
-        $html .= "                          <option value=\"G_PHYSICAL_MAP\">Physical</option>\n";
+        $html .= "                          <option value=\"ROADMAP\" SELECTED>Normal</option>\n";
+        $html .= "                          <option value=\"SATELLITE\">Satellite</option>\n";
+        $html .= "                          <option value=\"HYBRID\">Hybrid</option>\n";
+        $html .= "                          <option value=\"TERRAIN\">Physical</option>\n";
         $html .= "                      </select>\n";
         $html .= "                  </td>\n";
         $html .= "              </tr>\n";
@@ -370,21 +367,6 @@
         if ($clickcenter)
         {
             $html .= "                      <option value=\"$clickcenter\" SELECTED>$clickcenter</option>";
-        }
-        $html .= "                          <option value=\"yes\">Yes</option>";
-        $html .= "                          <option value=\"no\">No</option>";
-        $html .= "                      </select>";
-        $html .= "                  </td>\n";
-        $html .= "              </tr>\n";
-        $html .= "              <tr>\n";
-        $html .= "                  <td align=\"right\">\n";
-        $html .= "                      Display map overview:\n";
-        $html .= "                  </td>\n";
-        $html .= "                  <td align=\"left\">\n";
-        $html .= "                      <select name=\"overview\">";
-        if ($overview)
-        {
-            $html .= "                      <option value=\"$overview\" SELECTED>$overview</option>";
         }
         $html .= "                          <option value=\"yes\">Yes</option>";
         $html .= "                          <option value=\"no\">No</option>";
