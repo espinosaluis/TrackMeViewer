@@ -16,10 +16,9 @@
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    if (file_exists('config.php'))
-    {
-        require_once('config.php');
-    }
+    # Config is loaded by database
+    $no_config = !file_exists('config.php');
+    require_once('database.php');
 
     $colorarray = array(
         '#fff' => 'White',
@@ -69,22 +68,19 @@
 
 
         $html .= "    </div>\n";
-        if(!@mysql_connect("$dbserver","$dbuser","$dbpassword"))
+        $connection = array('host' => $dbserver, 'name' => $dbname,
+                            'user' => $dbuser, 'pass' => $dbpassword);
+        $db = connect_save($connection);
+        if(is_null($db))
         {
             $html .= "ERROR: Failed to connect to database.";
             print $html;
             die();
         }
 
-        mysql_select_db("$dbname");
 		if ($installtype == "newinstall") {
-          $str = file_get_contents("database.sql");
-          $sql = explode(';', $str);
-          foreach ($sql as $query) {
-             if (!empty($query)) {
-                $r = mysql_query($query);
-             }
-          }
+            $sql = file_get_contents("database.sql");
+            $db->exec($sql);
  //       $html .= "Install Type: $installtype<br>\n";
         $html .= "Database tables created successfully<br>\n";
 		} else {

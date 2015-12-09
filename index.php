@@ -2,8 +2,7 @@
 
     session_start();
 
-	Require_once("config.php");
-
+    require_once("database.php");
 
 
   if (dirname($_SERVER['PHP_SELF'])=="/") {
@@ -24,8 +23,10 @@
 
     require_once('language.php');
 
-    if(!@mysql_connect("$DBIP","$DBUSER","$DBPASS"))
-    {
+    try {
+        $db = connect();
+    } catch (PDOException $e) {
+        $db = null;
         $html  = " <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
         $html .= "        <head>\n";
         $html .= "            <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
@@ -36,30 +37,35 @@
         $html .= "            <div align=center>\n";
 	$html .= "                $database_fail_text<br>\n";
         $html .= "                <br>\n";
-        $html .= "                <br>\n";
+        $html .= "                " . $e->getMessage() . "<br>\n";
         $html .= "                <br>\n";
         $html .= "                <br>\n";
         $html .= "                <br>\n";
         $html .= "                <br>\n";
     }
-    else
-    {
-        mysql_select_db("$DBNAME");
 
+    if (!is_null($db))
+    {
         // Delete trip
         if (isset($_GET['deleteTrip']) && is_numeric($_GET['deleteTrip'])) {
           $tripId = (int)$_GET['deleteTrip'];
 
-          mysql_query(sprintf("DELETE FROM `trips` WHERE `ID` = %d", $tripId));
-          mysql_query(sprintf("DELETE FROM `positions` WHERE `FK_Trips_ID` = %d", $tripId));
+            try {
+                $db->beginTransaction();
+                $db->exec_sql("DELETE FROM `trips` WHERE `ID` = ?", $tripId);
+                $db->exec_sql("DELETE FROM `positions` WHERE `FK_Trips_ID` = ?", $tripId);
+                $db->commit();
+            } catch (Exception $e) {
+                $db->rollback();
+            }
 
           header('Location: '.$siteroot);
         }
 
-        $num_users = get_count("users");
-        $num_trips = get_count("trips");
-        $num_positions = get_count("positions");
-        $num_icons = get_count("icons");
+        $num_users = $db->get_count("users");
+        $num_trips = $db->get_count("trips");
+        $num_positions = $db->get_count("positions");
+        $num_icons = $db->get_count("icons");
 
 
         $filter            = $_REQUEST["filter"];
@@ -67,8 +73,6 @@
         $ID                = $_REQUEST["ID"];
         $username          = $_REQUEST["username"];
         $password          = $_REQUEST["password"];
-        $salt              = "trackmeuser";
-        $password          = MD5($salt.$password);
         $action            = $_REQUEST["action"];
         $storeshowbearings = $_REQUEST["storeshowbearings"];
         $storecrosshair    = $_REQUEST["storecrosshair"];
@@ -197,12 +201,10 @@
                 {
                     if (preg_match("/^([a-zA-Z0-9._])+$/", "$_REQUEST[username]"))
                     {
-                    $finduser=mysql_query("Select ID FROM users WHERE username = '$username' and password='$password'");
-	                if ( $founduser=mysql_fetch_array($finduser) )
+                        $login_id = $db->valid_login($username, $password);
+                        if ($login_id >= 0)
                         {
-        	    		$loggedin = "yes";
-		    	        $ID       = $founduser["ID"];
-                            $_SESSION['ID']       = $founduser["ID"];
+                            $_SESSION['ID'] = $login_id;
                         }
                     }
                 }
@@ -311,8 +313,8 @@ if($public_page == "yes")
    {
    $html .= "      <form name=\"form_user\" action=\"index.php\" method=\"post\">\n";
    $html .= "      <select name=\"ID\" class=\"pulldownlayout\">\n";
-   $findusers=mysql_query("Select * FROM users ORDER BY username");
-        while($founduser=mysql_fetch_array($findusers))
+                $findusers = $db->exec_sql("Select * FROM users ORDER BY username");
+                while($founduser = $findusers->fetch())
         {
           if(!isset($ID))
               {
@@ -351,8 +353,8 @@ if($public_page == "yes")
                   }
      $html .= "</form>\n";
 } else {
-       $finduser=mysql_query("Select * FROM users WHERE ID = '$ID' LIMIT 1");
-       $founduser=mysql_fetch_array($finduser);
+                $finduser = $db->exec_sql("Select * FROM users WHERE ID = ? LIMIT 1", $ID);
+                $founduser = $finduser->fetch();
        $html .= "                 $trip_data<br>\n";
        $html .= "                    " . $founduser["username"] . " (<a href=\"index.php?action=logout\">log out</a>)\n";
        if ($public_page == "no")
@@ -405,8 +407,8 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
                 {
                     $html .= "                            <option value=\"Any\">$trip_any_text</option>\n";
                 }
-                $findtrips=mysql_query("Select * FROM trips WHERE FK_Users_ID = $ID ORDER BY ID DESC");
-                while($foundtrip=mysql_fetch_array($findtrips))
+                $findtrips = $db->exec_sql("Select * FROM trips WHERE FK_Users_ID = ? ORDER BY ID DESC", $ID);
+                while($foundtrip = $findtrips->fetch())
                 {
                     if(!isset($trip) || trim($trip) == "")
                     {
@@ -576,6 +578,7 @@ $html .= "                </FORM> <br>    \n";
                 $html .= "                        <input type=\"hidden\" name=\"storeenddate\" value=\"$storeenddate\">\n";
 			}
 
+                $params = array($ID);
                 if(isset($_REQUEST[last_location]))
                 {
                     $limit = "DESC LIMIT 1";
@@ -587,25 +590,32 @@ $html .= "                </FORM> <br>    \n";
                     if ($tripname == "None")
                         $where = " AND FK_Trips_ID is NULL";
                     elseif ($tripname != "Any")
-                        $where = " AND FK_Trips_ID = '$trip'";
+                    {
+                        $where = " AND FK_Trips_ID = ?";
+                        $params[] = $trip;
+                    }
                     else
                         $where = "";
 
                     // if startday is not blank then don't lookup the start and end of entire trip
                     if (isset($startday) && trim($startday) != "")
-                        $where .= " AND DateOccurred BETWEEN '$startday' AND '$endday'";
+                    {
+                        $where .= " AND DateOccurred BETWEEN ? AND ?";
+                        $params[] = $startday;
+                        $params[] = $endday;
+                    }
                 }
 
-                $result = mysql_query("SELECT * FROM positions " .
-                                      "WHERE FK_Users_ID='$ID' $where " .
-                                      "ORDER BY DateOccurred $limit");
+                $result = $db->exec_sql("SELECT * FROM positions " .
+                                        "WHERE FK_Users_ID=? $where " .
+                                        "ORDER BY DateOccurred $limit", $params);
 
 $rounds      = 1;
 $total_miles = 0;
 $leg_time    = 0;
                 $pcount=0;
                 $ccount=0;
-	while($row = mysql_fetch_array($result))
+                while($row = $result->fetch())
 	{
 		$mph     = $row['Speed'] * 2.2369362920544;
 		$kph     = $row['Speed'] * 3.6;
@@ -993,6 +1003,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $html .= "                };\n";
 
 
+                $params = array();
                 if (isset($_REQUEST[last_location]))  //show last location is on
                 {
                     $where = "";
@@ -1041,23 +1052,29 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         }
                         else
                         {
-                            $count = get_count("positions " .
-                                               "WHERE FK_Users_ID='$ID' AND " .
-                                               "FK_Trips_ID='$trip' AND " .
-                                               "DateOccurred BETWEEN '$startday' AND '$endday'");
+                            // TODO: use parameters
+                            $count = $db->get_count("positions " .
+                                                    "WHERE FK_Users_ID='$ID' AND " .
+                                                    "FK_Trips_ID='$trip' AND " .
+                                                    "DateOccurred BETWEEN '$startday' AND '$endday'");
                         }
                         if ($count == 0)
                             $where .= " FK_Trips_ID is NULL AND";
                         else
-                            $where .= " FK_Trips_ID='$trip' AND";
+                        {
+                            $where .= " FK_Trips_ID=? AND";
+                            $params[] = $trip;
+                        }
                     }
-                    $where .= " DateOccurred BETWEEN '$startday' AND '$endday' AND";
+                    $where .= " DateOccurred BETWEEN ? AND ? AND";
+                    $params[] = $startday;
+                    $params[] = $endday;
                 }
 
                 if ($showmap != "yes" && $showmapdata != 1)
-                    $users_id .= 'ZZ';
+                    $params[] = 'ZZ';
                 else
-                    $users_id = $ID;
+                    $params[] = $ID;
 
                 $queries = array();
                 foreach (array('avg(speed)', 'COUNT(*)', '*') as $selected_column)
@@ -1069,12 +1086,13 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     }
                     else
                         $join = "";
-                    $queries[] = mysql_query("SELECT $selected_column FROM positions $join " .
-                                             "WHERE $where FK_Users_ID='$users_id' " .
-                                             "ORDER BY DateOccurred $limit");
+                    $queries[] = $db->exec_sql("SELECT $selected_column FROM positions $join " .
+                                               "WHERE $where FK_Users_ID=? " .
+                                               "ORDER BY DateOccurred $limit",
+                                               $params);
                 }
-                $avg_speed = mysql_fetch_array($queries[0]);
-                $count  = mysql_fetch_array($queries[1]);
+                $avg_speed = $queries[0]->fetch();
+                $count  = $queries[1]->fetch();
                 $result = $queries[2];
 
                 $avg_mph = $avg_speed[0] * 2.236936292054;
@@ -1094,7 +1112,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
              	{
                 $tripnameText = $tripname;
               	}
-                while($row = mysql_fetch_array($result))
+                while($row = $result->fetch())
                 {
                     $mph     = $row['Speed'] * 2.2369362920544;
                     $kph     = $row['Speed'] * 3.6;
@@ -1356,6 +1374,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
     $html .= "            </body>\n";
     $html .= "        </html>\n";
 
+    $db = null;  // Close database
     print $html;
 
     // Function to calculate distance between points
@@ -1409,14 +1428,5 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
         $elapsed_time = sprintf( "%0.{$decimals}f", $elapsed_time );
 
         return $elapsed_time;
-    }
-
-    // Database related functions
-
-    function get_count($statement)
-    {
-        $stmt = mysql_query("SELECT COUNT(*) FROM $statement");
-        $result = mysql_fetch_array($stmt);
-        return $result[0][0];
     }
 ?>
