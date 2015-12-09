@@ -1,6 +1,8 @@
 var info = new google.maps.InfoWindow();
 var iconRed = 'red-dot.png';
 var iconLtBlue = 'mm_20_gray.png';
+var iconLtYellow = 'mm_20_yellow.png';
+var iconLtPurple = 'mm_20_purple.png';
 var iconGreen = 'green-dot.png';
 
 var arrowIcons = [];
@@ -46,6 +48,14 @@ function getIcon(data)
     {
         var direction = Math.floor((data.bearing + 22.5) / 45) % 8;
         return arrowIcons[direction];
+    }
+    else if (data['photo'])
+    {
+        return iconLtYellow;
+    }
+    else if (data['comment'])
+    {
+        return iconLtPurple;
     }
     else
     {
