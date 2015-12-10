@@ -957,7 +957,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
              	{
                 $tripnameText = $tripname;
               	}
-                $html .= "            var trip = new Trip('$tripnameText', '$username');\n";
+                $html .= "            var trip = new Trip('" . escape_js_str($tripnameText) . "', '" . escape_js_str($username) . "');\n";
                 while($row = $result->fetch())
                 {
                     $mph     = $row['Speed'] * 2.2369362920544;
@@ -1004,7 +1004,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                         $parameter = "iconRed";
                     }
 
-                    $html .= "        trip.appendMarker(point, $parameter, '<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . $username . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . $tripnameText . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
+                    $html .= "        trip.appendMarker(point, $parameter, '<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . escape_js_str($username) . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . escape_js_str($tripnameText) . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
                     if($units == "metric")
                     {
                         $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
