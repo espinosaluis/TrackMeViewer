@@ -84,6 +84,7 @@
         $storeenddate      = $_REQUEST["storeenddate"];
         $startday          = preg_replace("/[^0-9 :\-]/", "", $_REQUEST["startday"]);
         $endday            = preg_replace("/[^0-9 :\-]/", "", $_REQUEST["endday"]);
+        $custom_view       = $_REQUEST["custom_view"];
 
         if ($action == "form_display" || $custom_view == "yes")
         {
