@@ -85,6 +85,12 @@
         $startday          = preg_replace("/[^0-9 :\-]/", "", $_REQUEST["startday"]);
         $endday            = preg_replace("/[^0-9 :\-]/", "", $_REQUEST["endday"]);
 
+        if (is_numeric($trip) && !isset($ID))
+        {
+            $ID = $db->exec_sql("SELECT FK_Users_ID FROM trips WHERE ID = ?",
+                                $trip)->fetchColumn();
+        }
+
         if ($action == "form_display" || $custom_view == "yes")
         {
 
