@@ -343,6 +343,7 @@ if($public_page == "yes")
 } else {
                 $finduser = $db->exec_sql("Select * FROM users WHERE ID = ? LIMIT 1", $ID);
                 $founduser = $finduser->fetch();
+       $username = $founduser['username'];
        $html .= "                 $trip_data<br>\n";
        $html .= "                    " . $founduser["username"] . " (<a href=\"index.php?action=logout\">log out</a>)\n";
        if ($public_page == "no")
