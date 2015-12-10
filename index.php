@@ -962,6 +962,9 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $kph     = $row['Speed'] * 3.6;
                     $ft      = $row['Altitude'] * 3.2808399;
                     $meters  = $row['Altitude'];
+                    // escape the strings for JS
+                    $row['ImageURL'] = escape_js_str($row['ImageURL']);
+                    $row['Comments'] = escape_js_str($row['Comments']);
                     $html .= "            var point = new google.maps.LatLng(" . $row['Latitude'] . "," . $row['Longitude'] . ");\n";
 
                     if($rounds == 1)
@@ -1167,5 +1170,10 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
         $elapsed_time = sprintf( "%0.{$decimals}f", $elapsed_time );
 
         return $elapsed_time;
+    }
+
+    function escape_js_str($str)
+    {
+        return str_replace("'", "\\'", str_replace("\\", "\\\\", $str));
     }
 ?>
