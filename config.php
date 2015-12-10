@@ -25,13 +25,14 @@
 
     // Google API Key. Obtain from http://www.google.com/apis/maps/signup.html
     $googleapikey = "Replace with your Google API Key";
-	// if you have Google Analytics Account, put account number here, otherwise leave blank
-	$googleanalyticsaccount="";
-	
-    // Google Maps default view (G_NORMAL_MAP,G_SATELLITE_MAP, G_HYBRID_MAP or G_PHYSICAL_MAP)
-    $googleview   = "G_NORMAL_MAP";
-	//to show all map points when you arrive at the page and when you change trips (yes or no)
-	$showmap="yes";
+    // if you have Google Analytics Account. Obtain from https://www.google.com/analytics/home/?et=reset&hl=en-US
+    // or just leave blank if you do not want to use it
+    $googleanalyticsaccount="";
+
+    // Google Maps default view (ROADMAP, SATELLITE, HYBRID or TERRAIN)
+    $googleview   = "ROADMAP";
+    //to show all map points when you arrive at the page and when you change trips (yes or no)
+    $showmap="yes";
 
     // Map style
     $mapwidth     = "700px";
@@ -43,20 +44,14 @@
     // Background color for map display
     $bgcolor      = "#cccccc";
 
-   // Display Header Title (yes or no)
-    $show_header = "no";
+    // Show bearing arrows on map (yes or no)
+    $show_bearings ="yes";
 
-    //Show bearing arrows
-	$show_bearings	  ="yes";
-
-	// Display crosshair at map center (yes or no)
+    // Display crosshair at map center (yes or no)
     $crosshair    = "yes";
 
     // Click to center map (yes or no)
     $clickcenter  = "yes";
-
-    // Display map overview (yes or no)
-    $overview     = "yes";
 
     // Map auto-refresh in seconds (0 for manual refresh)
     $refresh      = "120";
