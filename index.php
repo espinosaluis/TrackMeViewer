@@ -753,13 +753,14 @@ if(isset($_REQUEST[last_location]))
                         $html .= "                    <input type=\"checkbox\" name=\"setclickcenter\"> $display_clickcenter_text<br>\n";
                     }
                     $html .= "                        <select name=\"language\" class=\"pulldownlayout\">\n";
-                    $html .= "                            <option value=\"english\""; if($language == "english") { $html .= " SELECTED"; } $html .= ">English</option>\n";
-                    $html .= "                            <option value=\"italian\""; if($language == "italian") { $html .= " SELECTED"; } $html .= ">Italian</option>\n";
-                    $html .= "                            <option value=\"german\""; if($language == "german") { $html .= " SELECTED"; } $html .= ">German</option>\n";
-                    $html .= "                            <option value=\"spanish\""; if($language == "spanish") { $html .= "SELECTED"; } $html .= ">Spanish</option>\n";
-                    $html .= "                            <option value=\"french\""; if($language == "french") { $html .= "SELECTED"; } $html .= ">French</option>\n";
-                    $html .= "                            <option value=\"dutch\""; if($language == "dutch") { $html .= "SELECTED"; } $html .= ">Dutch</option>\n";
-                    $html .= "                            <option value=\"slovak\""; if($language == "slovak") { $html .= "SELECTED"; } $html .= ">Slovak</option>\n";
+                    foreach (array_values($languages) as $lang_entry)
+                    {
+                        $lang_name = strtolower($lang_entry->en);
+                        $html .= "                            <option value=\"$lang_name\"";
+                        if($language === $lang_name)
+                            $html .= " SELECTED";
+                        $html .= ">$lang_entry->full_name</option>\n";
+                    }
                     $html .= "                        </select>$display_language_text<br>\n";
                     $html .= "                        <select name=\"units\" class=\"pulldownlayout\">\n";
                     $html .= "                            <option value=\"imperial\""; if($units == "imperial") { $html .= " SELECTED"; } $html .= ">Imperial</option>\n";
