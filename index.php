@@ -86,6 +86,12 @@
         $endday            = preg_replace("/[^0-9 :\-]/", "", $_REQUEST["endday"]);
         $custom_view       = $_REQUEST["custom_view"];
 
+        if (is_numeric($trip) && !isset($ID))
+        {
+            $ID = $db->exec_sql("SELECT FK_Users_ID FROM trips WHERE ID = ?",
+                                $trip)->fetchColumn();
+        }
+
         if ($action == "form_display" || $custom_view == "yes")
         {
 
