@@ -402,7 +402,7 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
                 {
                     $html .= "                            <option value=\"Any\">$trip_any_text</option>\n";
                 }
-                $findtrips = $db->exec_sql("Select * FROM trips WHERE FK_Users_ID = ? ORDER BY ID DESC", $ID);
+                $findtrips = $db->exec_sql("Select A1.*, (select min( A2.dateoccurred ) from positions A2 where A2.FK_TRIPS_ID=A1.ID) AS startdate  FROM trips A1 WHERE A1.FK_Users_ID = ? order by startdate desc ", $ID);
                 while($foundtrip = $findtrips->fetch())
                 {
                     if(!isset($trip) || trim($trip) == "")
