@@ -414,7 +414,7 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
                     {
                         $html .= "                        <option value=\"$foundtrip[ID]\" SELECTED>$foundtrip[Name]</option>\n";
                         $tripname = $foundtrip[Name];
-                        $deleteButton = true;
+                        $deleteButton = $_SESSION["ID"] === $foundtrip["FK_Users_ID"];
                     }
                     else
                     {
@@ -422,7 +422,8 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
                     }
                 }
                 $html .= "                            </select>";
-                $html .= "<input type=\"button\" onclick=\"deleteTrip();\" class=\"pulldownlayout\" style=\"width:12px; text-align:center\" value=\"X\" id=\"delete-trip\">\n";
+                if ($deleteButton)
+                    $html .= "<input type=\"button\" onclick=\"deleteTrip();\" class=\"pulldownlayout\" style=\"width:12px; text-align:center\" value=\"X\" id=\"delete-trip\">\n";
 
 
                 $html .= "                            <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
