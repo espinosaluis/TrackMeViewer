@@ -632,7 +632,7 @@ $leg_time    = 0;
 			{
 				$leg_miles        = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
 				$total_miles      = $total_miles + $leg_miles;
-				$total_kilometers = $total_miles * 1.6;
+				$total_kilometers = $total_miles * 1.609344;
 				$leg_time         = $row['DateOccurred'];
 				$total_time       = get_elapsed_time($startday, $leg_time);
 				$total_time       = gmdate("H:i:s", $total_time);
@@ -979,12 +979,12 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     {
                         $leg_distance     = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "k");
                         $total_distance  += $leg_distance;
-                        $total_miles      = $total_distance / 1.6;
-                        $total_kilometers = $total_distance;
                         $leg_time         = $row['DateOccurred'];
                         $total_time       = get_elapsed_time($holdtime, $leg_time);
                     }
                     $total_time       = gmdate("H:i:s", $total_time);
+                    $total_miles      = $total_distance / 1.609344;
+                    $total_kilometers = $total_distance;
 
                     if (!is_null($row['URL']))
                     {
