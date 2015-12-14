@@ -927,28 +927,23 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 else
                     $params[] = $ID;
 
-                $queries = array();
-                foreach (array('avg(speed)', 'COUNT(*)', '*') as $selected_column)
-                {
-                    if ($selected_column === '*')
-                    {
-                        $selected_column = 'positions.*, icons.URL';
-                        $join = "LEFT JOIN icons ON positions.FK_Icons_ID=icons.ID";
-                    }
-                    else
-                        $join = "";
-                    $queries[] = $db->exec_sql("SELECT $selected_column FROM positions $join " .
-                                               "WHERE $where FK_Users_ID=? " .
-                                               "ORDER BY DateOccurred $limit",
-                                               $params);
-                }
-                $avg_speed = $queries[0]->fetch();
-                $count  = $queries[1]->fetch();
-                $result = $queries[2];
+                $query = $db->exec_sql("SELECT positions.*, icons.URL FROM positions " .
+                                       "LEFT JOIN icons ON positions.FK_Icons_ID=icons.ID " .
+                                       "WHERE $where FK_Users_ID=? " .
+                                       "ORDER BY DateOccurred $limit",
+                                       $params);
 
-                $avg_mph = $avg_speed[0] * 2.236936292054;
-                $avg_kph = $avg_speed[0] * 3.6;
-                $rounds      = 1;
+                $result = $query->fetchAll();
+                $count = count($result);
+                $avg_speed = 0;
+                foreach ($result as $row)
+                {
+                    $avg_speed += $row['Speed'];
+                }
+                $avg_speed /= $count;
+
+                $avg_mph = $avg_speed * 2.236936292054;
+                $avg_kph = $avg_speed * 3.6;
                 $total_distance = 0;
                 $total_time = 0;
                 if ($tripname == "Any")
@@ -964,8 +959,9 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 $tripnameText = $tripname;
               	}
                 $html .= "            var trip = new Trip('" . escape_js_str($tripnameText) . "', '" . escape_js_str($username) . "');\n";
-                while($row = $result->fetch())
+                for ($rounds = 1; $rounds <= $count; $rounds++)
                 {
+                    $row = $result[$rounds - 1];
                     $mph     = $row['Speed'] * 2.2369362920544;
                     $kph     = $row['Speed'] * 3.6;
                     $ft      = $row['Altitude'] * 3.2808399;
@@ -998,7 +994,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     {
                         $parameter = "iconGreen";
                     }
-                    elseif($rounds > 1  && $rounds < $count[0])
+                    elseif($rounds > 1  && $rounds < $count)
                     {
                         $parameter = "getIcon({photo: '$row[ImageURL]', comment: '$row[Comments]'";
                         if (!is_null($row['Angle']))
@@ -1023,13 +1019,12 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     {
                         $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> $row[Comments]<\/td><\/tr>";
                     }
-                    $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count[0] . "<\/td><\/tr>";
+                    $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count . "<\/td><\/tr>";
                     if($row['ImageURL'])
                     {
                         $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
                     }
                     $html .= "<tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
-                    $rounds++;
                     $holdlat  = $row['Latitude'];
                     $holdlong = $row['Longitude'];
                 }
