@@ -44,12 +44,26 @@
         $html .= "                <br>\n";
     }
 
-    if (!is_null($db))
-    {
-        // Delete trip
-        if (isset($_GET['deleteTrip']) && is_numeric($_GET['deleteTrip'])) {
-          $tripId = (int)$_GET['deleteTrip'];
+    // Delete trip
+    if (isset($_GET['deleteTrip']) && is_numeric($_GET['deleteTrip'])) {
+        if (isset($_SESSION["ID"]))
+        {
+            $tripId = (int)$_GET['deleteTrip'];
+            $trip = $db->exec_sql("SELECT `FK_Users_ID` FROM `trips` WHERE `ID` = ?", $tripId)->fetch();
+            if ($trip === false)
+                $err = $lang["delete-trip-wrong-id"];
+            else if ($trip["FK_Users_ID"] !== $_SESSION["ID"])
+                $err = $lang["delete-trip-not-owner"];
+            else
+                $err = false;
+        }
+        else
+        {
+            $err = $lang["delete-trip-no-login"];
+        }
 
+        if ($err === false)
+        {
             try {
                 $db->beginTransaction();
                 $db->exec_sql("DELETE FROM `trips` WHERE `ID` = ?", $tripId);
@@ -57,11 +71,36 @@
                 $db->commit();
             } catch (Exception $e) {
                 $db->rollback();
+                $err = $e->getMessage();
             }
-
-          header('Location: '.$siteroot);
         }
+        if ($err === false)
+        {
+            header('Location: '.$siteroot);
+        }
+        else
+        {
+            $html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
+            $html .= "    <head>\n";
+            $html .= "        <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
+            $html .= "        <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+            $html .= "        <title>$title_text (v" . $version_text . ")</title>\n";
+            $html .= "    </head>\n";
+            $html .= "    <body bgcolor=\"$bgcolor\">\n";
+            $html .= "        <div align=center>\n";
+            $html .= "            " . $lang["delete-trip-title"] . "<br>\n";
+            $html .= "            <br>\n";
+            $html .= "            $err<br>\n";
+            $html .= "            <br>\n";
+            $html .= "            <br>\n";
+            $html .= "            <br>\n";
+            $html .= "            <br>\n";
+        }
+        $db = null;
+    }
 
+    if (!is_null($db))
+    {
         $num_users = $db->get_count("users");
         $num_trips = $db->get_count("trips");
         $num_positions = $db->get_count("positions");
