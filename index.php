@@ -795,7 +795,10 @@ if(isset($_REQUEST[last_location]))
                     $html .= "                        <select name=\"language\" class=\"pulldownlayout\">\n";
                     foreach (array_values($languages) as $lang_entry)
                     {
-                        $lang_name = strtolower($lang_entry->en);
+                        if ($lang_entry->en)
+                            $lang_name = strtolower($lang_entry->en);
+                        else
+                            $lang_name = "english";
                         $html .= "                            <option value=\"$lang_name\"";
                         if($language === $lang_name)
                             $html .= " SELECTED";
