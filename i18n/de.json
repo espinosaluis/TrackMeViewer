@@ -64,7 +64,7 @@
     "unit-speed-imperial": "mph",
     "unit-distance-imperial": "Meilen",
     "unit-height-imperial": "Fuss",
-    "unit-speed-metric": "Km/h",
-    "unit-distance-metric": "Km",
+    "unit-speed-metric": "km/h",
+    "unit-distance-metric": "km",
     "unit-height-metric": "Meter"
 }
