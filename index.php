@@ -129,6 +129,8 @@
         {
             $ID = $db->exec_sql("SELECT FK_Users_ID FROM trips WHERE ID = ?",
                                 $trip)->fetchColumn();
+            if ($ID === false)
+                unset($ID);
         }
 
         if ($action == "form_display" || $custom_view == "yes")
