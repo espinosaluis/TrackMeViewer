@@ -413,38 +413,29 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
 
 		$html .= "                 $trip_title<br>\n";
                 $html .= "                        <select id=\"selTrip\" style=\"width:134px\" name=\"trip\" class=\"pulldownlayout trip\" onchange=\"javascript:submittrip();\" >\n";
-                $tripname = $trip;
-                $deleteButton = false;
 
-                if($trip == "None")
-                {
-                    $html .= "                            <option value=\"None\" SELECTED>$trip_none_text</option>\n";
-                }
-                else
-                {
-                    $html .= "                            <option value=\"None\">$trip_none_text</option>\n";
-                }
-                if($trip == "Any")
-                {
-                    $html .= "                            <option value=\"Any\" SELECTED>$trip_any_text</option>\n";
-                }
-                else
-                {
-                    $html .= "                            <option value=\"Any\">$trip_any_text</option>\n";
-                }
                 $findtrips = $db->exec_sql("Select A1.*, (select min( A2.dateoccurred ) from positions A2 where A2.FK_TRIPS_ID=A1.ID) AS startdate  FROM trips A1 WHERE A1.FK_Users_ID = ? order by startdate desc ", $ID);
-                while($foundtrip = $findtrips->fetch())
+                $foundTrips = array(array("ID" => "None", "Name" => $lang["trip-none"], "FK_Users_ID" => null),
+                                    array("ID" => "Any", "Name" => $lang["trip-any"], "FK_Users_ID" => null));
+                $foundTrips = array_merge($foundTrips, $findtrips->fetchAll());
+                // In case the selected trip is invalid, default to the first non-generic trip
+                // or None if there are only generic trips
+                $selectedTrip = $foundTrips[count($foundTrips) > 2 ? 2 : 0];
+                foreach ($foundTrips as $foundtrip)
                 {
-                    if(!isset($trip) || trim($trip) == "")
-                    {
-                        $tripname = $foundtrip[Name];
-                        $trip = $foundtrip[ID];
-                    }
+                    if ($foundtrip["ID"] == $trip)
+                        $selectedTrip = $foundtrip;
+                }
+
+                $deleteButton = ($selectedTrip["FK_Users_ID"] === $_SESSION["ID"]);
+                $trip = $selectedTrip["ID"];
+                $tripname = $selectedTrip["Name"];
+
+                foreach ($foundTrips as $foundtrip)
+                {
                     if($foundtrip[ID] == $trip)
                     {
                         $html .= "                        <option value=\"$foundtrip[ID]\" SELECTED>$foundtrip[Name]</option>\n";
-                        $tripname = $foundtrip[Name];
-                        $deleteButton = $_SESSION["ID"] === $foundtrip["FK_Users_ID"];
                     }
                     else
                     {
