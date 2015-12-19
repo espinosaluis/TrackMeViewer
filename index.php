@@ -412,7 +412,6 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
 
 
 		$html .= "                 $trip_title<br>\n";
-                $html .= "                        <select id=\"selTrip\" style=\"width:134px\" name=\"trip\" class=\"pulldownlayout trip\" onchange=\"javascript:submittrip();\" >\n";
 
                 $findtrips = $db->exec_sql("Select A1.*, (select min( A2.dateoccurred ) from positions A2 where A2.FK_TRIPS_ID=A1.ID) AS startdate  FROM trips A1 WHERE A1.FK_Users_ID = ? order by startdate desc ", $ID);
                 $foundTrips = array(array("ID" => "None", "Name" => $lang["trip-none"], "FK_Users_ID" => null),
@@ -430,6 +429,9 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
                 $deleteButton = ($selectedTrip["FK_Users_ID"] === $_SESSION["ID"]);
                 $trip = $selectedTrip["ID"];
                 $tripname = $selectedTrip["Name"];
+
+                $tripWidth = $deleteButton ? "style=\"width:134px\"" : "";
+                $html .= "                        <select id=\"selTrip\" $tripWidth name=\"trip\" class=\"pulldownlayout trip\" onchange=\"javascript:submittrip();\" >\n";
 
                 foreach ($foundTrips as $foundtrip)
                 {
