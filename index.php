@@ -116,7 +116,6 @@
         $storeshowbearings = $_REQUEST["storeshowbearings"];
         $storecrosshair    = $_REQUEST["storecrosshair"];
         $storeclickcenter  = $_REQUEST["storeclickcenter"];
-        $storeoverview     = $_REQUEST["storeoverview"];
         $storelanguage     = $_REQUEST["storelanguage"];
         $storeunits        = $_REQUEST["storeunits"];
         $storestartdate    = $_REQUEST["storestartdate"];
@@ -367,7 +366,6 @@ if($public_page == "yes")
      $html .= "<input type=\"hidden\" name=\"storeshowbearings\" value=\"$storeshowbearings\">\n";
      $html .= "<input type=\"hidden\" name=\"storecrosshair\" value=\"$storecrosshair\">\n";
      $html .= "<input type=\"hidden\" name=\"storeclickcenter\" value=\"$storeclickcenter\">\n";
-     $html .= "<input type=\"hidden\" name=\"storeoverview\" value=\"$storeoverview\">\n";
      $html .= "<input type=\"hidden\" name=\"storeunits\" value=\"$storeunits\">\n";
      $html .= "<input type=\"hidden\" name=\"storelanguage\" value=\"$storelanguage\">\n";
      $html .= "<input type=\"hidden\" name=\"custom_view\" value=\"$custom_view\">\n";
@@ -469,7 +467,6 @@ if(isset($_REQUEST[last_location]))   //if we are in live tracking then display 
 		$html .= "                            <input type=\"hidden\" name=\"storeshowbearings\" value=\"$storeshowbearings\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"storecrosshair\" value=\"$storecrosshair\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"storeclickcenter\" value=\"$storeclickcenter\">\n";
-                $html .= "                            <input type=\"hidden\" name=\"storeoverview\" value=\"$storeoverview\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"storeunits\" value=\"$storeunits\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"storelanguage\" value=\"$storelanguage\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"custom_view\" value=\"$custom_view\">\n";
@@ -605,7 +602,6 @@ $html .= "                </FORM> <br>    \n";
 		$html .= "                            <input type=\"hidden\" name=\"storeshowbearings\" value=\"$storeshowbearings\">\n";
 		$html .= "                            <input type=\"hidden\" name=\"storecrosshair\" value=\"$storecrosshair\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"storeclickcenter\" value=\"$storeclickcenter\">\n";
-                $html .= "                            <input type=\"hidden\" name=\"storeoverview\" value=\"$storeoverview\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"storeunits\" value=\"$storeunits\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"storelanguage\" value=\"$storelanguage\">\n";
                 $html .= "                            <input type=\"hidden\" name=\"custom_view\" value=\"$custom_view\">\n";
@@ -824,7 +820,6 @@ if(isset($_REQUEST[last_location]))
                     $html .= "                        <input type=\"hidden\" name=\"storeshowbearings\" value=\"$storeshowbearings\">\n";
                     $html .= "                        <input type=\"hidden\" name=\"storecrosshair\" value=\"$storecrosshair\">\n";
                     $html .= "                        <input type=\"hidden\" name=\"storeclickcenter\" value=\"$storeclickcenter\">\n";
-                    $html .= "                        <input type=\"hidden\" name=\"storeoverview\" value=\"$storeoverview\">\n";
                     $html .= "                        <input type=\"hidden\" name=\"storeunits\" value=\"$storeunits\">\n";
                     $html .= "                        <input type=\"hidden\" name=\"storelanguage\" value=\"$storelanguage\">\n";
                     $html .= "                        <input type=\"hidden\" name=\"custom_view\" value=\"$custom_view\">\n";
