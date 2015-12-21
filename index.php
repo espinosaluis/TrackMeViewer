@@ -1075,12 +1075,14 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $holdlong = $row['Longitude'];
                 }
 
-                $html .= "        map.fitBounds(bounds); \n";
 		if(isset($_REQUEST[last_location])) //show last location is on
                                 {
-		$html .= "      document.zoomform.zoom.value = getValue(\"zoomlevel\"); \n";
-                $html .= " 	map.setZoom(map.getZoom()-document.zoomform.zoom.value); \n";
+                $html .= " 	map.setZoom(16 - document.zoomform.zoom.value); \n";
 			        }
+                else
+                {
+                    $html .= "        map.fitBounds(bounds); \n";
+                }
                 $html .= "                map.setCenter(bounds.getCenter());\n";
                 $html .= "            //]]>\n";
                 $html .= "            </script>\n";
