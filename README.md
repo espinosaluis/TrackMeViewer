@@ -1,7 +1,7 @@
 # TrackMeViewer
 
-* Version: 1.15
-* Date: 05/27/2015
+* Version: 2.0
+* Date: 12/28/2015
 
 Web viewer for TrackMe app compatible with Android, Windows Phone and Windows Mobile clients
 
