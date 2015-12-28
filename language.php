@@ -15,7 +15,7 @@
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    $version_text                            = "1.21";
+    $version_text                            = "2.0";
 
 
     // Only for the deprecated support of not using $lang
