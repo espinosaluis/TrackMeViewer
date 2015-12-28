@@ -12,13 +12,74 @@
     $siteroot ="http://".$_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF'])."/";
   }
 
-    if($_REQUEST["language"])
+    $action            = $_REQUEST["action"];
+    $storeshowbearings = $_REQUEST["storeshowbearings"];
+    $storecrosshair    = $_REQUEST["storecrosshair"];
+    $storeclickcenter  = $_REQUEST["storeclickcenter"];
+    $storelanguage     = $_REQUEST["storelanguage"];
+    $storeunits        = $_REQUEST["storeunits"];
+    $storestartdate    = $_REQUEST["storestartdate"];
+    $storeenddate      = $_REQUEST["storeenddate"];
+    $custom_view       = $_REQUEST["custom_view"];
+
+    if ($action == "form_display" || $custom_view == "yes")
     {
-        $language = $_REQUEST["language"];
-    }
-    elseif($storelanguage)
-    {
-        $language = $storelanguage;
+        if($_REQUEST["setcrosshair"])
+        {
+            $crosshair = "yes";
+        }
+        elseif($action == "form_display")
+        {
+            $crosshair = "no";
+        }
+        else
+        {
+            $crosshair = $storecrosshair;
+        }
+
+        if($_REQUEST["setclickcenter"])
+        {
+            $clickcenter = "yes";
+        }
+        elseif($action == "form_display")
+        {
+            $clickcenter = "no";
+        }
+        else
+        {
+            $clickcenter = $storeclickcenter;
+        }
+
+        if($_REQUEST["setshowbearings"])
+        {
+            $show_bearings    = "yes";
+        }
+        elseif($action == "form_display")
+        {
+            $show_bearings    = "no";
+        }
+        else
+        {
+            $show_bearings    = $storeshowbearings;
+        }
+
+        $units    = $storeunits;
+        if($_REQUEST["units"])
+        {
+            $units       = $_REQUEST["units"];
+        }
+        $language    = $storelanguage;
+        if($_REQUEST["language"])
+        {
+            $language       = $_REQUEST["language"];
+        }
+
+        $storecrosshair   = $crosshair;
+        $storeclickcenter = $clickcenter;
+        $storeunits       = $units;
+        $storelanguage    = $language;
+        $storeshowbearings = $show_bearings;
+        $custom_view      = "yes";
     }
 
     require_once('language.php');
@@ -112,17 +173,8 @@
         $ID                = $_REQUEST["ID"];
         $username          = $_REQUEST["username"];
         $password          = $_REQUEST["password"];
-        $action            = $_REQUEST["action"];
-        $storeshowbearings = $_REQUEST["storeshowbearings"];
-        $storecrosshair    = $_REQUEST["storecrosshair"];
-        $storeclickcenter  = $_REQUEST["storeclickcenter"];
-        $storelanguage     = $_REQUEST["storelanguage"];
-        $storeunits        = $_REQUEST["storeunits"];
-        $storestartdate    = $_REQUEST["storestartdate"];
-        $storeenddate      = $_REQUEST["storeenddate"];
         $startday          = preg_replace("/[^0-9 :\-]/", "", $_REQUEST["startday"]);
         $endday            = preg_replace("/[^0-9 :\-]/", "", $_REQUEST["endday"]);
-        $custom_view       = $_REQUEST["custom_view"];
 
         if (is_numeric($trip) && !isset($ID))
         {
@@ -130,67 +182,6 @@
                                 $trip)->fetchColumn();
             if ($ID === false)
                 unset($ID);
-        }
-
-        if ($action == "form_display" || $custom_view == "yes")
-        {
-
-			if($_REQUEST["setcrosshair"])
-            {
-                $crosshair = "yes";
-            }
-            elseif($action == "form_display")
-            {
-                $crosshair = "no";
-            }
-            else
-            {
-                $crosshair = $storecrosshair;
-            }
-
-            if($_REQUEST["setclickcenter"])
-            {
-                $clickcenter = "yes";
-            }
-            elseif($action == "form_display")
-            {
-                $clickcenter = "no";
-            }
-            else
-            {
-                $clickcenter = $storeclickcenter;
-            }
-
-			if($_REQUEST["setshowbearings"])
-            {
-                $show_bearings    = "yes";
-            }
-            elseif($action == "form_display")
-            {
-                $show_bearings    = "no";
-            }
-            else
-            {
-                $show_bearings    = $storeshowbearings;
-            }
-
-            $units    = $storeunits;
-            if($_REQUEST["units"])
-            {
-                $units       = $_REQUEST["units"];
-            }
-            $language    = $storelanguage;
-            if($_REQUEST["language"])
-            {
-                $language       = $_REQUEST["language"];
-            }
-
-	    $storecrosshair   = $crosshair;
-            $storeclickcenter = $clickcenter;
-            $storeunits       = $units;
-            $storelanguage    = $language;
-   	    $storeshowbearings = $show_bearings;
-            $custom_view      = "yes";
         }
 
         if ($num_users < 1 || $num_trips < 1 || $num_positions < 1 || $num_icons < 1)
