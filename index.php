@@ -922,10 +922,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     }
                     if ($where != "")
                         $where .= " AND";
-                    if ($limit > 0)
-                        $limit = " DESC $limit";
-                    else
-                        $limit = "";
 
                     if ($tripname != "Any")
                     {
@@ -953,6 +949,10 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     $params[] = $startday;
                     $params[] = $endday;
                 }
+                if ($limit > 0)
+                    $limit = " DESC LIMIT $limit";
+                else
+                    $limit = "";
 
                 if ($showmap != "yes" && $showmapdata != 1)
                     $params[] = 'ZZ';
