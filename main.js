@@ -62,3 +62,14 @@ function getIcon(data)
         return iconLtBlue;
     }
 }
+
+var query = function(url, callback)
+{
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function() {
+        if (req.readyState == 4 && req.status == 200)
+            callback(req.responseText);
+    };
+    req.open('GET', url, true);
+    req.send(null);
+}

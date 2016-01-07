@@ -249,6 +249,7 @@
                 $html .= "        <script type=\"text/javascript\" src=\"calendar-setup.js\"></script>\n";
 		$html .= "        <script src=\"https://maps.googleapis.com/maps/api/js?key=$googleapikey\" type=\"text/javascript\"></script>\n";
                 $html .= "        <script type=\"text/javascript\" src=\"main.js\"></script>\n";
+                $html .= "        <script type=\"text/javascript\" src=\"lang.js\"></script>\n";
 		$html .= "    </head>\n";
 
 if(isset($_REQUEST[last_location])){
@@ -838,6 +839,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
 
                 $html .= "            <script type=\"text/javascript\">\n";
                 $html .= "            //<![CDATA[\n";
+                $html .= "                lang.setCode('$lang->code');\n";
                 $html .= "                var geocoder = null;\n";
                 $html .= "                var online = true;\n";
                 $html .= "                var bounds = new google.maps.LatLngBounds();\n";
