@@ -880,6 +880,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 } else {
                     $html .= "                var showBearings = false;\n";
                 }
+                $html .= "                var useMetric = " . ($units == "metric" ? "true" : "false") . ";\n\n";
 
                 $params = array();
                 if (isset($_REQUEST[last_location]))  //show last location is on
@@ -969,7 +970,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 }
                 $avg_speed /= $count;
 
-                $avg_mph = $avg_speed * 2.236936292054;
                 $avg_kph = $avg_speed * 3.6;
                 $total_distance = 0;
                 $total_time = 0;
@@ -989,14 +989,10 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                 for ($rounds = 1; $rounds <= $count; $rounds++)
                 {
                     $row = $result[$rounds - 1];
-                    $mph     = $row['Speed'] * 2.2369362920544;
                     $kph     = $row['Speed'] * 3.6;
-                    $ft      = $row['Altitude'] * 3.2808399;
-                    $meters  = $row['Altitude'];
                     // escape the strings for JS
                     $row['ImageURL'] = escape_js_str($row['ImageURL']);
                     $row['Comments'] = escape_js_str($row['Comments']);
-                    $html .= "            var point = new google.maps.LatLng(" . $row['Latitude'] . "," . $row['Longitude'] . ");\n";
 
                     if($rounds == 1)
                     {
@@ -1017,41 +1013,22 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
                     {
                         $parameter = "'$row[URL]'";
                     }
-                    elseif($rounds == 1)
+                    elseif($rounds < $count)
                     {
-                        $parameter = "iconGreen";
-                    }
-                    elseif($rounds > 1  && $rounds < $count)
-                    {
-                        $parameter = "getIcon({photo: '$row[ImageURL]', comment: '$row[Comments]'";
-                        if (!is_null($row['Angle']))
-                            $parameter .= ", bearing: $row[Angle]";
-                        $parameter .= "})";
+                        $parameter = "true";
                     }
                     else
                     {
                         $parameter = "iconRed";
                     }
 
-                    $html .= "        trip.appendMarker(point, $parameter, '<table border=\"0\"><tr><td align=\"center\"><b>$user_balloon_text: <\/b>" . escape_js_str($username) . "<\/td><td align=\"right\"><b>$trip_balloon_text: <\/b>" . escape_js_str($tripnameText) . "<\/td><\/tr><tr><td colspan=\"2\"><hr width=\"400\"><\/td><\/tr><tr><td align=\"left\"><b>$time_balloon_text: <\/b>" . date($date_format,strtotime($row['DateOccurred'])) . "<\/td><td align=\"right\"><b>$total_time_balloon_text: <\/b>" . $total_time . "<\/td><\/tr>";  //trackmeIT
-                    if($units == "metric")
-                    {
-                        $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($kph,2) . " " . $speed_metric_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_kph,2) . " " . $speed_metric_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($meters,2) . " " . $height_metric_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_kilometers,2) . " " . $distance_metric_unit_balloon_text . "<\/td><\/tr>";
-                    }
-                    else
-                    {
-                        $html .= "<tr><td align=\"left\"><b>$speed_balloon_text: <\/b>" . number_format($mph,2) . " " . $speed_imperial_unit_balloon_text . " <\/td><td align=\"right\"><b>$avg_speed_balloon_text: <\/b>" . number_format($avg_mph,2) . " " . $speed_imperial_unit_balloon_text . "<\/td><\/tr><tr><td align=\"left\"><b>$altitude_balloon_text: <\/b>" . number_format($ft,2) . " " . $height_imperial_unit_balloon_text . "<\/td><td align=\"right\"><b>$total_distance_balloon_text: <\/b>" . number_format($total_miles,2) . " " . $distance_imperial_unit_balloon_text . "<\/td><\/tr>";
-                    }
-                    if($row['Comments'] != "")
-                    {
-                        $html .= "    <tr><td colspan=\"2\" align=\"left\" width=\"400\"><b>$comment_balloon_text:<\/b> $row[Comments]<\/td><\/tr>";
-                    }
-                    $html .= "        <tr><td colspan=\"2\">$point_balloon_text " . $rounds . " of " . $count . "<\/td><\/tr>";
-                    if($row['ImageURL'])
-                    {
-                        $html .= "    <tr><td colspan=\"2\"><a href=\"" . $row['ImageURL'] . "\" target=\"_blank\"><img src=\"" . $row['ImageURL'] . "\" width=\"200\" border=\"0\"></a><\/td><\/tr>";
-                    }
-                    $html .= "<tr><td colspan=\"2\">&nbsp;<\/td><\/tr><\/table>');\n";
+                    $dataParameter = "";
+                    if (!is_null($row['Angle']))
+                        $dataParameter .= ", bearing: $row[Angle]";
+
+                    $formattedTS = escape_js_str(date($date_format, strtotime($row['DateOccurred'])));
+
+                    $html .= "        trip.appendMarker({latitude: $row[Latitude], longitude: $row[Longitude], timestamp: '$row[DateOccurred]', totalTime: '$total_time', speed: $kph, avgSpeed: $avg_kph, altitude: $row[Altitude], totalDistance: $total_distance, comment: '$row[Comments]', photo: '$row[ImageURL]' $dataParameter, formattedTS: '$formattedTS'}, $parameter);\n";
                     $holdlat  = $row['Latitude'];
                     $holdlong = $row['Longitude'];
                 }
