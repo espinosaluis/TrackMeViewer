@@ -224,9 +224,9 @@
     
     // Main query
     if ($tripname == "<None>" )   
-      $sql = "select UNIX_TIMESTAMP(DateOccurred) as UnixDateOccured, DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, null as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";        
+      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, null as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";
     else 
-      $sql = "select UNIX_TIMESTAMP(DateOccurred) as UnixDateOccured, DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, A2.Name as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";         
+      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, A2.Name as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";
           
     $sql = $sql.$cond;
                 
@@ -259,6 +259,7 @@
         $altitudeM = number_format(0,2);
       }
       $angle = number_format($row['angle'],2);      
+      $row["UnixDateOccured"] = strtotime($row["DateOccurred"]);
       
       if ( $count == count($result) - 1) // Last pushpin
       {
@@ -529,11 +530,9 @@
 
     // Main query
     if ($tripname == "<None>" ) {   
-      $sql = "select UNIX_TIMESTAMP(DateOccurred) as DateOccured,latitude, longitude,speed,altitude,fk_icons_id as customicon, null as tripname,A1.comments,A1.imageurl,A1.angle from positions A1 ";
       $tripname = "None";       
-    } else { 
-      $sql = "select UNIX_TIMESTAMP(DateOccurred) as DateOccured,latitude, longitude,speed,altitude,fk_icons_id as customicon, A2.Name as tripname,A1.comments,A1.imageurl,A1.angle from positions A1 ";
     }         
+      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, A1.comments,A1.imageurl,A1.angle from positions A1 ";
 
     $sql = $sql.$cond;
     $result = $db->exec_sql($sql);
@@ -567,6 +566,7 @@
       //$wptdata.=" <sym>Dot</sym>\n";
       //$wptdata.=" <type><![CDATA[Dot]]></type>\n";
       $wptdata.="</wpt>\n";*/
+        $row["DateOccured"] = strtotime($row["DateOccurred"]);
       $trkptdata.="<trkpt lat=\"" . $row['latitude'] . "\" lon=\"" . $row['longitude'] . "\">\n";
       $trkptdata.=" <ele>" . $altitudeM . "</ele>\n";
       $trkptdata.=" <time>".date('Y-m-d',$row['DateOccured'])."T".date('H:i:s',$row['DateOccured'])."Z</time>\n";
