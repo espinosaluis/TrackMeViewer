@@ -1,4 +1,6 @@
 <?php
+
+    session_start();
   
   require_once('config.php');
     
@@ -20,13 +22,8 @@
   
   $showbearings = 0;
   
-// DMR Use the Cookies to get the user and password-->
-  if($public_page != "yes" && isset($_COOKIE["username"]) && isset($_COOKIE["password"]))
+    if (!isset($_SESSION["ID"]))
   {
-//      $loggedin = "yes";
-      $username = $_COOKIE["username"];
-      $password = $_COOKIE["password"];
-  } else {
     echo "<Result>Not Logged in or this is not a private system</Result>";
     die();
   }
@@ -42,16 +39,7 @@
   $showbearings = urldecode($_GET["sb"]);
     
   
-  $result=mysql_query("Select ID FROM users WHERE username = '$username' and password='$password'");
-  if ( $row=mysql_fetch_array($result) )
-  {
-      $userid=$row['ID'];   // Good, user and password are correct.
-  }
-  else
-  {
-    echo "Error: User/password not valid.";
-    die();    
-  }
+    $userid = $_SESSION["ID"];
   
   
         
