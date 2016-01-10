@@ -2,7 +2,7 @@
 
     session_start();
   
-  require_once('config.php');
+    require_once("database.php");
     
 // DMR didn't see where this was used so removed.    
 //  $requireddb = urldecode($_GET["db"]);     
@@ -12,13 +12,12 @@
 //      die;
 //  }   
   
-  if(!@mysql_connect("$DBIP","$DBUSER","$DBPASS"))
+    $db = connect_save();
+    if (is_null($db))
   {
     echo "<Result>4</Result>";
     die();
   }
-  
-  mysql_select_db("$DBNAME");
   
   $showbearings = 0;
   
@@ -69,9 +68,9 @@
     $sql = "select distinct A3.ID, A3.URL  from icons A3 inner join positions A1 on A1.fk_icons_id = A3.ID ";
     $sql = $sql.$cond;
         
-    $result = mysql_query($sql);    
+    $result = $db->exec_sql($sql);
   
-    while( $row = mysql_fetch_array($result) )
+    while( $row = $result->fetch() )
     {
       $customicons .="<Style id='CustomIcon".$row['ID']."'>";
         $customicons .="<IconStyle>";
@@ -232,8 +231,7 @@
     $sql = $sql.$cond;
                 
           
-    $result = mysql_query($sql);    
-    $num_rows = mysql_num_rows($result);            
+    $result = $db->exec_sql($sql)->fetchAll();
   
     $header = "<?xml version='1.0' encoding='utf-8' ?>";
     $header .= "<kml xmlns='http://earth.google.com/kml/2.0'>";
@@ -245,11 +243,11 @@
     
     $output ="<NetworkLinkControl><minRefreshPeriod>12</minRefreshPeriod></NetworkLinkControl>";  
     
-      $count = 0;
       $group = "";
       
-    while( $row=mysql_fetch_array($result) )
+    for ($count = 0; $count < count($result); $count++)
     {
+        $row = $result[$count];
       $speedMPH = number_format($row['speed']*2.2369362920544,2);
       $speedKPH = number_format($row['speed']*3.6,2); 
       if ($row['altitude'] > 0) 
@@ -262,7 +260,7 @@
       }
       $angle = number_format($row['angle'],2);      
       
-      if ( $count == $num_rows -1 ) // Last pushpin
+      if ( $count == count($result) - 1) // Last pushpin
       {
         $output .="<LookAt>";           
           $output .="<longitude>".$row['longitude']."</longitude>";   
@@ -466,7 +464,6 @@
       $group.=$row['longitude'].",".$row['latitude']." ";
 //      $group.=$row['longitude'].",".$row['latitude'].",2 ";
           
-      $count = $count + 1;          
     }   
 
 
@@ -539,8 +536,7 @@
     }         
 
     $sql = $sql.$cond;
-    $result = mysql_query($sql);    
-    $num_rows = mysql_num_rows($result);
+    $result = $db->exec_sql($sql);
 
     $n=0;
     $bounds_lat_min = 0;
@@ -550,7 +546,7 @@
     $wptdata="";
     $trkptdata="<trk>\n";
     $trkptdata.="<trkseg>\n";
-    while( $row=mysql_fetch_array($result) )
+    while( $row=$result->fetch() )
     {
       if(($row['latitude']<$bounds_lat_min && $bounds_lat_min!=0) || $bounds_lat_min==0) { $bounds_lat_min = $row['latitude']; }
       if(($row['latitude']>$bounds_lat_max && $bounds_lat_max!=0) || $bounds_lat_max==0) { $bounds_lat_max = $row['latitude']; }
@@ -617,6 +613,6 @@
     //echo "<Result>0</Result>";
 
   }
-    
+    $db = null;
 
 ?> 
