@@ -1,8 +1,6 @@
 <?php
-
-    session_start();
   
-    require_once("database.php");
+  require_once('config.php');
     
 // DMR didn't see where this was used so removed.    
 //  $requireddb = urldecode($_GET["db"]);     
@@ -12,17 +10,23 @@
 //      die;
 //  }   
   
-    $db = connect_save();
-    if (is_null($db))
+  if(!@mysql_connect("$DBIP","$DBUSER","$DBPASS"))
   {
     echo "<Result>4</Result>";
     die();
   }
   
+  mysql_select_db("$DBNAME");
+  
   $showbearings = 0;
   
-    if (!isset($_SESSION["ID"]))
+// DMR Use the Cookies to get the user and password-->
+  if($public_page != "yes" && isset($_COOKIE["username"]) && isset($_COOKIE["password"]))
   {
+//      $loggedin = "yes";
+      $username = $_COOKIE["username"];
+      $password = $_COOKIE["password"];
+  } else {
     echo "<Result>Not Logged in or this is not a private system</Result>";
     die();
   }
@@ -38,7 +42,16 @@
   $showbearings = urldecode($_GET["sb"]);
     
   
-    $userid = $_SESSION["ID"];
+  $result=mysql_query("Select ID FROM users WHERE username = '$username' and password='$password'");
+  if ( $row=mysql_fetch_array($result) )
+  {
+      $userid=$row['ID'];   // Good, user and password are correct.
+  }
+  else
+  {
+    echo "Error: User/password not valid.";
+    die();    
+  }
   
   
         
@@ -68,9 +81,9 @@
     $sql = "select distinct A3.ID, A3.URL  from icons A3 inner join positions A1 on A1.fk_icons_id = A3.ID ";
     $sql = $sql.$cond;
         
-    $result = $db->exec_sql($sql);
+    $result = mysql_query($sql);    
   
-    while( $row = $result->fetch() )
+    while( $row = mysql_fetch_array($result) )
     {
       $customicons .="<Style id='CustomIcon".$row['ID']."'>";
         $customicons .="<IconStyle>";
@@ -224,14 +237,15 @@
     
     // Main query
     if ($tripname == "<None>" )   
-      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, null as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";
+      $sql = "select UNIX_TIMESTAMP(DateOccurred) as UnixDateOccured, DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, null as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";        
     else 
-      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, A2.Name as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";
+      $sql = "select UNIX_TIMESTAMP(DateOccurred) as UnixDateOccured, DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, A2.Name as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";         
           
     $sql = $sql.$cond;
                 
           
-    $result = $db->exec_sql($sql)->fetchAll();
+    $result = mysql_query($sql);    
+    $num_rows = mysql_num_rows($result);            
   
     $header = "<?xml version='1.0' encoding='utf-8' ?>";
     $header .= "<kml xmlns='http://earth.google.com/kml/2.0'>";
@@ -243,11 +257,11 @@
     
     $output ="<NetworkLinkControl><minRefreshPeriod>12</minRefreshPeriod></NetworkLinkControl>";  
     
+      $count = 0;
       $group = "";
       
-    for ($count = 0; $count < count($result); $count++)
+    while( $row=mysql_fetch_array($result) )
     {
-        $row = $result[$count];
       $speedMPH = number_format($row['speed']*2.2369362920544,2);
       $speedKPH = number_format($row['speed']*3.6,2); 
       if ($row['altitude'] > 0) 
@@ -259,9 +273,8 @@
         $altitudeM = number_format(0,2);
       }
       $angle = number_format($row['angle'],2);      
-      $row["UnixDateOccured"] = strtotime($row["DateOccurred"]);
       
-      if ( $count == count($result) - 1) // Last pushpin
+      if ( $count == $num_rows -1 ) // Last pushpin
       {
         $output .="<LookAt>";           
           $output .="<longitude>".$row['longitude']."</longitude>";   
@@ -465,6 +478,7 @@
       $group.=$row['longitude'].",".$row['latitude']." ";
 //      $group.=$row['longitude'].",".$row['latitude'].",2 ";
           
+      $count = $count + 1;          
     }   
 
 
@@ -530,12 +544,15 @@
 
     // Main query
     if ($tripname == "<None>" ) {   
+      $sql = "select UNIX_TIMESTAMP(DateOccurred) as DateOccured,latitude, longitude,speed,altitude,fk_icons_id as customicon, null as tripname,A1.comments,A1.imageurl,A1.angle from positions A1 ";
       $tripname = "None";       
+    } else { 
+      $sql = "select UNIX_TIMESTAMP(DateOccurred) as DateOccured,latitude, longitude,speed,altitude,fk_icons_id as customicon, A2.Name as tripname,A1.comments,A1.imageurl,A1.angle from positions A1 ";
     }         
-      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, A1.comments,A1.imageurl,A1.angle from positions A1 ";
 
     $sql = $sql.$cond;
-    $result = $db->exec_sql($sql);
+    $result = mysql_query($sql);    
+    $num_rows = mysql_num_rows($result);
 
     $n=0;
     $bounds_lat_min = 0;
@@ -545,7 +562,7 @@
     $wptdata="";
     $trkptdata="<trk>\n";
     $trkptdata.="<trkseg>\n";
-    while( $row=$result->fetch() )
+    while( $row=mysql_fetch_array($result) )
     {
       if(($row['latitude']<$bounds_lat_min && $bounds_lat_min!=0) || $bounds_lat_min==0) { $bounds_lat_min = $row['latitude']; }
       if(($row['latitude']>$bounds_lat_max && $bounds_lat_max!=0) || $bounds_lat_max==0) { $bounds_lat_max = $row['latitude']; }
@@ -566,7 +583,6 @@
       //$wptdata.=" <sym>Dot</sym>\n";
       //$wptdata.=" <type><![CDATA[Dot]]></type>\n";
       $wptdata.="</wpt>\n";*/
-        $row["DateOccured"] = strtotime($row["DateOccurred"]);
       $trkptdata.="<trkpt lat=\"" . $row['latitude'] . "\" lon=\"" . $row['longitude'] . "\">\n";
       $trkptdata.=" <ele>" . $altitudeM . "</ele>\n";
       $trkptdata.=" <time>".date('Y-m-d',$row['DateOccured'])."T".date('H:i:s',$row['DateOccured'])."Z</time>\n";
@@ -613,6 +629,6 @@
     //echo "<Result>0</Result>";
 
   }
-    $db = null;
+    
 
 ?> 
