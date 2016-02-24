@@ -99,6 +99,20 @@ CREATE TABLE `users` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 
+CREATE TABLE `cloud` (
+  `ID` varchar(255) NOT NULL,
+  `DisplayName` varchar(255) default NULL,
+  `Latitude` double NOT NULL,
+  `Longitude` double NOT NULL,
+  `Altitude` double default NULL,
+  `Speed` double default NULL,
+  `Angle` double default NULL,
+  `Accuracy` double default NULL,
+  `DateOccurred` timestamp NOT NULL default '0000-00-00 00:00:00',
+  `Public` tinyint(4) NOT NULL default '1',
+  PRIMARY KEY  (`ID`),
+  KEY `DateOccurred` (`DateOccurred`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
 
