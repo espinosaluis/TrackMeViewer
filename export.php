@@ -1,6 +1,6 @@
 <?php
 	
-	require_once('database.php');
+	require_once('config.php');
 	
 	header("Content-type: text/xml");
 	
@@ -11,26 +11,33 @@
     	die;
   }		
 	
-    $db = connect_save()
-    if(is_null($db))
+	if(!@mysql_connect("$DBIP","$DBUSER","$DBPASS"))
 	{
 		echo "<Result>4</Result>";
 		die();
 	}
+	
+	mysql_select_db("$DBNAME");
 	
 	$showbearings = 0;
 	
 	$action = $_GET["a"];
 	$username = urldecode($_GET["u"]);
 	$password = urldecode($_GET["p"]);
+	$salt = "trackmeuser";
+	$password = MD5($salt.$password);
 	$datefrom = urldecode($_GET["df"]);
 	$dateto = urldecode($_GET["dt"]);
 	$tripname = urldecode($_GET["tn"]);
 	$showbearings = urldecode($_GET["sb"]);
 		
 	
-    $userid = $db->valid_login($username, $password);
-    if ($userid < 0)
+	$result=mysql_query("Select ID FROM users WHERE username = '$username' and password='$password'");
+	if ( $row=mysql_fetch_array($result) )
+	{
+			$userid=$row['ID'];		// Good, user and password are correct.
+	}
+	else
 	{
 		echo "<Result>1</Result>";
 		die();		
@@ -39,48 +46,34 @@
 	
 				
 	
-    $params = array();
-    $cond = " WHERE A1.FK_Users_ID = ?";
+	if($action=="kml")
+	{
+		// Condition
+		$cond = "";	
 		if ($tripname == "<None>" )		
-    {
-        $cond .= " AND A1.FK_Trips_ID is null";
-    }
+			$cond = "WHERE FK_Trips_ID is null AND A1.FK_USERS_ID='$userid' ";
 		else if ($tripname != "" )
-    {
-        $cond = " INNER JOIN trips A2 ON A1.FK_Trips_ID = A2.ID AND A2.Name = ? $cond"
-        $params[] = $tripname;
-    }
+			$cond = "INNER JOIN trips A2 ON A1.FK_Trips_ID=A2.ID AND A2.Name='$tripname' WHERE A1.FK_USERS_ID='$userid' ";
 		else
-    {
-        $cond = " LEFT JOIN trips A2 ON A1.FK_Trips_ID = A2.ID $cond";
-    }
-    $params[] = $userid;
+			$cond = "LEFT JOIN trips A2 ON A1.FK_Trips_ID=A2.ID WHERE A1.FK_USERS_ID='$userid' ";			
 												
 		if ( $datefrom != "" )
-    {
-			$cond .=" AND DateOccurred >= ?";
-        $params[] = $datefrom;
-    }
+			$cond .=" and DateOccurred>='$datefrom' ";
 		if ( $dateto != "" )
-    {
-			$cond .=" AND DateOccurred <= ?";
-        $params[] = $dateto;
-    }
+			$cond .=" and DateOccurred<='$dateto' ";										
+			
 		$cond .=" order by dateoccurred asc";	
 
 
-	if($action=="kml")
-	{
 		
 		// Generate code for custom icons
 		$customicons = "";	
-        $result = $db->exec_sql("SELECT DISTINCT A3.ID, A3.URL " .
-                                "FROM icons A3 " .
-                                "INNER JOIN positions A1 ON A1.fk_icons_id = A3.ID" .
-                                $cond,
-                                $params);
+		$sql = "select distinct A3.ID, A3.URL  from icons A3 inner join positions A1 on A1.fk_icons_id = A3.ID ";
+		$sql = $sql.$cond;
+				
+		$result = mysql_query($sql);		
 	
-        while ($row = $result->fetch())
+		while( $row = mysql_fetch_array($result) )
 		{
 			$customicons .="<Style id='CustomIcon".$row['ID']."'>";
 				$customicons .="<IconStyle>";
@@ -243,7 +236,8 @@
 		$sql = $sql.$cond;
 								
 					
-        $result = $db->exec_sql($sql, $params);		
+		$result = mysql_query($sql);		
+		$num_rows = mysql_num_rows($result);						
 	
 		$header = "<?xml version='1.0' encoding='utf-8' ?>";
 		$header .= "<kml xmlns='http://earth.google.com/kml/2.0'>";
@@ -257,19 +251,16 @@
   	
   		$count = 0;
   		$group = "";
-
-        $next_row = $result->fetch();
 			
-        while($row = $next_row)
+		while( $row=mysql_fetch_array($result) )
 		{
-            $next_row = $result->fetch();
 			$speedMPH = number_format($row['speed']*2.2369362920544,2);
 			$speedKPH = number_format($row['speed']*3.6,2);		
 			$altitudeFeet = number_format($row['altitude']*3.2808399,2);
 			$altitudeM = number_format($row['altitude'],2);			
 			$angle = number_format($row['angle'],2);			
 			
-            if ($next_row === false) // Last pushpin
+			if ( $count == $num_rows -1 ) // Last pushpin
 			{
 				$output .="<LookAt>";						
 					$output .="<longitude>".$row['longitude']."</longitude>";		
@@ -501,6 +492,22 @@
 	}
 	else if ($action = "gpx") 
 	{
+		// Condition
+		$cond = "";	
+		if ($tripname == "<None>" )		
+			$cond = "WHERE FK_Trips_ID is null AND A1.FK_USERS_ID='$userid' ";
+		else if ($tripname != "" )
+			$cond = "INNER JOIN trips A2 ON A1.FK_Trips_ID=A2.ID AND A2.Name='$tripname' WHERE A1.FK_USERS_ID='$userid' ";
+		else
+			$cond = "LEFT JOIN trips A2 ON A1.FK_Trips_ID=A2.ID WHERE A1.FK_USERS_ID='$userid' ";			
+
+		if ( $datefrom != "" )
+			$cond .=" and DateOccurred>='$datefrom' ";
+		if ( $dateto != "" )
+			$cond .=" and DateOccurred<='$dateto' ";
+			
+		$cond .=" order by dateoccurred desc";
+
 		// Main query
 		if ($tripname == "<None>" ) {		
 			$sql = "select UNIX_TIMESTAMP(DateOccurred) as DateOccured,latitude, longitude,speed,altitude,fk_icons_id as customicon, null as tripname,A1.comments,A1.imageurl,A1.angle from positions A1 ";
@@ -510,7 +517,8 @@
 		}					
 
 		$sql = $sql.$cond;
-        $result = $db->exec_sql($sql, $params);
+		$result = mysql_query($sql);		
+		$num_rows = mysql_num_rows($result);
 
 		$n=0;
 		$bounds_lat_min = 0;
@@ -520,7 +528,7 @@
 		$wptdata="";
 		$trkptdata="<trk>\n";
 		$trkptdata.="<trkseg>\n";
-        while ($row = $result->fetch())
+		while( $row=mysql_fetch_array($result) )
 		{
 			if(($row['latitude']<$bounds_lat_min && $bounds_lat_min!=0) || $bounds_lat_min==0) { $bounds_lat_min = $row['latitude']; }
 			if(($row['latitude']>$bounds_lat_max && $bounds_lat_max!=0) || $bounds_lat_max==0) { $bounds_lat_max = $row['latitude']; }
