@@ -728,7 +728,7 @@ if(isset($_REQUEST[last_location]))
 // Use the Cookie soe we don't display it in the URL        $ExportOptions .= "&p=" . $password;
                                         //
                                         $ExportOptions .= "&df=" . $startday;
-                                        $ExportOptions .= "&dt" . $endday;
+                                        $ExportOptions .= "&dt=" . $endday;
                                         $ExportOptions .= "&tn=" . $tripname;
                                         $ExportOptions .= "&sb=" . $storeshowbearings; //0=no 1=Yes
                                         $html .= "                                                    <a href=\"download.php?a=kml" . $ExportOptions . "\">KML Format</a><br>\n";
