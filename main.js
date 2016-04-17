@@ -115,8 +115,8 @@ function createMarkerText(data)
                 "<td align='left'><b>" + lang.get('balloon-time') + ": </b>" + data.formattedTS +
                 "</td><td align='right'><b>" + lang.get('balloon-total-time') + ": </b>" +
                 data.totalTime + "</td></tr>");
-    speed = toMiles(data.speed);
-    avgSpeed = toMiles(data.avgSpeed);
+    speed = toMiles(data.speed * 3.6);
+    avgSpeed = toMiles(data.avgSpeed * 3.6);
     totalDistance = toMiles(data.distanceToHere);
     altitude = data.altitude;
     if (!useMetric) {
