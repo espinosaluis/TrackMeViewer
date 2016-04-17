@@ -110,7 +110,7 @@ function createMarkerText(data)
         html += ("<tr><td colspan='2' align='left' width='400'><b>" +
                  lang.get('balloon-comment') + ":</b> " + data.comment + "</td></tr>");
     }
-    html += "        <tr><td colspan='2'>" + lang.get('balloon-point') + " " + (data.index + 1) + " of " + data.trip.markers.length + "</td></tr>";
+    html += "        <tr><td colspan='2'>" + lang.get('balloon-point') + " " + lang.get('balloon-point-val', data.index + 1, data.trip.markers.length) + "</td></tr>";
     if (data.photo)
     {
         html += ("    <tr><td colspan='2'><a href='" + data.photo +

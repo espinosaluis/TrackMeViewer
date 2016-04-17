@@ -1,6 +1,30 @@
 var lang = {
 
     get: function(key) {
+        var trans = this._get(key);
+        var args = Array.prototype.slice.call(arguments, 1);
+        if (args.length > 0)
+        {
+            trans = trans.replace(/({+)(\d+)(}+)/g, function(match, before, number, after) {
+                if (before.length == after.length && typeof args[number] != 'undefined')
+                {
+                    if (before.length % 2 == 0)
+                        var repl = number;
+                    else
+                        var repl = args[number];
+                    var count = Math.floor(before.length / 2);
+                    before = new Array(count).join('{');
+                    after = new Array(count).join('}');
+                    return before + repl + after;
+                }
+                else
+                    return match;
+            });
+        }
+        return trans;
+    },
+
+    _get: function(key) {
         // Extra check in case the mapping is still null
         if (this._trans && key in this._trans)
             return this._trans[key];
