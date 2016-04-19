@@ -5,6 +5,26 @@
     class KMLExporter extends Exporter
     {
 
+        private function create_icon($id, $href, $scaled)
+        {
+            $code = "<Style id='$id'>";
+            $code .= "<IconStyle>";
+            if ($scaled)
+                $code .="<scale>0.5</scale>";
+            $code .= "<Icon>";
+            $code .= "<href>$href</href>";
+            if ($scaled) {
+                $code .= "<x>0</x>";
+                $code .= "<y>0</y>";
+                $code .= "<w>32</w>";
+                $code .= "<h>32</h>";
+            }
+            $code .= "</Icon>";
+            $code .= "</IconStyle>";
+            $code .= "</Style>";
+            return $code;
+        }
+
         public function export($showbearings)
         {
             // Temporarily cache local variables like $db as long as it isn't using $this
@@ -44,153 +64,24 @@
   
     while( $row = $result->fetch() )
     {
-      $customicons .="<Style id='CustomIcon".$row['ID']."'>";
-        $customicons .="<IconStyle>";
-          $customicons .="<Icon>";
-            $customicons .="<href>".$row['URL']."</href>";
-          $customicons .="</Icon>";
-        $customicons .="</IconStyle>";
-      $customicons .="</Style>";    
+                $customicons .= $this->create_icon("CustomIcon$row[ID]", $row["URL"], false);
     }
     
-    // Default icons
-    $customicons .="<Style id='IconYellow'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>http://labs.google.com/ridefinder/images/mm_20_yellow.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";    
-    
-    $customicons .="<Style id='IconGreen'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<Icon>";
-          $customicons .="<href>http://labs.google.com/ridefinder/images/mm_20_green.png</href>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";
-    $customicons .="</Style>";
-    
-    $customicons .="<Style id='IconRed'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<Icon>";
-          $customicons .="<href>http://labs.google.com/ridefinder/images/mm_20_red.png</href>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";
-    $customicons .="</Style>";
-    
     $currentpath="http://".$_SERVER['HTTP_HOST']."/".basename(getcwd());
-    
-    $customicons .="<Style id='IconArrow0'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>".$currentpath."/arrow0.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";  
-    
-    $customicons .="<Style id='IconArrow45'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>".$currentpath."/arrow45.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";      
-    
-    $customicons .="<Style id='IconArrow90'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>".$currentpath."/arrow90.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";      
-        
-        
-    $customicons .="<Style id='IconArrow135'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>".$currentpath."/arrow135.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";          
-    
-    
-    $customicons .="<Style id='IconArrow180'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>".$currentpath."/arrow180.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";      
-    
-    $customicons .="<Style id='IconArrow225'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>".$currentpath."/arrow225.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";      
-    
-    
-    $customicons .="<Style id='IconArrow270'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>".$currentpath."/arrow270.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";      
-    
-    $customicons .="<Style id='IconArrow315'>";
-      $customicons .="<IconStyle>";
-        $customicons .="<scale>0.5</scale>";
-        $customicons .="<Icon>";
-          $customicons .="<href>".$currentpath."/arrow315.png</href>";
-          $customicons .="<x>0</x>";
-          $customicons .="<y>0</y>";
-          $customicons .="<w>32</w>";
-          $customicons .="<h>32</h>";
-        $customicons .="</Icon>";
-      $customicons .="</IconStyle>";      
-    $customicons .="</Style>";      
+
+            foreach (array("yellow", "green", "red") as $color)
+            {
+                $id = "Icon" . ucfirst($color);
+                $href = $currentpath . "/mm_20_$color.png";
+                $customicons .= $this->create_icon($id, $href, $color === "yellow");
+            }
+
+            for ($angle = 0; $angle < 360; $angle += 45)
+            {
+                $id = "IconArrow$angle";
+                $href = $currentpath . "/arrow$angle.png";
+                $customicons .= $this->create_icon($id, $href, true);
+            }
     
     
     
