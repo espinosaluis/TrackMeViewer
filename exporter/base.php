@@ -34,6 +34,54 @@
                                                   $this->userid)->fetchColumn();
         }
 
+        protected function exec_sql($ascending)
+        {
+            $params = array();
+            $cond = " WHERE positions.FK_Users_ID = ?";
+            if (is_null($this->tripid)) {
+                $cond .= " AND positions.FK_Trips_ID is null";
+            } else if ($this->tripid !== true) {
+                $cond = " INNER JOIN trips ON positions.FK_Trips_ID = trips.ID AND trips.ID = ? $cond";
+                $params[] = $this->tripid;
+            } else {
+                $cond = " LEFT JOIN trips ON positions.FK_Trips_ID = trips.ID $cond";
+            }
+
+            $params[] = $this->userid;
+            if ( $this->datefrom != "" )
+            {
+                $cond .= " AND DateOccurred >= ?";
+                $params[] = $this->datefrom;
+            }
+            if ( $this->dateto != "" )
+            {
+                $cond .= " AND DateOccurred <= ?";
+                $params[] = $this->dateto;
+            }
+            $cond .= " ORDER BY DateOccurred ";
+            if ($ascending)
+                $cond .= "ASC";
+            else
+                $cond .= "DESC";
+            $sql = "SELECT DateOccurred, Latitude, Longitude, Speed, Altitude, FK_Icons_ID, trips.Name, positions.Comments, positions.ImageURL, positions.Angle, positions.SignalStrength, positions.SignalStrengthMax, positions.SignalStrengthMin, positions.BatteryStatus FROM positions ";
+            return $this->db->exec_sql($sql . $cond, $params);
+        }
+
+        protected function simulate_old(&$row)
+        {
+            // Old queries didn't use proper capitalisation
+            // This is adding the old query's attributes to the new query
+            // It can be removed as soon as there is nothing left using the old
+            // attributes
+            foreach (array("Latitude", "Longitude", "Speed", "Altitude",
+                           "Comments", "ImageURL", "Angle", "SignalStrength",
+                           "SignalStrengthMax", "SignalStrengthMin",
+                           "BatteryStatus") as $name)
+                $row[strtolower($name)] = $row[$name];
+            $row["tripname"] = $row["Name"];
+            $row["customicon"] = $row["FK_Icons_ID"];
+        }
+
         // Find better home for this function
         private static function get_default($needle, $array, $default = null)
         {

@@ -30,42 +30,10 @@
             // Temporarily cache local variables like $db as long as it isn't using $this
             // A future patch is removing the usage anyway so a more through change is not
             // necessary.
-            $db = $this->db;
-            $userid = $this->userid;
-            $datefrom = $this->datefrom;
-            $dateto = $this->dateto;
-            $tripname = $this->tripname;
             $username = $this->username;
 
-    // Condition
-    $cond = ""; 
-            if (is_null($this->tripid))
-      $cond = "WHERE FK_Trips_ID is null AND A1.FK_USERS_ID='$userid' ";
-            else if ($this->tripid !== true)
-      $cond = "INNER JOIN trips A2 ON A1.FK_Trips_ID=A2.ID AND A2.Name='$tripname' WHERE A1.FK_USERS_ID='$userid' ";
-    else
-      $cond = "LEFT JOIN trips A2 ON A1.FK_Trips_ID=A2.ID WHERE A1.FK_USERS_ID='$userid' ";     
-                        
-    if ( $datefrom != "" )
-      $cond .=" and DateOccurred>='$datefrom' ";
-    if ( $dateto != "" )
-      $cond .=" and DateOccurred<='$dateto' ";                    
-      
-    $cond .=" order by dateoccurred asc"; 
-
-
     
-    // Generate code for custom icons
     $customicons = "";  
-    $sql = "select distinct A3.ID, A3.URL  from icons A3 inner join positions A1 on A1.fk_icons_id = A3.ID ";
-    $sql = $sql.$cond;
-        
-    $result = $db->exec_sql($sql);
-  
-    while( $row = $result->fetch() )
-    {
-                $customicons .= $this->create_icon("CustomIcon$row[ID]", $row["URL"], false);
-    }
     
     $currentpath="http://".$_SERVER['HTTP_HOST']."/".basename(getcwd());
 
@@ -82,35 +50,25 @@
                 $href = $currentpath . "/arrow$angle.png";
                 $customicons .= $this->create_icon($id, $href, true);
             }
-    
-    
-    
-    // Main query
-    if ($tripname == "<None>" )   
-      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, null as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";
-    else 
-      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, A2.Name as tripname,A1.comments,A1.imageurl,A1.angle,A1.signalstrength,A1.signalstrengthmax,A1.signalstrengthmin,A1.batterystatus from positions A1 ";
-          
-    $sql = $sql.$cond;
-                
-          
-    $result = $db->exec_sql($sql)->fetchAll();
+            $result = $this->exec_sql(true);
+            $result = $result->fetchAll();
   
     $header = "<?xml version='1.0' encoding='utf-8' ?>";
     $header .= "<kml xmlns='http://earth.google.com/kml/2.0'>";
     $header .="<Document>";   
-    
-    // Styles     
-    $header .=$customicons;
                   
     
     $output ="<NetworkLinkControl><minRefreshPeriod>12</minRefreshPeriod></NetworkLinkControl>";  
     
       $group = "";
+            $iconIds = array();
       
     for ($count = 0; $count < count($result); $count++)
     {
         $row = $result[$count];
+                $this->simulate_old($row);
+                if ($row["FK_Icons_ID"])
+                    $iconIds[] = $row["FK_Icons_ID"];
       $speedMPH = number_format($row['speed']*2.2369362920544,2);
       $speedKPH = number_format($row['speed']*3.6,2); 
       if ($row['altitude'] > 0) 
@@ -352,7 +310,19 @@
     $output .="</Document>";        
     $output .="</kml>";
     
-    $output = $header.$output;
+            // Generate code for custom icons
+            $iconIds = array_unique($iconIds, SORT_NUMERIC);
+            if (count($iconIds) > 0)
+            {
+                // Wrap icon ids in an array as it should add the array itself as a parameter, not each value
+                $params = implode(',', array_fill(0, count($iconIds), '?'));
+                $result = $this->db->exec_sql("SELECT ID, URL FROM icons WHERE ID IN ($params)", $iconIds);
+                while( $row = $result->fetch() )
+                {
+                    $customicons .= $this->create_icon("CustomIcon$row[ID]", $row["URL"], false);
+                }
+            }
+            $output = $header.$customicons.$output;
     
     
             return $output;

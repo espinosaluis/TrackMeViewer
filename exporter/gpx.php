@@ -7,36 +7,7 @@
 
         public function export($showbearings)
         {
-            // Temporarily cache local variables like $db as long as it isn't using $this
-            // A future patch is removing the usage anyway so a more through change is not
-            // necessary.
-            $db = $this->db;
-            $userid = $this->userid;
-            $datefrom = $this->datefrom;
-            $dateto = $this->dateto;
-            $tripname = $this->tripname;
-
-    // Condition
-    $cond = ""; 
-            if (is_null($this->tripid))
-      $cond = "WHERE FK_Trips_ID is null AND A1.FK_USERS_ID='$userid' ";
-            else if ($this->tripid !== true)
-      $cond = "INNER JOIN trips A2 ON A1.FK_Trips_ID=A2.ID AND A2.Name='$tripname' WHERE A1.FK_USERS_ID='$userid' ";
-    else
-      $cond = "LEFT JOIN trips A2 ON A1.FK_Trips_ID=A2.ID WHERE A1.FK_USERS_ID='$userid' ";     
-
-    if ( $datefrom != "" )
-      $cond .=" and DateOccurred>='$datefrom' ";
-    if ( $dateto != "" )
-      $cond .=" and DateOccurred<='$dateto' ";
-      
-    $cond .=" order by dateoccurred desc";
-
-    // Main query
-      $sql = "select DateOccurred,latitude, longitude,speed,altitude,fk_icons_id as customicon, A1.comments,A1.imageurl,A1.angle from positions A1 ";
-
-    $sql = $sql.$cond;
-    $result = $db->exec_sql($sql);
+            $result = $this->exec_sql(false);
 
     $n=0;
     $bounds_lat_min = 0;
@@ -48,6 +19,7 @@
     $trkptdata.="<trkseg>\n";
     while( $row=$result->fetch() )
     {
+                $this->simulate_old($row);
       if(($row['latitude']<$bounds_lat_min && $bounds_lat_min!=0) || $bounds_lat_min==0) { $bounds_lat_min = $row['latitude']; }
       if(($row['latitude']>$bounds_lat_max && $bounds_lat_max!=0) || $bounds_lat_max==0) { $bounds_lat_max = $row['latitude']; }
       if(($row['longitude']<$bounds_lon_min && $bounds_lon_min!=0) || $bounds_lon_min==0) { $bounds_lon_min = $row['longitude']; }
