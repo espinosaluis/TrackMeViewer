@@ -43,7 +43,7 @@
       $trkptdata.="<trkpt lat=\"" . $row['latitude'] . "\" lon=\"" . $row['longitude'] . "\">\n";
       $trkptdata.=" <ele>" . $altitudeM . "</ele>\n";
       $trkptdata.=" <time>".date('Y-m-d',$row['DateOccured'])."T".date('H:i:s',$row['DateOccured'])."Z</time>\n";
-      $trkptdata.=" <desc><![CDATA[Lat.=" . $row['latitude'] . ", Long.=" . $row['logitude'] . ", Alt.=" . $altitudeM . ", Speed=".$speedKPH."Km/h, Course=" . $angle . "deg.]]></desc>\n";
+                $trkptdata.=" <desc><![CDATA[Lat.=$row[Latitude], Long.=$row[Longitude], Alt.=$altitudeM, Speed=$speedKPH" . "km/h, Course=$angle" . "deg.]]></desc>\n";
       $trkptdata.="</trkpt>\n";
       $n++;
     }
