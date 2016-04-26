@@ -27,12 +27,6 @@
 
         public function export($showbearings)
         {
-            // Temporarily cache local variables like $db as long as it isn't using $this
-            // A future patch is removing the usage anyway so a more through change is not
-            // necessary.
-            $username = $this->username;
-
-    
     $customicons = "";  
     
     $currentpath="http://".$_SERVER['HTTP_HOST']."/".basename(getcwd());
@@ -80,10 +74,10 @@
         $altitudeM = number_format(0,2);
       }
       $angle = number_format($row['angle'],2);      
+                $is_last = ($count == count($result) - 1);  // Last pushpin
       $row["UnixDateOccured"] = strtotime($row["DateOccurred"]);
       
-      if ( $count == count($result) - 1) // Last pushpin
-      {
+                if ($is_last) {
         $output .="<LookAt>";           
           $output .="<longitude>".$row['longitude']."</longitude>";   
           $output .="<latitude>".$row['latitude']."</latitude>";
@@ -94,20 +88,28 @@
         
         $output .="<visibility>1</visibility>";
         $output .="<open>0</open>";
+                }
         
         $output .="\n<Placemark>";  
         
         //  $output .="<TimeStamp><when>2007-09-12T15:07:27Z</when></TimeStamp>";
           $output .="\n  <TimeStamp><when>" . strftime("%Y-%m-%dT%TZ", $row['UnixDateOccured']) . "</when></TimeStamp>";
                               
-          $output .="\n  <name>";
+
+                if ($is_last) {
+                    $name = $row['DateOccurred'];
             if ( $row['tripname'] != "" )
-              $output .="Trip: ".$row['tripname']." ";                  
-            $output .=$row['DateOccurred'];                 
-          $output .="</name>";          
+                        $name = "Trip: $row[tripname] $name";
+                } else {
+                    $name = $row['Comments'];
+                }
+
+                if ($name) {
+                    $output .= "\n  <name>$name</name>";
+                }
                     
           $output .="\n  <description>";
-            $output .="<![CDATA[User: <b>".$username."</b><hr>";
+            $output .="<![CDATA[User: <b>".$this->username."</b><hr>";
             $output .="<table><tr><td>Time: ".$row['DateOccurred']."</td></tr>";
             $output .="<tr><td>Trip: ".$row['tripname']."</td></tr>";
             $output .="<tr><td>Speed: ".$speedMPH." MPH (".$speedKPH." km/h)</td></tr>";
@@ -153,124 +155,23 @@
             $output .="</table><hr><b>TrackMe. Created by Luis Espinosa</b><BR>http://www.luisespinosa.com]]>";
           $output .="</description>";
         
-          if ( $row['customicon'] != "" )
-            $output .="\n  <styleUrl>#CustomIcon".$row['customicon']."</styleUrl>";       
-          else
-            $output .="\n  <styleUrl>#IconRed</styleUrl>";                                    
-        
-          $output .="\n  <Point>";                          
-            $output .="\n    <altitudeMode>clampedToGround</altitudeMode>";
-            $output .="\n    <coordinates>".$row['longitude'].",".$row['latitude'].",".$altitudeM."</coordinates>";
-          $output .="\n  </Point>";                         
-          
-        $output .="\n</Placemark>";
-                
-      }
-      else // Rest of the pushpins
-      {
-          $output .="\n<Placemark>";
-          
-          
-      //    $output .="<TimeStamp><when>2007-09-12T15:07:27Z</when></TimeStamp>";         
-          $output .="\n  <TimeStamp><when>" . strftime("%Y-%m-%dT%TZ", $row['UnixDateOccured']) . "</when></TimeStamp>";         
-          
-          if ($row['comments'] != "" )
-          {
-            $output .="\n  <name>";
-            $output .=$row['comments'];
-            $output .="\n  </name>";
-//          } else {
-//            $output .="<name>";
-//            $output .=$row['DateOccurred'];
-//            $output .="</name>";
-          }
-                                          
-          $output .="\n  <description>";
-      //      $output .="<![CDATA[User: <b>".$username."</b><hr>";
-      //      $output .="<table><tr><td>Time: ".$row['DateOccurred']."</td></tr>";
-
-
-            $output .="<![CDATA[Time: <b>".$row['DateOccurred']."</b><hr>";
-            $output .="<table><tr><td>User: ".$username."</td></tr>";
-
-            $output .="<tr><td>Trip: ".$row['tripname']."</td></tr>";
-            $output .="<tr><td>Speed: ".$speedMPH." MPH (".$speedKPH." km/h)</td></tr>";
-
-            if ( $row['altitude'] < 0 )
-              $output .="<tr><td>Altitude: Unknown</td></tr>";
-            else
-              $output .="<tr><td>Altitude: ".$altitudeFeet." ft (".$altitudeM." m)</td></tr>";            
-                          
-            if ($row['comments'] != "" )
-              $output .="<tr><td>Comments: ".$row['comments']."</td></tr>";
-            
-            if ($row['signalstrength'] != "" )
-            {
-              $output .="<tr><td>Signal Strength: ".$row['signalstrength']."dBm";
-              if ($row['signalstrengthmax'] != "" && $row['signalstrengthmin'] != "" )
-              {
-                 $RANGE=($row['signalstrengthmax']-$row['signalstrengthmin'])/5;
- 
-                 if ( $row['signalstrength'] >= $row['signalstrengthmax'] - $RANGE )
-                    $output .=" (Excellent)";
-                 else if ( $row['signalstrength'] >= $row['signalstrengthmax'] - $RANGE*2 )
-                    $output .=" (Very Good)";
-                 else if ( $row['signalstrength'] >= $row['signalstrengthmax'] - $RANGE*3 )
-                    $output .=" (Good)";
-                 else if ( $row['signalstrength'] >= $row['signalstrengthmax'] - $RANGE*4 )
-                    $output .=" (Poor)";                    
-                 else 
-                    $output .=" (Very Poor)";                                                                         
-              }
-
-              $output .="</td></tr>";                         
-            }
-            
-            if ($row['batterystatus'] != "" )
-            {
-              $output .="<tr><td>Battery Status: ".$row['batterystatus']."%</td></tr>";
-            }
-            
-
-            if ($row['imageurl'] != "" )
-              $output .="<tr><td><a href='".$row['imageurl']."'><img src='".$row['imageurl']."' height='200' width='240'></a></td></tr>";                         
-              
-            $output .="</table><hr><b>TrackMe. Created by Luis Espinosa</b><BR>http://www.luisespinosa.com]]>";
-          $output .="\n  </description>";
-          
-          if ( $count == 0 )  // First pushpin
-            $output .="\n  <styleUrl>#IconGreen</styleUrl>";                            
-          else
-          {
-            if ( $row['customicon'] != "" )
-              $output .="\n  <styleUrl>#CustomIcon".$row['customicon']."</styleUrl>";
-            else
-            {
+                $icon = "CustomIcon$row[FK_Icons_ID]";
+                if ($is_last) {
+                    if ($row["FK_Icons_ID"] == "")
+                        $icon = "IconRed";
+                } else if ($count == 0) {
+                    $icon = "IconGreen";
+                } else if ($row['FK_Icons_ID'] == "") {
                 if ( $row['angle'] != "" && $showbearings == 1 )
                 {                 
-                  if ( $row['angle']<22.5 )
-                    $output .="<styleUrl>#IconArrow0</styleUrl>";                           
-                  else if ( $row['angle']<67.5 )
-                    $output .="<styleUrl>#IconArrow45</styleUrl>";      
-                  else if ( $row['angle']<112.5 )
-                    $output .="<styleUrl>#IconArrow90</styleUrl>";                          
-                  else if ( $row['angle']<157.5 )
-                    $output .="<styleUrl>#IconArrow135</styleUrl>";                                             
-                  else if ( $row['angle']<202.5 )
-                    $output .="<styleUrl>#IconArrow180</styleUrl>";                                             
-                  else if ( $row['angle']<247.5 )
-                    $output .="<styleUrl>#IconArrow225</styleUrl>";                                                                 
-                  else if ( $row['angle']<292.5 )
-                    $output .="<styleUrl>#IconArrow270</styleUrl>";                                                                                     
-                  else if ( $row['angle']<337.5 )
-                    $output .="<styleUrl>#IconArrow315</styleUrl>";                                                                                                         
-                  else
-                    $output .="<styleUrl>#IconArrow0</styleUrl>";                                             
+                        $direction = (int) (($row['Angle'] - 22.5) / 45) % 8;
+                        $direction *= 45;
+                        $icon = "IconArrow$direction";
                 }
                 else
-                  $output .="<styleUrl>#IconYellow</styleUrl>";                           
-            }
-          }
+                        $icon = "IconYellow";
+                }
+                $output .="\n  <styleUrl>#$icon</styleUrl>";
         
           $output .="\n  <Point>";                          
             $output .="\n    <altitudeMode>clampedToGround</altitudeMode>";
@@ -280,7 +181,6 @@
           $output .="\n  </Point>";                         
           
         $output .="\n</Placemark>";       
-      }
       
       // Since we locked the altitude to the ground only send Lon and Lat to the path
       $group.=$row['longitude'].",".$row['latitude']." ";
