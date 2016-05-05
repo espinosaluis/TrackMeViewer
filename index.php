@@ -820,8 +820,8 @@ if(isset($_REQUEST[last_location]))
 		    $html .= " <div id=\"content\">\n";
                     $html .= " <div id=\"map\"></div>\n <!-- astrovue -->";
                     $html .= " <div class=\"credit\">Powered by <a href=\"http://www.luisespinosa.com/trackme_eng.html\">TrackMe (v" . $version_text . ")</a> by <a href=\"http://www.luisespino
-sa.com/central_eng.php\">Luis Espinosa</a></div>/n";
-                    $html .= " </div>/n";
+sa.com/central_eng.php\">Luis Espinosa</a></div>\n";
+                    $html .= " </div>\n";
 
                 if ($googleview === "G_NORMAL_MAP")
                     $googleview = "ROADMAP";
