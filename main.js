@@ -69,6 +69,17 @@ Trip.prototype.totalDistance = function()
         return 0;
 }
 
+Trip.prototype.avgSpeed = function()
+{
+    // Return m/s, the same as data.speed and this.totalSpeed
+    if (this.markers.length > 0) {
+        var totalTime = (this.lastMarker().data.date.getTime() - this.markers[0].data.date.getTime()) / 1000;
+        return this.totalDistance() * 1000 / totalTime;
+    } else {
+        return 0;
+    }
+}
+
 function getIcon(data, lastMarker)
 {
     if (data.index == 0)
@@ -116,7 +127,7 @@ function createMarkerText(data)
                 "</td><td align='right'><b>" + lang.get('balloon-total-time') + ": </b>" +
                 data.totalTime + "</td></tr>");
     speed = toMiles(data.speed * 3.6);
-    avgSpeed = toMiles(data.avgSpeed * 3.6);
+    avgSpeed = toMiles(data.trip.avgSpeed() * 3.6);
     totalDistance = toMiles(data.distanceToHere);
     altitude = data.altitude;
     if (!useMetric) {

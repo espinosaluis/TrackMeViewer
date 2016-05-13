@@ -963,12 +963,6 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>\n";
 
                 $result = $query->fetchAll();
                 $count = count($result);
-                $avg_speed = 0;
-                foreach ($result as $row)
-                {
-                    $avg_speed += $row['Speed'];
-                }
-                $avg_speed /= $count;
 
                 if ($tripname == "Any")
                 {
@@ -1009,7 +1003,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>\n";
 
                     $formattedTS = escape_js_str(date($date_format, strtotime($row['DateOccurred'])));
 
-                    $html .= "        trip.appendMarker({latitude: $row[Latitude], longitude: $row[Longitude], timestamp: '$row[DateOccurred]', speed: $row[Speed], avgSpeed: $avg_speed, altitude: $row[Altitude], comment: '$row[Comments]', photo: '$row[ImageURL]' $dataParameter, formattedTS: '$formattedTS'}, $parameter);\n";
+                    $html .= "        trip.appendMarker({latitude: $row[Latitude], longitude: $row[Longitude], timestamp: '$row[DateOccurred]', speed: $row[Speed], altitude: $row[Altitude], comment: '$row[Comments]', photo: '$row[ImageURL]' $dataParameter, formattedTS: '$formattedTS'}, $parameter);\n";
                 }
 
 		if(isset($_REQUEST[last_location])) //show last location is on
