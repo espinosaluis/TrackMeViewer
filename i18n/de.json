@@ -60,6 +60,7 @@
     "balloon-avg-speed": "Durchschnittstempo",
     "balloon-total-distance": "Entfernung",
     "balloon-point": "Punkt",
+    "balloon-point-val": "{0} von {1}",
     "balloon-comment": "Kommentar",
     "unit-speed-imperial": "mph",
     "unit-distance-imperial": "Meilen",

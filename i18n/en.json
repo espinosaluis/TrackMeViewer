@@ -59,6 +59,7 @@
     "balloon-avg-speed": "Avg Speed",
     "balloon-total-distance": "Total Dist.",
     "balloon-point": "Point",
+    "balloon-point-val": "{0} of {1}",
     "balloon-comment": "Comments",
     "unit-speed-imperial": "mph",
     "unit-distance-imperial": "miles",
