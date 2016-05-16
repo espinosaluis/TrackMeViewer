@@ -963,16 +963,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>\n";
 
                 $result = $query->fetchAll();
                 $count = count($result);
-                $avg_speed = 0;
-                foreach ($result as $row)
-                {
-                    $avg_speed += $row['Speed'];
-                }
-                $avg_speed /= $count;
 
-                $avg_kph = $avg_speed * 3.6;
-                $total_distance = 0;
-                $total_time = 0;
                 if ($tripname == "Any")
                 {
                 $tripnameText = $trip_any_text;
@@ -989,25 +980,9 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>\n";
                 for ($rounds = 1; $rounds <= $count; $rounds++)
                 {
                     $row = $result[$rounds - 1];
-                    $kph     = $row['Speed'] * 3.6;
                     // escape the strings for JS
                     $row['ImageURL'] = escape_js_str($row['ImageURL']);
                     $row['Comments'] = escape_js_str($row['Comments']);
-
-                    if($rounds == 1)
-                    {
-                        $holdtime = $row['DateOccurred'];
-                    }
-                    else
-                    {
-                        $leg_distance     = distance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "k");
-                        $total_distance  += $leg_distance;
-                        $leg_time         = $row['DateOccurred'];
-                        $total_time       = get_elapsed_time($holdtime, $leg_time);
-                    }
-                    $total_time       = gmdate("H:i:s", $total_time);
-                    $total_miles      = $total_distance / 1.609344;
-                    $total_kilometers = $total_distance;
 
                     if (!is_null($row['URL']))
                     {
@@ -1028,9 +1003,7 @@ sa.com/central_eng.php\">Luis Espinosa</a></div>\n";
 
                     $formattedTS = escape_js_str(date($date_format, strtotime($row['DateOccurred'])));
 
-                    $html .= "        trip.appendMarker({latitude: $row[Latitude], longitude: $row[Longitude], timestamp: '$row[DateOccurred]', totalTime: '$total_time', speed: $kph, avgSpeed: $avg_kph, altitude: $row[Altitude], totalDistance: $total_distance, comment: '$row[Comments]', photo: '$row[ImageURL]' $dataParameter, formattedTS: '$formattedTS'}, $parameter);\n";
-                    $holdlat  = $row['Latitude'];
-                    $holdlong = $row['Longitude'];
+                    $html .= "        trip.appendMarker({latitude: $row[Latitude], longitude: $row[Longitude], timestamp: '$row[DateOccurred]', speed: $row[Speed], altitude: $row[Altitude], comment: '$row[Comments]', photo: '$row[ImageURL]' $dataParameter, formattedTS: '$formattedTS'}, $parameter);\n";
                 }
 
 		if(isset($_REQUEST[last_location])) //show last location is on
