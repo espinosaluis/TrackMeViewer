@@ -9,14 +9,18 @@
 
 
     // Database related functions
+    function toConnectionArray($DBIP, $DBNAME, $DBUSER, $DBPASS)
+    {
+        return array('host' => $DBIP, 'name' => $DBNAME,
+                     'user' => $DBUSER, 'pass' => $DBPASS);
+    }
 
     function connect($connection=false)
     {
         if ($connection === false)
         {
             global $DBIP, $DBNAME, $DBUSER, $DBPASS;
-            $connection = array('host' => $DBIP, 'name' => $DBNAME,
-                                'user' => $DBUSER, 'pass' => $DBPASS);
+            $connection = toConnectionArray($DBIP, $DBNAME, $DBUSER, $DBPASS);
         }
         return new TrackMePDO("mysql:host=$connection[host];dbname=$connection[name]",
                               $connection["user"], $connection["pass"]);

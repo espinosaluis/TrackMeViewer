@@ -1,22 +1,24 @@
 <?php
 
 	require_once("config.php");
+    require_once("database.php");
 	
+
+    function run($connection)
+    {
   $requireddb = urldecode($_GET["db"]);     
   if ( $requireddb == "" || $requireddb < 8 )
   {
-    	echo "Result:5";
-    	die;
+            return "Result:5";
   }	
 	
 	
-	if(!@mysql_connect("$DBIP","$DBUSER","$DBPASS"))
+        if(!@mysql_connect("$connection[host]","$connection[user]","$connection[pass]"))
 	{
-		echo "Result:4";
-		die();
+            return "Result:4";
 	}
 	
-	mysql_select_db("$DBNAME");
+        mysql_select_db("$connection[name]");
 	
 		
 	// Check username and password
@@ -26,8 +28,7 @@
 	// User not specified
 	if ( $username == "" || $password == "" )
 	{
-		echo "Result:3";
-		die();
+            return "Result:3";
 	}
 	
 	$salt = "trackmeuser";
@@ -51,8 +52,7 @@
 		$nume=mysql_num_rows($result);	
 		if ( $nume > 0 )
 		{
-			echo "Result:1"; // user exists, password incorrect.
-			die();
+                return "Result:1"; // user exists, password incorrect.
 		}					
 		
 		mysql_query("Insert into users (username,password) values('$username','$password')");			
@@ -80,8 +80,7 @@
 	
 	if ($action=="noop")
 	{
-		echo "Result:0";
-		die();		
+            return "Result:0";
 	}
 			
 	
@@ -883,6 +882,12 @@
 		 echo "Result:0";
   	 die();			 	
 	}	
+    }
+
+    // Run by default when included/required, unless __norun is set to true
+    if (!isset($__norun) || !$__norun) {
+        echo run(toConnectionArray($DBIP, $DBNAME, $DBUSER, $DBPASS));
+    }
 
 ?>
 
