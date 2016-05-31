@@ -77,10 +77,10 @@
 
         function create_login($username, $password)
         {
-            $password = $this->static_hash($password);
+            $hash = $this->static_hash($password);
             $this->exec_sql("INSERT INTO users (username, password) ".
                             "VALUES (?, ?)",
-                            $username, $password);
+                            $username, $hash);
             return $this->valid_login($username, $password);
         }
 
@@ -89,7 +89,7 @@
             $user = $this->exec_sql("Select ID, password, Enabled " .
                                     "FROM users WHERE username=?",
                                     $username)->fetch();
-            if (is_null($user))
+            if ($user === false)
             {
                 return NO_USER;
             }
