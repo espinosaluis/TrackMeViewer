@@ -68,6 +68,11 @@
             $db = null;
         }
 
+        public function testDisabled() {
+            $_GET["u"] = "Disabled";
+            $this->assertEquals("User disabled. Please contact system administrator", self::runRequests());
+        }
+
         public function testNoop()
         {
             $this->assertEquals("Result:0", self::runRequests());

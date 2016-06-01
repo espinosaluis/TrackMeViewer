@@ -222,4 +222,5 @@ INSERT INTO `positions` VALUES(5344,3,NULL,NULL,58.0,13.0,0.0,0.0,NULL,'2015-12-
 INSERT INTO `trips` VALUES(15,3,'Hi''s Bars',NULL,0);
 INSERT INTO `trips` VALUES(16,3,'04 Trollhättan',NULL,0);
 
+INSERT INTO `users` VALUES(2,'Disabled','63abd2c6d9cbde32f451db430ebe6ea7','2015-12-01 12:30:22',0);
 INSERT INTO `users` VALUES(3,'track','63abd2c6d9cbde32f451db430ebe6ea7','2015-12-01 12:30:22',1);

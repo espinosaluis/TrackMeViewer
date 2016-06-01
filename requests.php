@@ -42,8 +42,7 @@
 		$enabled = $row['Enabled'];
 		if ($enabled == 0 )
 		{
-			echo "User disabled. Please contact system administrator";
-			die();
+            return "User disabled. Please contact system administrator";
 		}
 	}
 	else
