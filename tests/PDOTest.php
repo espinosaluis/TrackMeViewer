@@ -30,5 +30,14 @@
             $this->db->exec_sql("DELETE FROM users WHERE username=?", $username);
         }
 
+        public function testExecSqlParameters() {
+            $no_parameters = $this->db->exec_sql("SELECT username FROM users WHERE username='track'")->fetchAll();
+            $this->assertEquals(array(array(0 => "track", "username" => "track")), $no_parameters);
+            $as_parameters = $this->db->exec_sql("SELECT username FROM users WHERE username=?", "track")->fetchAll();
+            $this->assertEquals($no_parameters, $as_parameters);
+            $as_list = $this->db->exec_sql("SELECT username FROM users WHERE username=?", array("track"))->fetchAll();
+            $this->assertEquals($as_parameters, $as_list);
+        }
+
     }
 ?>
