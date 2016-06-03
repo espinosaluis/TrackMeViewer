@@ -20,7 +20,7 @@ before_script:
   - mysql -u track -ppassword tracking < tests/test_data.sql
 
 script:
-  - phpunit tests/
+  - phpunit -v tests/
 
 notifications:
   email: false
