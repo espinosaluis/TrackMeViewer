@@ -1,6 +1,7 @@
 <?php
 
-	require_once("config.php");
+    define("R_OK", 0);
+
     require_once("database.php");
 	
 
@@ -13,17 +14,15 @@
   }	
 	
 	
-        if(!@mysql_connect("$connection[host]","$connection[user]","$connection[pass]"))
+        $db = connect_save($connection);
+        if (is_null($db))
 	{
             return "Result:4";
 	}
 	
-        mysql_select_db("$connection[name]");
-	
-		
 	// Check username and password
-	$username = mysql_real_escape_string($_GET["u"]);
-	$password = mysql_real_escape_string($_GET["p"]);
+        $username = $_GET["u"];
+        $password = $_GET["p"];
 	
 	// User not specified
 	if ( $username == "" || $password == "" )
@@ -31,44 +30,18 @@
             return "Result:3";
 	}
 	
-	$salt = "trackmeuser";
-	$password = MD5($salt.$password);
-	
-	$result=mysql_query("Select ID, Enabled FROM users WHERE username = '$username' and password='$password'");
-	if ( $row=mysql_fetch_array($result) )
-	{
-		$userid=$row['ID'];		// Good, user and password are correct.
-		
-		$enabled = $row['Enabled'];
-		if ($enabled == 0 )
-		{
+        $userid = $db->valid_login($username, $password);
+        switch ($userid) {
+        case NO_USER:
+            $userid = $db->create_login($username, $password);
+            if ($userid < 0)
+                return result(2);
+            break;
+        case INVALID_CREDENTIALS:
+            return result(1);  // user exists, password incorrect.
+        case LOCKED_USER:
             return "User disabled. Please contact system administrator";
-		}
-	}
-	else
-	{
-		$result=mysql_query("Select 1 FROM users WHERE username = '$username'");
-		$nume=mysql_num_rows($result);	
-		if ( $nume > 0 )
-		{
-                return "Result:1"; // user exists, password incorrect.
-		}					
-		
-		mysql_query("Insert into users (username,password) values('$username','$password')");			
-
-		$result=mysql_query("Select ID FROM users WHERE username = '$username' and password='$password'");
-		if ( $row=mysql_fetch_array($result) )
-		{
-			$userid=$row['ID'];	// User created correctly.	
-		}
-		else
-		{		
-			echo "Result:2"; // Unable to find user that was just created.
-			die();		
-		}
-		
-	}	
-	
+        }
 	
 	
 	$tripname = urldecode($_GET["tn"]);	
@@ -102,20 +75,20 @@
 	
 	if( $action=="geticonlist")
 	{
-
-		$iconlist = "";
-		$result = mysql_query("select name from icons order by name");					
-		while( $row=mysql_fetch_array($result) )
-		{
-			$iconlist.=$row['name']."|";
-		}
-
-		$iconlist = substr($iconlist, 0, -1);		  
-		echo "Result:0|$iconlist";
-		die();
+            $result = $db->exec_sql("SELECT Name FROM icons ORDER BY Name")->fetchAll(PDO::FETCH_COLUMN, 0);
+            return success($result);
 	}
 		
 	
+
+        // TODO: As long as this is both using PDO and mysql, start connection here in parallel
+        //       mysql is not used before this line so start as late as possible
+        if(!@mysql_connect("$connection[host]","$connection[user]","$connection[pass]"))
+	{
+            return "Result:4";
+	}
+
+        mysql_select_db("$connection[name]");
 
 
 	if($action=="upload")
@@ -886,6 +859,20 @@
     // Run by default when included/required, unless __norun is set to true
     if (!isset($__norun) || !$__norun) {
         echo run(toConnectionArray($DBIP, $DBNAME, $DBUSER, $DBPASS));
+    }
+
+    function success($message="")
+    {
+        return result(R_OK, $message);
+    }
+
+    function result($id=R_OK, $message="")
+    {
+        if (is_array($message))
+            $message = implode("|", $message);
+        if ($message)
+            $message = "|$message";
+        return "Result:$id$message";
     }
 
 ?>

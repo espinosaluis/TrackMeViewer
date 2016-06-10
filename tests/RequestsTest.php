@@ -26,6 +26,16 @@
             return run(self::$connection);
         }
 
+        private function assertResult($result, $code=0, $values=0) {
+            $parts = explode("|", $result);
+            $this->assertEquals("Result:$code", $parts[0]);
+            if ($values === true) {
+                $this->assertGreaterThan(1, count($parts));
+            } else {
+                $this->assertEquals($values + 1, count($parts));
+            }
+        }
+
         public function setUp()
         {
             self::defineGET();
@@ -76,6 +86,12 @@
         public function testNoop()
         {
             $this->assertEquals("Result:0", self::runRequests());
+        }
+
+        public function testGetIconList()
+        {
+            $_GET["a"] = "geticonlist";
+            $this->assertResult(self::runRequests(), 0, true);
         }
 
     }
