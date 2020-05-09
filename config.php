@@ -16,13 +16,13 @@
     //////////////////////////////////////////////////////////////////////////////
 
     // Database Information
-    $DBIP   = "localhost";
-    $DBUSER = "";
-    $DBPASS = "";
-    $DBNAME = "";
+    $DBIP         = "localhost";
+    $DBUSER       = "Replace with MySQL User Name";
+    $DBPASS       = "Replace with MySQL Password";
+    $DBNAME       = "Replace with MySQL Database Name";
 
     // Some paps/tiles provider require "api keys" or "acccess tokens". See tileprovider.php for details
-    $googleapikey = "";
+    $googleapikey = "Replace with your Google API Key";
     $mapboxaccesstoken = "";
     $thunderforestapikey = "";
     $tomtomapikey = "";
