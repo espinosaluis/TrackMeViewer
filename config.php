@@ -1,9 +1,9 @@
 <?php
     //////////////////////////////////////////////////////////////////////////////
     //
-    // TrackMe Google Maps Display Configuration
-    // Version: 1.20
-    // Date:    12/22/2007
+    // TrackMe Maps Display Configuration
+    // Version: 1.30
+    // Date:    04/14/2010
     // Time:    16:00:00
     //
     // TrackMe built by Staryon
@@ -16,59 +16,53 @@
     //////////////////////////////////////////////////////////////////////////////
 
     // Database Information
-    $DBIP         = "localhost";
-    $DBUSER       = "Replace with MySQL User Name";
-    $DBPASS       = "Replace with MySQL Password";
-    $DBNAME       = "Replace with MySQL Database Name";
+    $DBIP   = "localhost";
+    $DBUSER = "root";
+    $DBPASS = "***REMOVED***";
+    $DBNAME = "***REMOVED***";
 
+    // Some paps/tiles provider require "api keys" or "acccess tokens". See tileprovider.php for details
+    $googleapikey = "***REMOVED***";
+    $mapboxaccesstoken = "***REMOVED***";
+    $thunderforestapikey = "***REMOVED***";
+    $tomtomapikey = "***REMOVED***";
+    $hereapikey = "***REMOVED***";
 
-
-    // Google API Key. Obtain from http://www.google.com/apis/maps/signup.html
-    $googleapikey = "Replace with your Google API Key";
-    // if you have Google Analytics Account. Obtain from https://www.google.com/analytics/home/?et=reset&hl=en-US
+    // If you have Google Analytics Account. Obtain from https://www.google.com/analytics/home/?et=reset&hl=en-US
     // or just leave blank if you do not want to use it
-    $googleanalyticsaccount="";
+    $googleanalyticsaccount = "";
 
-    // Google Maps default view (ROADMAP, SATELLITE, HYBRID or TERRAIN)
-    $googleview   = "ROADMAP";
-    //to show all map points when you arrive at the page and when you change trips (yes or no)
-    $showmap="yes";
+    // Show bearing arrows on map ("yes" or "no")
+    $showbearings = "yes";
 
-    // Map style
-    $mapwidth     = "700px";
-    $mapheight    = "500px";
-    $mapborder    = "1px";
-    $bordercolor  = "#000";
-    $mapalign     = "center";
+    // Display crosshair at map center ("yes" or "no")
+    $crosshair = "yes";
 
-    // Background color for map display
-    $bgcolor      = "#cccccc";
+    // Click to center map ("yes" or "no")
+    $clickcenter = "yes";
 
-    // Show bearing arrows on map (yes or no)
-    $show_bearings ="yes";
+    // Units ("imperial" or "metric")
+    $units = "metric";
 
-    // Display crosshair at map center (yes or no)
-    $crosshair    = "yes";
+    // Language ("english", "italian", "german", "french" or "spanish")
+    $language = "english";
 
-    // Click to center map (yes or no)
-    $clickcenter  = "yes";
+    // Tile Provider (see tileprovider.php for details - use one of the array keys)
+    $tileprovider = "OpenStreetMap Mapnik";
+
+    // Shall a Public Transport map be overlayed on the selected map ("yes" or "no")
+    $tilePT = "no";
 
     // Map auto-refresh in seconds (0 for manual refresh)
-    $refresh      = "120";
+    $refresh = "120";
 
-    // Public Page Access (yes or no)
-    $public_page  = "yes";
+    // Public Page Access ("yes" or "no")
+    $publicpage = "no";
 
     // Date Display Format
     // Must be valid php date format (http://us.php.net/date)
-    $date_format  = "d/m/Y H:i:s";
+    $dateformat = "d.m.Y H:i:s";
 
-    // Units (imperial or metric)
-    $units       = "metric";
-
-    // Language (English, Italian, German, French or Spanish) //trackmeIT
-    $language     = "english";
-
-    // Allow customization of display (yes or no)
-    $allow_custom = "yes";
+    // Allow customization of display ("yes" or "no")
+    $allowcustom = "yes";
 ?>
