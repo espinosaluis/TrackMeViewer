@@ -1,937 +1,1287 @@
 <?php
-	session_start();
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
-	require_once("config.php");
+	$versiontext = "3.5";
+
 	require_once("database.php");
 	require_once("tileprovider.php");
 
-	if (dirname($_SERVER['PHP_SELF'])=="/") {
-		$siteroot ="http://" . $_SERVER['HTTP_HOST'] . ":" .  $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
-		$siteroot ="http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
+	session_start();
+	$debug0 = false; $debug1 = false; $debug2 = false; $debug3 = false; $debug4 = false;
+
+	if (!ini_get('date.timezone')) {
+		date_default_timezone_set('GMT');
+	}
+	$_REQUEST = array_merge($_GET, $_POST);
+
+	if (dirname($_SERVER['PHP_SELF']) == "/") {
+		$siteroot ="http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "index.php";
 	} else {
-		$siteroot ="http://" . $_SERVER['HTTP_HOST'] . ":" .  $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/";
-		$siteroot ="http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/";
+		$siteroot ="http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/index.php";
 	}
 
-	$html = "";
-	(isset($_REQUEST["action"])) ? $action = $_REQUEST["action"] : $action = null;
-	(isset($_REQUEST["livetracking"])) ? $livetracking = $_REQUEST["livetracking"] === "yes" : $livetracking = null;
+	if ($debug0) debug2console("\$_REQUEST[".count($_REQUEST, COUNT_RECURSIVE)."]=", $_REQUEST);
+	if ($debug0) debug2console("\$_GET[".count($_GET, COUNT_RECURSIVE)."]=", $_GET);
+	if ($debug0) debug2console("\$_POST[".count($_POST, COUNT_RECURSIVE)."]=", $_POST);
+	if ($debug4) debug2console("\$_SERVER[".count($_SERVER, COUNT_RECURSIVE)."]=", $_SERVER);
+	if ($debug0) debug2console("\$_COOKIE[".count($_COOKIE, COUNT_RECURSIVE)."]=", $_COOKIE);
+	if ($debug0) debug2console("\$_ENV[".count($_ENV, COUNT_RECURSIVE)."]=", $_ENV);
 
-	if (isset($_COOKIE["showbearings"])) $showbearings = $_COOKIE["showbearings"];
-	if (isset($_COOKIE["crosshair"]))    $crosshair    = $_COOKIE["crosshair"];
-	if (isset($_COOKIE["clickcenter"]))  $clickcenter  = $_COOKIE["clickcenter"];
-	if (isset($_COOKIE["language"]))     $language     = $_COOKIE["language"];
-	if (isset($_COOKIE["units"]))        $units        = $_COOKIE["units"];
-	if (isset($_COOKIE["tileprovider"])) $tileprovider = $_COOKIE["tileprovider"];
-	if (isset($_COOKIE["tilePT"]))       $tilePT       = $_COOKIE["tilePT"];
+	// Attributes use: config.php values or Default values ---overwrittenby---> Cookies values ---overwrittenby---> Request values
+	// config.php attributes Default values
+	require("config.php");
+	// Non-config.php attributes Default values
+	$tripID           = null;
+	$tripgroup        = "";
+	$filterwith       = "None";
+	$filterstart      = null;
+	$filterend        = null;
+	$livetracking     = 0;
+	$chartdisplay     = 0;
+	$attributedisplay = 0;
+	$zoomlevel        = 11;
+	$navigationwidth  = "210px";
+	$ID               = null;
+	$username         = null;
+	$password         = null;
+	$action           = null;
 
-	if ($action == "form_options") {
-		(isset($_REQUEST["setshowbearings"])) ? (($_REQUEST["setshowbearings"] == "on") ? $showbearings = "yes" : $showbearings = "no") : $showbearings = "no";
-		(isset($_REQUEST["setcrosshair"]))    ? (($_REQUEST["setcrosshair"] == "on")    ? $crosshair    = "yes" : $crosshair    = "no") : $crosshair    = "no";
-		(isset($_REQUEST["setclickcenter"]))  ? (($_REQUEST["setclickcenter"] == "on")  ? $clickcenter  = "yes" : $clickcenter  = "no") : $clickcenter  = "no";
-		                                                                                  $language     = $_REQUEST["setlanguage"];
-		                                                                                  $units        = $_REQUEST["setunits"];
-		                                                                                  $tileprovider = $_REQUEST["settileprovider"];
-		(isset($_REQUEST["settilePT"]))       ? (($_REQUEST["settilePT"] == "on")       ? $tilePT       = "yes" : $tilePT       = "no") : $tilePT       = "no";
-	}
-	setcookie("showbearings", $showbearings, 2147483647, "/");
-	setcookie("crosshair",    $crosshair,    2147483647, "/");
-	setcookie("clickcenter",  $clickcenter,  2147483647, "/");
-	setcookie("language",     $language,     2147483647, "/");
-	setcookie("units",        $units,        2147483647, "/");
-	setcookie("tileprovider", $tileprovider, 2147483647, "/");
-	setcookie("tilePT",       $tilePT,       2147483647, "/");
+	// Cookies values overwrite initial values
+	if (isset($_COOKIE['tripID']))           $tripID           = $_COOKIE['tripID'];
+	if (isset($_COOKIE['tripgroup']))        $tripgroup        = $_COOKIE['tripgroup'];
+	if (isset($_COOKIE['filterwith']))       $filterwith       = $_COOKIE['filterwith'];
+	if (isset($_COOKIE['filterstart']))      $filterstart      = $_COOKIE['filterstart'];
+	if (isset($_COOKIE['filterend']))        $filterend        = $_COOKIE['filterend'];
+	if (isset($_COOKIE['livetracking']))     $livetracking     = $_COOKIE['livetracking'];
+	if (isset($_COOKIE['chartdisplay']))     $chartdisplay     = $_COOKIE['chartdisplay'];
+	if (isset($_COOKIE['attributedisplay'])) $attributedisplay = $_COOKIE['attributedisplay'];
+	if (isset($_COOKIE['interval']))         $interval         = $_COOKIE['interval'];
+	if (isset($_COOKIE['zoomlevel']))        $zoomlevel        = $_COOKIE['zoomlevel'];
+	if (isset($_COOKIE['navigationwidth']))  $navigationwidth  = $_COOKIE['navigationwidth'];
+	if (isset($_COOKIE['linecolor']))        $linecolor        = $_COOKIE['linecolor'];
+	if (isset($_COOKIE['showbearings']))     $showbearings     = $_COOKIE['showbearings'];
+	if (isset($_COOKIE['markertype']))       $markertype       = $_COOKIE['markertype'];
+	if (isset($_COOKIE['crosshair']))        $crosshair        = $_COOKIE['crosshair'];
+	if (isset($_COOKIE['clickcenter']))      $clickcenter      = $_COOKIE['clickcenter'];
+	if (isset($_COOKIE['language']))         $language         = $_COOKIE['language'];
+	if (isset($_COOKIE['units']))            $units            = $_COOKIE['units'];
+	if (isset($_COOKIE['tileprovider']))     $tileprovider     = $_COOKIE['tileprovider'];
+	if (isset($_COOKIE['tilePT']))           $tilePT           = $_COOKIE['tilePT'];
+
+	// Request values overwrite initial and cookies values
+	if (isset($_REQUEST['ID']))                  $ID               = $_REQUEST['ID'];
+	if (isset($_REQUEST['username']))            $username         = $_REQUEST['username'];
+	if (isset($_REQUEST['password']))            $password         = $_REQUEST['password'];
+	if (isset($_REQUEST['action']))              $action           = $_REQUEST['action'];
+	if (isset($_REQUEST['settripID']))           $tripID           = $_REQUEST['settripID'];
+	if (isset($_REQUEST['settripgroup']))        $tripgroup        = $_REQUEST['settripgroup'];
+	if (isset($_REQUEST['setfilterwith']))       $filterwith       = $_REQUEST['setfilterwith'];
+	if (isset($_REQUEST['setfilterstart']))      $filterstart      = $_REQUEST['setfilterstart'];
+	if (isset($_REQUEST['setfilterend']))        $filterend        = $_REQUEST['setfilterend'];
+	if (isset($_REQUEST['setlivetracking']))     $livetracking     = $_REQUEST['setlivetracking'];
+	if (isset($_REQUEST['setchartdisplay']))     $chartdisplay     = $_REQUEST['setchartdisplay'];
+	if (isset($_REQUEST['setattributedisplay'])) $attributedisplay = $_REQUEST['setattributedisplay'];
+	if (isset($_REQUEST['interval']))            $interval         = $_REQUEST['interval'];
+	if (isset($_REQUEST['zoomlevel']))           $zoomlevel        = $_REQUEST['zoomlevel'];
+	if (isset($_REQUEST['navigationwidth']))     $navigationwidth  = $_REQUEST['navigationwidth'];
+	if (isset($_REQUEST['setlinecolor']))        $linecolor        = $_REQUEST['setlinecolor'];
+	if (isset($_REQUEST['setshowbearings']))     $showbearings     = $_REQUEST['setshowbearings'];
+	if (isset($_REQUEST['setmarkertype']))       $markertype       = $_REQUEST['setmarkertype'];
+	if (isset($_REQUEST['setcrosshair']))        $crosshair        = $_REQUEST['setcrosshair'];
+	if (isset($_REQUEST['setclickcenter']))      $clickcenter      = $_REQUEST['setclickcenter'];
+	if (isset($_REQUEST['setlanguage']))         $language         = $_REQUEST['setlanguage'];
+	if (isset($_REQUEST['setunits']))            $units            = $_REQUEST['setunits'];
+	if (isset($_REQUEST['settileprovider']))     $tileprovider     = $_REQUEST['settileprovider'];
+	if (isset($_REQUEST['settilePT']))           $tilePT           = $_REQUEST['settilePT'];
+
+	if ($debug0) debug2console("Attribs:", "action=$action ID=$ID username=$username password=$password interval=$interval zoomlevel=$zoomlevel");
+	if ($debug0) debug2console("Attribs:", "livetracking=$livetracking chartdisplay=$chartdisplay attributedisplay=$attributedisplay linecolor=$linecolor markertype=$markertype showbearings=$showbearings crosshair=$crosshair clickcenter=$clickcenter language=$language units=$units tileprovider=$tileprovider tilePT=$tilePT");
+	if ($debug0) debug2console("Attribs:", "tripID=$tripID tripgroup=$tripgroup filterwith=$filterwith filterstart=$filterstart filterend=$filterend");
 
 	require_once("language.php");
 
 	try {
 		$db = connect();
 	} catch (PDOException $e) {
-		$db = null;
 		$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
 		$html .= " <head>\n";
 		$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
 		$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
-		$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
+		$html .= "  <title>$windowtitle (v$versiontext)</title>\n";
 		$html .= " </head>\n";
 		$html .= " <body>\n";
-		$html .= "  <div align=center>\n";
+		$html .= "  <div align=\"center\">\n";
 		$html .= "   $database_fail_text<br>\n";
 		$html .= "   <br>\n";
-		$html .= "   " . $e->getMessage() . "<br>\n";
-		$html .= "   <br>\n";
-		$html .= "   <br>\n";
-		$html .= "   <br>\n";
-		$html .= "   <br>\n";
+		$html .= "   " . $e->getMessage() . "<br>" . $e . "\n";
+		$html .= "  </div>\n";
+		$html .= " </body>\n";
+		$html .= "</html>\n";
+		print $html;
+		exit;
 	}
 
-//	Delete trip
-	if (isset($_GET["deleteTrip"]) && is_numeric($_GET["deleteTrip"])) {
-		if (isset($_SESSION["ID"])) {
-			$tripId = (int)$_GET["deleteTrip"];
-			$trip = $db->exec_sql("SELECT FK_Users_ID FROM trips WHERE ID=?", $tripId)->fetch();
-			if ($trip === false)
-				$err = $lang["delete-trip-wrong-id"];
-			elseif ($trip["FK_Users_ID"] !== $_SESSION["ID"])
-				$err = $lang["delete-trip-not-owner"];
-			else
-				$err = false;
-		} else {
-			$err = $lang["delete-trip-no-login"];
-		}
+	$num_users     = $db->get_count("users");
+	$num_trips     = $db->get_count("trips");
+	$num_positions = $db->get_count("positions");
+	$num_icons     = $db->get_count("icons");
 
-		if ($err === false) {
-			try {
-				$db->beginTransaction();
-				$db->exec_sql("DELETE FROM trips WHERE ID=?", $tripId);
-				$db->exec_sql("DELETE FROM positions WHERE FK_Trips_ID=?", $tripId);
-				$db->commit();
-			} catch (Exception $e) {
-				$db->rollback();
-				$err = $e->getMessage();
-			}
-		}
-		if ($err === false) {
-			header('Location: '.$siteroot);
-			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
-			$html .= " <head>\n";
-			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-			$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
-			$html .= "  <title>" . $title_text . "(v" . $version_text . ")</title>\n";
-			$html .= " </head>\n";
-			$html .= " <body>\n";
-		} else {
-			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
-			$html .= " <head>\n";
-			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-			$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
-			$html .= "  <title>" . $title_text . "(v" . $version_text . ")</title>\n";
-			$html .= " </head>\n";
-			$html .= " <body>\n";
-			$html .= "  <div align=center>\n";
-			$html .= "   " . $lang["delete-trip-title"] . "<br>\n";
-			$html .= "   <br>\n";
-			$html .= "   $err<br>\n";
-			$html .= "   <br>\n";
-			$html .= "   <br>\n";
-			$html .= "   <br>\n";
-			$html .= "   <br>\n";
-		}
-		$db = null;
+	if ($filterstart != null) {
+		$filterstartNLS = preg_replace("/[^0-9 \.:\-]/", "", $filterstart);
+	} else
+		$filterstartNLS = null;
+	if ($filterend != null) {
+		$filterendNLS   = preg_replace("/[^0-9 \.:\-]/", "", $filterend);
+	} else
+		$filterendNLS   = null;
+
+	if (is_numeric($tripID) && !isset($ID)) {
+		$ID = $db->exec_sql("SELECT FK_Users_ID FROM trips WHERE ID=?", $tripID)->fetchColumn();
+		if ($ID === false)
+			unset($ID);
 	}
 
-	if (!is_null($db)) {
-		$num_users = $db->get_count("users");
-		$num_trips = $db->get_count("trips");
-		$num_positions = $db->get_count("positions");
-		$num_icons = $db->get_count("icons");
+	if ($num_users < 1 || $num_trips < 1 || $num_positions < 1 || $num_icons < 1) {
+		$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
+		$html .= " <head>\n";
+		$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
+		$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+		$html .= "  <title>$windowtitle (v$versiontext)</title>\n";
+		$html .= " </head>\n";
+		$html .= " <body>\n";
+		$html .= "  <div align=\"center\">\n";
+		$html .= "   $no_data_text<br>\n";
+		$html .= "  </div>\n";
+		$html .= " </body>\n";
+		$html .= "</html>\n";
+		print $html;
+		exit;
+	}
 
-		(isset($_REQUEST["setfilter"])) ? $filter   = $_REQUEST["setfilter"] : $filter   = null;
-		(isset($_REQUEST["trip"]))      ? $trip     = $_REQUEST["trip"]      : $trip     = null;
-		(isset($_REQUEST["ID"]))        ? $ID       = $_REQUEST["ID"]        : $ID       = null;
-		(isset($_REQUEST["username"]))  ? $username = $_REQUEST["username"]  : $username = null;
-		(isset($_REQUEST["password"]))  ? $password = $_REQUEST["password"]  : $password = null;
-		(isset($_REQUEST["startday"]))  ? $startday = $_REQUEST["startday"]  : $startday = null;
-		(isset($_REQUEST["endday"]))    ? $endday   = $_REQUEST["endday"]    : $endday   = null;
+	if (file_exists("install.php") || file_exists("database.sql")) {
+		$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
+		$html .= " <head>\n";
+		$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
+		$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+		$html .= "  <title>$windowtitle (v$versiontext)</title>\n";
+		$html .= " </head>\n";
+		$html .= " <body>\n";
+		$html .= "  <div align=\"center\">\n";
+		$html .= "   $incomplete_install_text<br>\n";
+		$html .= "  </div>\n";
+		$html .= " </body>\n";
+		$html .= "</html>\n";
+		print $html;
+		exit;
+	}
 
-		$trip     = preg_replace("/[^a-zA-Z0-9]/", "", $trip);
-		$startday = preg_replace("/[^0-9 :\-]/", "", $startday);
-		$endday   = preg_replace("/[^0-9 :\-]/", "", $endday);
-
-		if (is_numeric($trip) && !isset($ID)) {
-			$ID = $db->exec_sql("SELECT FK_Users_ID FROM trips WHERE ID=?", $trip)->fetchColumn();
-			if ($ID === false)
-				unset($ID);
+	if ($publicpage != "yes") {
+		if ($action == "logout") {
+			unset($_SESSION['ID']);
 		}
-
-		if ($num_users < 1 || $num_trips < 1 || $num_positions < 1 || $num_icons < 1) {
-			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
-			$html .= " <head>\n";
-			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-			$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
-			$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
-			$html .= " </head>\n";
-			$html .= " <body>\n";
-			$html .= "  <div align=center>\n";
-			$html .= "   $no_data_text<br>\n";
-			$html .= "   <br>\n";
-		} elseif (file_exists("install.php") || file_exists("database.sql")) {
-			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
-			$html .= " <head>\n";
-			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-			$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
-			$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
-			$html .= " </head>\n";
-			$html .= " <body>\n";
-			$html .= "  <div align=center>\n";
-			$html .= "   $incomplete_install_text<br>\n";
-			$html .= "   <br>\n";
-		} else {
-			if ($publicpage != "yes") {
-				if ($action == "logout") {
-					unset($_SESSION["ID"]);
+		if (isset($username) && isset($password)) {
+			if (preg_match("/^([a-zA-Z0-9._])+$/", "$_REQUEST[username]")) {
+				$login_id = $db->valid_login($username, $password);
+				if ($login_id >= 0) {
+					$_SESSION['ID'] = $login_id;
 				}
-				if (isset($username) && isset($password)) {
-					if (preg_match("/^([a-zA-Z0-9._])+$/", "$_REQUEST[username]")) {
-						$login_id = $db->valid_login($username, $password);
-						if ($login_id >= 0) {
-							$_SESSION["ID"] = $login_id;
-						}
-					}
-				}
-				$ID = $_SESSION["ID"];
 			}
-
-			if (isset($_SESSION["ID"]) || $publicpage == "yes") {
-				$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
-				$html .= " <head>\n";
-				$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n";
-				$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
-				$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
-				$html .= "  <link rel=\"stylesheet\" href=\"layout.css\" type=\"text/css\">\n";
-				$html .= "  <link rel=\"stylesheet\" href=\"calendar-win2k-cold-1.css\" type=\"text/css\">\n";
-				$html .= "  <link rel=\"stylesheet\" href=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet.css\" integrity=\"sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==\" crossorigin=\"\"/>\n";
-				$html .= "  <!-- Make sure you put this AFTER Leaflet's CSS -->\n";
-//	for debugging us this	$html .= "  <script type=\"text/javascript\" src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet-src.js\" integrity=\"sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==\" crossorigin=\"\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet.js\" crossorigin=\"\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"calendar.js\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"lang/calendar-en.js\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"calendar-setup.js\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"main.js\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"lang.js\"></script>\n";
-				$html .= " </head>\n";
-
-				if ($livetracking) {
-					$html .= " <body onload=\"initInterval();\">\n";
-				} else {
-					$html .= " <body>\n";
-				}
-
-				$html .= "  <script type=\"text/javascript\">\n";
-				$html .= "   function getValue(varname) {\n";
-				$html .= "    var url = window.location.href;\n";
-				$html .= "    var qparts = url.split(\"?\");\n";
-				$html .= "    if (qparts.length == 0) {\n";
-				$html .= "     return \"\";\n";
-				$html .= "    }\n";
-				$html .= "    var queryparts = qparts[1];\n";
-				$html .= "    var vars = queryparts.split(\"&\");\n";
-				$html .= "    var value = \"\";\n";
-				$html .= "    for (i=0;i<vars.length;i++) {\n";
-				$html .= "     var parts = vars[i].split(\"=\");\n";
-				$html .= "     if (parts[0] == varname) {\n";
-				$html .= "      value = parts[1];\n";
-				$html .= "      break;\n";
-				$html .= "     }\n";
-				$html .= "    }\n";
-				$html .= "    value = unescape(value);\n";
-				$html .= "    value.replace(/\+/g,\" \");\n";
-				$html .= "    return value;\n";
-				$html .= "   }\n";
-
-				$html .= "   function showInfo() {\n";
-				$html .= "    var elem = document.getElementById('configsection');\n";
-				$html .= "    if (elem.style.display == \"none\") {\n";
-				$html .= "     elem.style.display=\"inline\";\n";
-				$html .= "     document.getElementById(\"showcfgbutton\").value = \"$showconfig_button_text_off\";\n";
-				$html .= "    } else {\n";
-				$html .= "     elem.style.display=\"none\";\n";
-				$html .= "     document.getElementById(\"showcfgbutton\").value = \"$showconfig_button_text\";\n";
-				$html .= "    }\n";
-				$html .= "   }\n";
-
-				$html .= "   function liveTrack() {\n";
-				$html .= "    if (document.getElementById(\"livebutton\").value == \"$location_button_text\") {\n";
-				$html .= "     location=\"index.php?livetracking=yes&interval=60&zoomlevel=8\";\n";
-				$html .= "    } else {\n";
-				$html .= "     location=\"index.php\";\n";
-				$html .= "    }\n";
-				$html .= "   }\n";
-
-				$html .= "   function submitTrip() {\n";
-				$html .= "    document.form_trip.submit();\n";
-				$html .= "   }\n";
-
-				$html .= "   function deleteTrip() {\n";
-				$html .= "    var selTrip = document.getElementById('selTrip').value;\n";
-				$html .= "    if (selTrip != \"$trip_none_text\" && selTrip != \"$trip_any_text\") {\n";
-				$html .= "     if (confirm('Are you sure you want to delete this trip?')) {\n";
-				$html .= "      var url = document.location.protocol +'//'+ document.location.hostname + ':' + document.location.port + document.location.pathname + '?deleteTrip='+selTrip;\n";
-				$html .= "      window.location.href = url;\n";
-				$html .= "     }\n";
-				$html .= "    } else {\n";
-				$html .= "     alert('Please select a trip!');\n";
-				$html .= "    }\n";
-				$html .= "   }\n";
-
-				$html .= "  </script>\n";
-
-				$html .= "  <div id=\"navigationsection\">\n";
-
-				if ($publicpage == "yes") {
-					$html .= "   <form name=\"form_user\" method=\"post\">\n";
-					$html .= "    =\"ID\" class=\"pulldown\">\n";
-					$findusers = $db->exec_sql("SELECT * FROM users ORDER BY Username");
-					while ($founduser = $findusers->fetch()) {
-						if (!isset($ID)) {
-							$ID = $founduser["ID"];
-							$trip = "";
-						}
-						if ($founduser["ID"] == $ID) {
-							$html .= "     <option value=\"$founduser[ID]\" selected>$founduser[username]</option>\n";
-							$username = $founduser["username"];
-						} else {
-							$html .= "     <option value=\"$founduser[ID]\">$founduser[username]</option>\n";
-						}
-					}
-					$html .= "    </select>\n";
-					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "    <input type=\"hidden\" name=\"trip\" value=\"\">\n";
-					$html .= "    <input type=\"submit\" class=\"button\" id=\"userbutton\" value=\"$user_button_text\">\n";
-					$html .= "   </form>\n";
-				} else {
-					$finduser = $db->exec_sql("SELECT * FROM users WHERE ID=? LIMIT 1", $ID);
-					$founduser = $finduser->fetch();
-					$username = $founduser['username'];
-					$html .= "   <b><u>$trip_data</u></b><br>\n";
-					$html .= "   <form name=\"form_logout\" method=\"post\">\n";
-					$html .= "    " . $founduser["username"] . "&nbsp;&nbsp;&nbsp;\n";
-					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "    <input type=\"hidden\" name=\"action\" value=\"logout\">\n";
-					$html .= "    <input type=\"submit\" class=\"buttonshort\" id=\"logoutbutton\" value=\"$logout_button_text\">\n";
-					$html .= "   </form>\n";
-				}
-				$html .= "   <br><br>\n";
-
-				if ($allowcustom == "yes") {
-					$html .= "   <input type=\"button\" class=\"button\" id=\"showcfgbutton\" value=\"$showconfig_button_text\" onClick=\"showInfo();\" >\n";
-				}
-				$html .= "   <br><br>\n";
-
-				if ($livetracking) {
-					$html .= "   <input type=\"button\" class=\"button\" id=\"livebutton\" value=\"$location_button_text_off\" onClick=\"liveTrack();\">\n";
-				} else {
-					$html .= "   <input type=\"button\" class=\"button\" id=\"livebutton\" value=\"$location_button_text\" onClick=\"liveTrack();\">\n";
-				}
-				$html .= "   <br><br>\n";
-
-				$tripname = $trip_none_text;
-				if ($livetracking) {
-				} else {
-					$html .= "   <form name=\"form_trip\" method=\"post\">\n";
-					$html .= "    <b><u>$trip_title</u></b>\n";
-
-					$findtrips = $db->exec_sql("SELECT A1.*, (SELECT MIN(A2.DateOccurred) FROM positions A2 WHERE A2.FK_Trips_ID=A1.ID) AS Startdate FROM trips A1 WHERE A1.FK_Users_ID=? ORDER BY Startdate DESC ", $ID);
-					$foundTrips = array(array("ID" => "None", "Name" => $trip_none_text, "FK_Users_ID" => null),
-						array("ID" => "Any", "Name" => $trip_any_text, "FK_Users_ID" => null));
-					$foundTrips = array_merge($foundTrips, $findtrips->fetchAll());
-					// In case the selected trip is invalid, default to the first non-generic trip
-					// or None if there are only generic trips
-					$selectedTrip = $foundTrips[count($foundTrips) > 2 ? 2 : 0];
-					foreach ($foundTrips as $foundtrip) {
-					if ($foundtrip["ID"] == $trip)
-						$selectedTrip = $foundtrip;
-					}
-
-					$deleteButton = ($selectedTrip["FK_Users_ID"] === $_SESSION["ID"]);
-					$trip = $selectedTrip["ID"];
-					$tripname = $selectedTrip["Name"];
-
-					if ($deleteButton) {
-						$html .= "    <select id=\"selTrip\" name=\"trip\" class=\"pulldownshort\" onchange=\"submitTrip();\" >\n";
-					} else {
-						$html .= "    <select id=\"selTrip\" name=\"trip\" class=\"pulldown\" onchange=\"submitTrip();\" >\n";
-					}
-
-					foreach ($foundTrips as $foundtrip) {
-						if ($foundtrip["ID"] == $trip) {
-							$html .= "     <option value=\"$foundtrip[ID]\" selected>$foundtrip[Name]</option>\n";
-						} else {
-							$html .= "     <option value=\"$foundtrip[ID]\">$foundtrip[Name]</option>\n";
-						}
-					}
-					$html .= "    </select>\n";
-					if ($deleteButton)
-						$html .= "    <input type=\"button\" class=\"pulldownX\" value=\"X\" onclick=\"deleteTrip();\">\n";
-
-					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "   </form>\n";
-					$html .= "   <br>\n";
-				}
-				if ($livetracking) {
-					$html .= "   <script type=\"text/javascript\">\n";
-					$html .= "    function initInterval() {\n";
-					$html .= "     if (document.form_intervalclock.interval.value == \"-\") {\n";
-					$html .= "      document.form_intervalclock.interval.value = getValue(\"interval\");\n";
-					$html .= "     }\n";
-					$html .= "     if (document.form_intervalclock.interval.value < 10) {\n";
-					$html .= "      alert(\"Minimum interval ist 10 seconds\");\n";
-					$html .= "      t = 60;\n";
-					$html .= "      document.form_intervalclock.interval.value = 60;\n";
-					$html .= "     } else {\n";
-					$html .= "      t = document.form_intervalclock.interval.value;\n";
-					$html .= "     }\n";
-					$html .= "     k = setTimeout('showClock()', 1000);\n";
-					$html .= "    }\n";
-
-					$html .= "    function showClock() {\n";
-					$html .= "     t = t - 1;\n";
-					$html .= "     if (t == 0) {\n";
-					$html .= "      if (document.form_intervalclock.interval.value < 10) {\n";
-					$html .= "       alert(\"Minimum interval is 10 seconds\");\n";
-					$html .= "       t = 60;\n";
-					$html .= "       document.form_intervalclock.interval.value = 60;\n";
-					$html .= "      } else {\n";
-					$html .= "       if (document.form_zoom.zoom.value != \"-\") {\n";
-					$html .= "        if (document.form_zoom.zoom.value != zoomlevel) {\n";
-					$html .= "         zoomlevel = document.form_zoom.zoom.value;\n";
-					$html .= "        }\n";
-					$html .= "       }\n";
-					$html .= "       window.location.href = (\"index.php?livetracking=yes&interval=\" + document.form_intervalclock.interval.value + \"&zoomlevel=\" + zoomlevel); \n";
-					$html .= "      }\n";
-					$html .= "     }\n";
-					$html .= "     document.form_intervalclock.seconds.value = t;\n";
-					$html .= "     k = setTimeout('showClock()', 1000);\n";
-					$html .= "    }\n";
-					$html .= "   </script>\n";
-
-					$html .= "   <b><u>$reloadoptions_title</u></b>\n";
-					$html .= "   <table>\n";
-					$html .= "    <tr>\n";
-					$html .= "     <td align=right>\n";
-					$html .= "      <form name=\"form_intervalclock\">\n";
-					$html .= "       Interval:\n";
-					$html .= "       <input type=\"text\" class=\"intervalinputfield\" name=\"interval\" value=\"-\" size=\"1\">\n";
-					$html .= "       sec.\n";
-					$html .= "       <input type=\"button\" class=\"intervalbutton\" name=\"start\" value=\"Start\" onClick=\"clearTimeout(k); initInterval();\"><br>\n";
-					$html .= "       Reload:\n";
-					$html .= "       <input type=\"text\" class=\"intervalinputfield\" name=\"seconds\" value=\"-\" size=\"1\">\n";
-					$html .= "       sec.\n";
-					$html .= "       <input type=\"button\" class=\"intervalbutton\" name=\"stop\" value=\"Stop\" onClick=\"clearTimeout(k); document.form_intervalclock.seconds.value = document.form_intervalclock.interval.value;\">\n";
-					$html .= "       <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "      </form>\n";
-					$html .= "     </td>\n";
-					$html .= "    </tr>\n";
-					$html .= "   </table>\n";
-
-					$html .= "   <br>\n";
-
-					$html .= "   <form name=\"form_zoom\">\n";
-					$html .= "    <b><u>$zoomlevel_title</u></b>\n";
-					$html .= "    <select class=\"pulldown\" name=\"zoom\">\n";
-					$html .= "     <option value=\"-\" selected>Choose Zoomlevel\n";
-					$html .= "     <option value=3>Level 3 (World)\n";
-					$html .= "     <option value=4>Level 4\n";
-					$html .= "     <option value=5>Level 5 (Continent)\n";
-					$html .= "     <option value=6>Level 6\n";
-					$html .= "     <option value=7>Level 7 (Country)\n";
-					$html .= "     <option value=8>Level 8\n";
-					$html .= "     <option value=9>Level 9 (wide Area)\n";
-					$html .= "     <option value=10>Level 10\n";
-					$html .= "     <option value=11>Level 11 (City)\n";
-					$html .= "     <option value=12>Level 12\n";
-					$html .= "     <option value=13>Level 13 (Village)\n";
-					$html .= "     <option value=14>Level 14\n";
-					$html .= "     <option value=15>Level 15 (small road)\n";
-					$html .= "     <option value=16>Level 16\n";
-					$html .= "     <option value=17>Level 17 (Block)\n";
-					$html .= "     <option value=18>Level 18\n";
-					$html .= "    </select>\n";
-					$html .= "   </form>\n";
-					$html .= "   <br>\n";
-				}
-
-				if ($livetracking) {
-				} else {
-					$html .= "   <form name=\"form_filter\" method=\"post\">\n";
-					$html .= "    <b><u>$filter_title</u></b>\n";
-					$html .= "    <select name=\"setfilter\" class=\"pulldown\">\n";
-					if ($filter == "Photo") {
-						$html .= "     <option value=\"None\">$filter_none_text</option>\n";
-						$html .= "     <option value=\"Photo\" selected>$filter_photo_text</option>\n";
-						$html .= "     <option value=\"Comment\">$filter_comment_text</option>\n";
-						$html .= "     <option value=\"PhotoComment\">$filter_photo_comment_text</option>\n";
-						$html .= "     <option value=\"Last20\">$filter_last_20</option>\n";
-					} elseif ($filter == "Comment") {
-						$html .= "     <option value=\"None\">$filter_none_text</option>\n";
-						$html .= "     <option value=\"Photo\">$filter_photo_text</option>\n";
-						$html .= "     <option value=\"Comment\" selected>$filter_comment_text</option>\n";
-						$html .= "     <option value=\"PhotoComment\">$filter_photo_comment_text</option>\n";
-						$html .= "     <option value=\"Last20\">$filter_last_20</option>\n";
-					} elseif ($filter == "PhotoComment") {
-						$html .= "     <option value=\"None\">$filter_none_text</option>\n";
-						$html .= "     <option value=\"Photo\">$filter_photo_text</option>\n";
-						$html .= "     <option value=\"Comment\">$filter_comment_text</option>\n";
-						$html .= "     <option value=\"PhotoComment\" selected>$filter_photo_comment_text</option>\n";
-						$html .= "     <option value=\"Last20\">$filter_last_20</option>\n";
-					} elseif ($filter == "Last20") {
-						$html .= "     <option value=\"None\">$filter_none_text</option>\n";
-						$html .= "     <option value=\"Photo\">$filter_photo_text</option>\n";
-						$html .= "     <option value=\"Comment\">$filter_comment_text</option>\n";
-						$html .= "     <option value=\"PhotoComment\">$filter_photo_comment_text</option>\n";
-						$html .= "     <option value=\"Last20\" selected>$filter_last_20</option>\n";
-					} else {
-						$html .= "     <option value=\"None\" selected>$filter_none_text</option>\n";
-						$html .= "     <option value=\"Photo\">$filter_photo_text</option>\n";
-						$html .= "     <option value=\"Comment\">$filter_comment_text</option>\n";
-						$html .= "     <option value=\"PhotoComment\">$filter_photo_comment_text</option>\n";
-						$html .= "     <option value=\"Last20\">$filter_last_20</option>\n";
-					}
-					$html .= "    </select>\n";
-				}
-
-				$params = array($ID);
-				if ($livetracking) {
-					$limit = "DESC LIMIT 1";
-					$where = "";
-				} else {
-					$limit = "";
-					if ($tripname == $trip_none_text)
-						$where = " AND FK_Trips_ID is NULL";
-					elseif ($tripname == $trip_any_text)
-					{
-						$where = "";
-					} else {
-						$where = " AND FK_Trips_ID=?";
-						$params[] = $trip;
-					}
-
-					// if startday is not null or not blank, then use start and end day to limit search
-					if ($startday != null && trim($startday) != "") {
-						$where .= " AND DateOccurred BETWEEN ? AND ?";
-						$params[] = $startday;
-						$params[] = $endday;
-					}
-				}
-
-				$result = $db->exec_sql("SELECT * FROM positions " .
-					"WHERE FK_Users_ID=? $where " .
-					"ORDER BY DateOccurred $limit", $params);
-
-				$rounds   = 1;
-				$leg_time = 0;
-				$pcount   = 0;
-				$ccount   = 0;
-
-				while ($row = $result->fetch()) {
-					$mph    = $row['Speed'] * 2.2369362920544;
-					$kph    = $row['Speed'] * 3.6;
-					$ft     = $row['Altitude'] * 3.2808399;
-					$meters = $row['Altitude'];
-					if ($row['ImageURL'] != '')
-						$pcount++;
-					if ($row['Comments'] != '')
-						$ccount++;
-
-					$endday = $row['DateOccurred'];
-					if ($rounds == 1) {
-						$total_time         = 0;
-						$display_total_time = gmdate("H:i:s", $total_time);
-						$total_miles        = 0;
-						$total_kilometers   = 0;
-						$startday           = $endday;
-					} else {
-						$leg_miles          = calcDistance($row['Latitude'], $row['Longitude'], $holdlat, $holdlong, "m");
-						$total_miles        = $total_miles + $leg_miles;
-						$total_kilometers   = $total_miles * 1.609344;
-						$leg_time           = $row['DateOccurred'];
-						$total_time         = getElapsedTime($startday, $leg_time);
-						$display_total_time = gmdate("H:i:s", $total_time);
-					}
-					$rounds++;
-					$holdlat  = $row['Latitude'];
-					$holdlong = $row['Longitude'];
-				}
-
-				if ($livetracking) {
-				} else {
-					$html .= "    <input type=\"submit\" class=\"button\" name=\"filter_data\" value=\"$filter_button_text\">\n";
-					$html .= "    <br><br>\n";
-
-					$html .= "    <b><u>$startdate_text</u></b>\n";
-					$html .= "    <input type=\"text\" class=\"textinputfield\" id=\"startday\" name=\"startday\" value=\"$startday\">\n";
-					$html .= "    <b><u>$enddate_text</u></b>\n";
-					$html .= "    <input type=\"text\" class=\"textinputfield\" id=\"endday\" name=\"endday\" value=\"$endday\">\n";
-					$html .= "    <script type=\"text/javascript\">\n";
-					$html .= "     Calendar.setup( {\n";
-					$html .= "      inputField: \"startday\",\n";
-					$html .= "      ifFormat  : \"%Y-%m-%d %H:%M:%S\", \n";
-					$html .= "      showsTime : true, \n";
-					$html .= "      timeFormat: \"24\" \n";
-					$html .= "     });\n";
-					$html .= "     Calendar.setup( {\n";
-					$html .= "      inputField: \"endday\",\n";
-					$html .= "      ifFormat  : \"%Y-%m-%d %H:%M:%S\", \n";
-					$html .= "      showsTime : true, \n";
-					$html .= "      timeFormat: \"24\" \n";
-					$html .= "     });\n";
-					$html .= "    </script>\n";
-					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "    <input type=\"hidden\" name=\"trip\" value=\"$trip\">\n";
-					$html .= "   </form>\n";
-					$html .= "   <br>\n";
-				}
-
-				if ($livetracking) {
-					if ($units == "metric") {
-						$html .= "   <b>$speed_balloon_text: </b>" . number_format($kph,2) . " $speed_metric_unit_balloon_text<br>\n";
-						$html .= "   <b>$altitude_balloon_text: </b>" . number_format($meters,2) . " $height_metric_unit_balloon_text</br>\n";
-						$html .= "   <b>$total_distance_balloon_text: </b>" . number_format($total_kilometers,2) . " $distance_metric_unit_balloon_text\n";
-					} else {
-						$html .= "   <b>$speed_balloon_text: </b>" . number_format($mph,2) . " $speed_imperial_unit_balloon_text<br>\n";
-						$html .= "   <b>$altitude_balloon_text: </b>" . number_format($ft,2) . " $height_imperial_unit_balloon_text<br>\n";
-						$html .= "   <b>$total_distance_balloon_text: </b>" . number_format($total_miles,2) . " $distance_imperial_unit_balloon_text\n";
-					}
-				} else {
-					if ($units == "metric") {
-						$html .= "   <b>$total_distance_balloon_text: </b>" . number_format($total_kilometers,2) . " $distance_metric_unit_balloon_text<br>\n";
-					} else {
-						$html .= "   <b>$total_distance_balloon_text: </b>" . number_format($total_miles,2) . " $distance_imperial_unit_balloon_text<br>\n";
-					}
-					$html .= "   <b>$summary_time: </b>$display_total_time<br>\n";
-					$html .= "   <b>$summary_photos: </b>$pcount<br>\n";
-					$html .= "   <b>$summary_comments: </b>$ccount\n";
-					$html .= "   <br><br>\n";
-
-					// 2009-05-07 DMR Add Link to download the currently displayed data. -->
-					$html .= "   <b><u>$downloadtrip_title</u></b><br>\n";
-
-					// Required Params
-					// Removing from Export code                           $ExportOptions = "&db=1234567";
-					// Use the Cookie so we don't display it in the URL    $ExportOptions .= "&u=" . $username;
-					// Use the Cookie so we don't display it in the URL    $ExportOptions .= "&p=" . $password;
-					$ExportOptions  = "&df=" . $startday;
-					$ExportOptions .= "&dt=" . $endday;
-					$ExportOptions .= "&tn=" . $tripname;
-					$ExportOptions .= "&sb=" . $showbearings; //0=no 1=Yes
-					$html .= "   <form name=\"form_download\" method=\"post\" action=\"download.php?a=kml" . $ExportOptions . "\">\n";
-					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "    <input type=\"submit\" class=\"button\" id=\"downloadkml\" value=\"KML Format\">\n";
-					$html .= "   </form>\n";
-					$html .= "   <form name=\"form_download\" method=\"post\" action=\"download.php?a=gpx" . $ExportOptions . "\">\n";
-					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "    <input type=\"submit\" class=\"button\" id=\"downloadgpx\" value=\"GPX Format\">\n";
-					$html .= "   </form>\n";
-					// 2009-05-07 DMR Add Link to download the currently displayed data. <--
-
-				}
-
-				$html .= "  </div>\n";
-
-				$html .= "  <div id=\"configsection\" style=\"display:none;\">\n";
-				$html .= "   $display_options_title_text:\n";
-				$html .= "   <br><br>\n";
-
-				$html .= "   <form name=\"form_options\" method=\"post\">\n";
-				$html .= "    <input type=\"hidden\" name=\"action\" value=\"form_options\">\n";
-				if ($showbearings == "yes") {
-					$html .= "    <input type=\"checkbox\" name=\"setshowbearings\" checked>$display_showbearing_text<br>\n";
-				} else {
-					$html .= "    <input type=\"checkbox\" name=\"setshowbearings\">$display_showbearing_text<br>\n";
-				}
-				$html .= "    <br>\n";
-
-				if ($crosshair == "yes") {
-					$html .= "    <input type=\"checkbox\" name=\"setcrosshair\" checked>$display_crosshair_text<br>\n";
-				} else {
-					$html .= "    <input type=\"checkbox\" name=\"setcrosshair\">$display_crosshair_text<br>\n";
-				}
-				$html .= "    <br>\n";
-
-				if ($clickcenter == "yes") {
-					$html .= "    <input type=\"checkbox\" name=\"setclickcenter\" checked>$display_clickcenter_text<br>\n";
-				} else {
-					$html .= "    <input type=\"checkbox\" name=\"setclickcenter\">$display_clickcenter_text<br>\n";
-				}
-				$html .= "    <br>\n";
-
-				$html .= "    <select name=\"setlanguage\" class=\"pulldown\">\n";
-				foreach (array_values($languages) as $lang_entry) {
-					if ($lang_entry->en)
-						$lang_name = strtolower($lang_entry->en);
-					else
-						$lang_name = "english";
-					if ($language === $lang_name) {
-						$html .= "     <option value=\"$lang_name\" selected>$lang_entry->full_name</option>\n";
-					} else {
-						$html .= "     <option value=\"$lang_name\">$lang_entry->full_name</option>\n";
-					}
-				}
-				$html .= "    </select> $display_language_text<br>\n";
-				$html .= "    <br>\n";
-
-				$html .= "    <select name=\"setunits\" class=\"pulldown\">\n";
-				$html .= "     <option value=\"imperial\""; if ($units == "imperial") { $html .= " selected"; } $html .= ">Imperial</option>\n";
-				$html .= "     <option value=\"metric\""; if ($units == "metric") { $html .= " selected"; } $html .= ">Metric</option>\n";
-				$html .= "    </select> $display_units_text<br>\n";
-				$html .= "    <br>\n";
-
-				$html .= "    <select name=\"settileprovider\" class=\"pulldown\">\n";
-				foreach ($tileproviders as $tileprovidername => $tileproviderspecs) {
-					$html .= "     <option value=\"" . $tileprovidername . "\""; if ($tileprovidername == $tileprovider) { $html .= " selected"; }; $html .= ">" . $tileprovidername . "</option>\n";
-				}
-				$html .= "    </select> $display_tileprovider_text<br>\n";
-
-				if ($tilePT == "yes") {
-					$html .= "    <input type=\"checkbox\" name=\"settilePT\" checked>$display_tilePT_text<br>\n";
-				} else {
-					$html .= "    <input type=\"checkbox\" name=\"settilePT\">$display_tilePT_text<br>\n";
-				}
-				$html .= "    <br><br>\n";
-
-				if ($livetracking) {
-					$html .= "    <input type=\"hidden\" name=\"livetracking\" value=\"$location_button_text\">\n";
-				}
-				if (isset($filter)) {
-					$html .= "    <input type=\"hidden\" name=\"filter\" value=\"$filter\">\n";
-				}
-				$html .= "    <input type=\"hidden\" name=\"trip\" value=\"$trip\">\n";
-				$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-				$html .= "    <input type=\"submit\" class=\"button\" value=\"$display_button_text\">\n";
-				$html .= "   </form>\n";
-				$html .= "  </div>\n";
-
-				$html .= "  <div id=\"mapsection\"></div>\n";
-
-				$html .= "  <div id=\"creditsection\">Powered by <a href=\"http://www.luisespinosa.com/trackme_eng.html\">TrackMe (v" . $version_text . ")</a> by <a href=\"http://www.luisespinosa.com/central_eng.php\">Luis Espinosa & friends</a></div>\n";
-
-				$html .= "  <script type=\"text/javascript\">\n";
-				$html .= "   // Leaflet Map API initialisation\n";
-				$html .= "   var map = L.map(\"mapsection\", {center: [0, 0], zoom: 0});\n";
-				$html .= "   L.tileLayer('".$tileproviders[$tileprovider]["url"] . "', {\n";
-				if (isset($tileproviders[$tileprovider]["maxZoom"]))
-					$html .= "     maxZoom: " . $tileproviders[$tileprovider]["maxZoom"] . ",\n";
-				$html .= "     attribution: '" . $tileproviders[$tileprovider]["attribution"] . "'\n";
-				$html .= "    }).addTo(map);\n";
-				if ($tilePT == "yes") {
-					$html .= "   L.tileLayer('http://openptmap.org/tiles/{z}/{x}/{y}.png', {\n";
-					$html .= "     maxZoom: 17,\n";
-					$html .= "    attribution: 'Map data: &copy; <a href=\"http://www.openptmap.org\">OpenPtMap</a> contributors'\n";
-					$html .= "    }).addTo(map);\n";
-				}
-				$html .= "  </script>\n";
-
-				$html .= "  <script type=\"text/javascript\">\n";
-				$html .= "   //<![CDATA[\n";
-				$html .= "   lang.setCode('$lang->code');\n";
-				$html .= "   var geocoder = null;\n";
-				$html .= "   var online = true;\n";
-				$html .= "   var bounds = null;\n";
-				$html .= "   var markersLatLng = [];\n";
-				if ($livetracking) {
-					$html .= "   var zoomlevel = getValue(\"zoomlevel\");\n";
-				} else {
-					$html .= "   var zoomlevel = 0;\n";
-				}
-
-				if ($crosshair == "yes") {
-					$html .= "   var centerCrosshair = L.icon({iconUrl: 'crosshair.gif', iconSize: [17, 17], iconAnchor: [8, 8],});\n";
-					$html .= "   centerCross = L.marker(map.getCenter(), {icon: centerCrosshair, interactive: false}).addTo(map);\n";
-					$html .= "   function setCenterCross() {\n";
-					$html .= "    centerCross.setLatLng(map.getCenter());\n";
-					$html .= "   };\n";
-					$html .= "   map.on(\"zoom move load viewreset resize zoomlevelchange\", setCenterCross);\n";
-				}
-				if ($clickcenter == "yes") {
-					$html .= "   map.on(\"click\", function(e) { map.panTo(e.latlng); });\n";
-				} else {
-					$html .= "   map.off(\"click\");\n";
-				}
-
-				// Write configuration to JS
-				if ($showbearings == "yes") {
-					$html .= "   var showBearings = true;\n";
-				} else {
-					$html .= "   var showBearings = false;\n";
-				}
-				$html .= "   var useMetric = " . ($units == "metric" ? "true" : "false") . ";\n\n";
-
-				$params = array();
-				if ($livetracking) {
-					$where = "";
-					$limit = 1;
-				} else {
-					if ($filter == "Photo") {
-						$where = "ImageURL != ''";
-						$limit = 0;
-					} elseif ($filter == "Comment") {
-						$where = "Comments != ''";
-						$limit = 0;
-					} elseif ($filter == "PhotoComment") {
-						$where = "(Comments!='' OR ImageURL!='')";
-						$limit = 0;
-					} elseif ($filter == "Last20") {
-						$where = "";
-						$limit = 20;
-					} else {
-						$where = "";
-						$limit = 0;
-					}
-					if ($where != "")
-						$where .= " AND";
-
-					if ($tripname != $trip_any_text) {
-						if ($tripname == $trip_none_text) {
-							$count = 0;
-						} else {
-							// TODO: use parameters
-							$count = $db->get_count("positions " .
-								"WHERE FK_Users_ID='$ID' AND " .
-								"FK_Trips_ID='$trip' AND " .
-								"DateOccurred BETWEEN '$startday' AND '$endday'");
-						}
-						if ($count == 0) {
-							$where .= " FK_Trips_ID is NULL AND";
-						} else {
-							$where .= " FK_Trips_ID=? AND";
-							$params[] = $trip;
-						}
-					}
-					$where .= " DateOccurred BETWEEN ? AND ? AND";
-					$params[] = $startday;
-					$params[] = $endday;
-				}
-
-				if ($limit > 0)
-					$limit = " DESC LIMIT $limit";
-				else
-					$limit = "";
-
-				$params[] = $ID;
-				$positions = $db->exec_sql("SELECT positions.*, icons.URL FROM positions " .
-					"LEFT JOIN icons ON positions.FK_Icons_ID=icons.ID " .
-					"WHERE $where FK_Users_ID=? " .
-					"ORDER BY DateOccurred $limit",
-					$params);
-
-				$result = $positions->fetchAll();
-				$count = count($result);
-
-				if ($tripname == $trip_any_text) {
-					$tripnameText = $trip_any_text;
-				} elseif ($tripname == $trip_none_text) {
-					$tripnameText = $trip_none_text;
-				} else {
-					$tripnameText = $tripname;
-				}
-				$html .= "   var trip = new Trip('" . escapeJSString($tripnameText) . "', '" . escapeJSString($username) . "');\n";
-				for ($rounds = 1; $rounds <= $count; $rounds++) {
-					$row = $result[$rounds - 1];
-					// escape the strings for JS
-					$row['ImageURL'] = escapeJSString($row['ImageURL']);
-					$row['Comments'] = escapeJSString($row['Comments']);
-
-					if (!is_null($row['URL'])) {
-						$parameter = "'" . $row['URL'] . "'";
-					} elseif ($rounds < $count) {
-						$parameter = "true";
-					} else {
-						$parameter = "iconRed";
-					}
-
-					$dataParameter = "";
-					if (!is_null($row['Angle']))
-						$dataParameter = ", bearing: " . $row['Angle'];
-
-					$formattedTS = escapeJSString(date($dateformat, strtotime($row['DateOccurred'])));
-
-					$html .= "   trip.appendMarker({latitude: " . $row['Latitude'] . ", longitude: " . $row['Longitude'] . ", timestamp: '" . $row['DateOccurred']. "', speed: " . $row['Speed'] . ", altitude: " . $row['Altitude'] . ", comment: '" . $row['Comments'] . "', photo: '" . $row['ImageURL'] . "'" . $dataParameter . ", formattedTS: '" . $formattedTS . "'}, " . $parameter . ");\n";
-				}
-
-				$html .= "   var polyline = L.polyline(markersLatLng, {color: \"#000000\", weight: 3, opacity: 1}).addTo(map)\n";
-
-				$html .= "   if (bounds == null) {\n";
-				$html .= "    bounds = L.latLngBounds(L.latLng(0, 0).toBounds(12000000));\n";
-				$html .= "   }\n";
-				$html .= "   map.fitBounds(bounds);\n";
-
-				if ($livetracking) {
-					$html .= "   map.setZoom(zoomlevel);\n";
-				}
-				$html .= "   //]]>\n";
-				$html .= "  </script>\n";
+		}
+		(isset($_SESSION['ID'])) ? $ID = $_SESSION['ID'] : $ID = null;
+
+		if (!isset($_SESSION['ID'])) {
+			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
+			$html .= " <head>\n";
+			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n";
+			$html .= "  <link rel=\"stylesheet\" href=\"layout.css\" type=\"text/css\">\n";
+			$html .= "  <title>$windowtitle (v$versiontext)</title>\n";
+			$html .= " </head>\n";
+			$html .= " <body onload=\"placeFocus()\">\n";
+			$html .= "  <script>\n";
+			$html .= "   function placeFocus() {\n";
+			$html .= "    if (document.forms.length > 0) {\n";
+			$html .= "     var field = document.forms[0];\n";
+			$html .= "     for (i = 0; i < field.length; i++) {\n";
+			$html .= "      if ((field.elements[i].type == \"text\") || (field.elements[i].type == \"textarea\") || (field.elements[i].type.toString().charAt(0) == \"s\")) {\n";
+			$html .= "       document.forms[0].elements[i].focus();\n";
+			$html .= "       break;\n";
+			$html .= "      }\n";
+			$html .= "     }\n";
+			$html .= "    }\n";
+			$html .= "   }\n";
+			$html .= "  </script>\n";
+			$html .= "  <center>\n";
+			$html .= "   <br><br>\n";
+			$html .= "   <div id=\"loginsection\" align=\"center\">\n";
+			$html .= "    <h1>$windowtitle (v$versiontext)</h1>\n";
+			$html .= "    $page_private_text<br>\n";
+			$html .= "    <br><br>\n";
+			$html .= "    <form id=\"form_login\" name=\"form_login\" method=\"post\"><br>\n";
+			$html .= "     <table>\n";
+			$html .= "      <tr style=\"border: 10px\">\n";
+			$html .= "       <td style=\"text-align: right;\">&nbsp;&nbsp;&nbsp;$login_username_text:&nbsp;&nbsp;</td>\n";
+			$html .= "       <td align=\"center\"><input type=\"text\" class=\"textinputfield\" name=\"username\" size=\"50\" /></td>\n";
+			$html .= "      </tr>\n";
+			$html .= "      <tr>\n";
+			$html .= "       <td style=\"text-align: right;\">&nbsp;&nbsp;&nbsp;$login_password_text:&nbsp;&nbsp;</td>\n";
+			$html .= "       <td align=\"center\"><input type=\"password\" class=\"textinputfield\" name=\"password\" size=\"50\" /></td>\n";
+			$html .= "      </tr>\n";
+			$html .= "      <tr>\n";
+			$html .= "       <td align=\"center\" colspan=\"2\"><input type=\"submit\" class=\"buttonshort\" value=\"$login_button_text\" /></td>\n";
+			$html .= "      </tr>\n";
+			$html .= "     </table>\n";
+			$html .= "    </form>\n"; // form_login
+			$html .= "    <br>\n";
+			$html .= "   </div>\n"; // loginsection
+			$html .= "  </center>\n";
+			$html .= " </body>\n";
+			$html .= "</html>\n";
+			print $html;
+			exit;
+		}
+	}
+
+	// Normal page starts here
+	$html = "";
+	$html .= "<!DOCTYPE html>\n";
+	$html .= "<html lang=\"" . $lang->code . "\">\n";
+	$html .= " <head>\n";
+	$html .= "  <meta charset=\"utf-8\" />\n";
+	$html .= "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n";
+	$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\" />\n";
+	$html .= "  <link rel=\"stylesheet\" type=\"text/css\" href=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet.css\" integrity=\"sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==\" crossorigin=\"\" />\n";
+	$html .= "  <link rel=\"stylesheet\" type=\"text/css\" href=\"flatpickr.min.css\" />\n";
+	$html .= "  <link rel=\"stylesheet\" type=\"text/css\" href=\"cookieconsent.min.css\" />\n";
+	$html .= "  <link rel=\"stylesheet\" type=\"text/css\" href=\"layout.css\" />\n";
+	$html .= "  <script src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet.js\" crossorigin=\"\"></script>\n";
+	$html .= "  <script src=\"iro.js\"></script>\n";
+	$html .= "  <script src=\"flatpickr.min.js\"></script>\n";
+	$html .= "  <script src=\"flatpickrNLS.js\"></script>\n";
+	$html .= "  <script src=\"cookieconsent.min.js\" data-cfasync=\"false\"></script>\n";
+	$html .= "  <script src=\"jquery-3.5.1.min.js\"></script>\n";
+	$html .= "  <script src=\"jquery.sparkline.min.js\"></script>\n";
+	$html .= "  <script src=\"sweetalert2.all.min.js\"></script>\n";
+	$html .= "  <script src=\"colResizable-1.6.min.js\"></script>\n";
+	$html .= "  <script src=\"main.js\"></script>\n";
+	$html .= "  <script src=\"lang.js\"></script>\n";
+	$html .= "  <title>$windowtitle (v$versiontext)</title>\n";
+	$html .= " </head>\n";
+
+	if ($livetracking) {
+		$html .= " <body onload=\"initInterval();\">\n";
+	} else {
+		$html .= " <body>\n";
+	}
+
+	$html .= "  <script>\n";
+	$html .= "   var debug0 = " . ($debug0 ? "true" : "false") . ";\n";
+	$html .= "   var debug1 = " . ($debug1 ? "true" : "false") . ";\n";
+	$html .= "   var debug2 = " . ($debug2 ? "true" : "false") . ";\n";
+	$html .= "   var debug3 = " . ($debug3 ? "true" : "false") . ";\n";
+	$html .= "   var debug4 = " . ($debug4 ? "true" : "false") . ";\n";
+	$html .= "  </script>\n";
+	$html .= "  <table id=\"trackmeviewer\">\n";
+	$html .= "   <tr>\n";
+	$html .= "    <td>\n";
+
+	$html .= "     <div id=\"mapsection\"></div>\n"; // mapsection
+
+	$html .= "     <div id=\"creditsection\">Powered by <a href=\"http://www.luisespinosa.com/trackme_eng.html\">TrackMeViewer (v$versiontext)</a> by <a href=\"http://www.luisespinosa.com/central_eng.php\">Luis Espinosa & friends</a></div>\n"; // creditsection
+
+	$html .= "    </td>\n";
+	$html .= "    <td id=\"navigationsectioncell\" style=\"width: 210px; font-size: 90%;\">\n";
+
+	$html .= "     <div id=\"navigationsection\">\n";
+
+	if ($publicpage == "yes") {
+		$html .= "      <form id=\"form_user\" name=\"form_user\" method=\"post\">\n";
+		$html .= "       <select id=\"ID\" name=\"ID\" class=\"pulldown\">\n";
+
+		$findusers = $db->exec_sql("SELECT * FROM users ORDER BY username");
+		while ($founduser = $findusers->fetch()) {
+			if (!isset($ID)) {
+				$ID     = $founduser['ID'];
+				$tripID = "";
+			}
+			if ($founduser['ID'] == $ID) {
+				$html .= "        <option value=\"$founduser[ID]\" selected>$founduser[username]</option>\n";
+				$username = $founduser['username'];
 			} else {
-				unset($_SESSION["ID"]);
-				$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
-				$html .= " <head>\n";
-				$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n";
-				$html .= "  <link rel=\"stylesheet\" href=\"layout.css\" type=\"text/css\">\n";
-				$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
-				$html .= " </head>\n";
-				$html .= " <body onload=\"placeFocus()\">\n";
-				$html .= "  <script type=\"text/javascript\">\n";
-				$html .= "   function placeFocus() {\n";
-				$html .= "    if (document.forms.length > 0) {\n";
-				$html .= "     var field = document.forms[0];\n";
-				$html .= "     for (i = 0; i < field.length; i++) {\n";
-				$html .= "      if ((field.elements[i].type == \"text\") || (field.elements[i].type == \"textarea\") || (field.elements[i].type.toString().charAt(0) == \"s\")) {\n";
-				$html .= "       document.forms[0].elements[i].focus();\n";
-				$html .= "       break;\n";
-				$html .= "      }\n";
-				$html .= "     }\n";
-				$html .= "    }\n";
-				$html .= "   }\n";
-				$html .= "  </script>\n";
-				$html .= "  <center><br><br>\n";
-				$html .= "   <div id=\"loginsection\" align=center>\n";
-				$html .= "    <h2>$title_text (v" . $version_text . ")</h2>\n";
-				$html .= "    $page_private<br>\n"; //trackmeIT
-				$html .= "    <br><br>\n";
-				$html .= "    <form name=\"form_login\" method=\"post\"><br>\n";
-				$html .= "     <table border=\"0\">";
-				$html .= "      <tr>\n";
-				$html .= "       <td align=\"right\">$login_text:</td>\n";
-				$html .= "       <td><input type=\"text\" class=\"textinputfield\" name=\"username\" size=\"10\"></td>\n";
-				$html .= "      </tr>\n";
-				$html .= "      <tr>\n";
-				$html .= "       <td align=\"right\">$password_text:</td>\n";
-				$html .= "       <td><input type=\"password\" class=\"textinputfield\" name=\"password\" size=\"10\"></td>\n";
-				$html .= "      </tr>\n";
-				$html .= "      <tr>\n";
-				$html .= "       <td align=\"right\" colspan=\"2\"><input type=\"submit\" class=\"button\" value=\"$login_button_text\"></td>\n";
-				$html .= "      </tr>\n";
-				$html .= "     </table>\n";
-				$html .= "    </form>\n";
-				$html .= "    <br>\n";
-				$html .= "    <br>\n";
-				$html .= "    <br>\n";
-				$html .= "    <br>\n";
-				$html .= "    <br>\n";
-				$html .= "   </div>\n";
-				$html .= "  </center>\n";
+				$html .= "        <option value=\"$founduser[ID]\">$founduser[username]</option>\n";
 			}
 		}
+		$html .= "       </select>\n";
+		$html .= "       <input type=\"submit\" class=\"button\" id=\"userbutton\" value=\"$select_user_text\" />\n";
+		$html .= "      </form>\n"; // form_user
+	} else {
+		$founduser = $db->exec_sql("SELECT * FROM users WHERE ID=? LIMIT 1", $ID)->fetch();
+		$username = $founduser['username'];
+		$html .= "      <form id=\"form_logout\" name=\"form_logout\" method=\"post\" style=\"display: inline;\">\n";
+		$html .= "       <br>\n";
+		$html .= "       <b><u>$trip_data_text:</u></b>\n";
+		$html .= "       " . $founduser['username'] . "<br>\n";
+		$html .= "       <input type=\"hidden\" name=\"ID\" value=\"$ID\" />\n";
+		$html .= "       <input type=\"hidden\" name=\"action\" value=\"logout\" />\n";
+		$html .= "       <input type=\"submit\" class=\"button\" id=\"logoutbutton\" value=\"$logout_button_text\" />\n";
+		$html .= "      </form>\n"; // form_logout
+	}
+	$html .= "      <br><br>\n";
+
+	$html .= "      <form id=\"form_attributes\" name=\"form_attributes\" method=\"post\" accept-charset=\"utf-8\" style=\"display: inline;\">\n";
+
+	if ($livetracking) { $chk = " checked"; } else { $chk = ""; }
+	$html .= "       <input type=\"hidden\" name=\"setlivetracking\" value=\"0\" />\n";
+	$html .= "       <input type=\"checkbox\" name=\"setlivetracking\" id=\"setlivetracking\" value=\"1\"$chk onClick=\"document.form_attributes.submit();\" />\n";
+	$html .= "       <label id=\"label_setlivetracking\" for=\"setlivetracking\" style=\"color: lightblue;\">$livetracking_text<br></label>\n";
+
+	if (!$livetracking) {
+		if ($chartdisplay) { $chk = " checked"; } else { $chk = ""; }
+		$html .= "       <input type=\"hidden\" name=\"setchartdisplay\" value=\"0\" />\n";
+		$html .= "       <input type=\"checkbox\" name=\"setchartdisplay\" id=\"setchartdisplay\" value=\"1\"$chk onClick=\"document.form_attributes.submit();\" />\n";
+		$html .= "       <label id=\"label_setchartdisplay\" for=\"setchartdisplay\" style=\"color: lightblue;\">$chartdisplay_text<br></label>\n";
+	}
+
+	if ($allowcustom == "yes") {
+		if ($attributedisplay) { $chk = " checked"; } else { $chk = ""; }
+		$html .= "       <input type=\"hidden\" name=\"setattributedisplay\" value=\"0\" />\n";
+		$html .= "       <input type=\"checkbox\" name=\"setattributedisplay\" id=\"setattributedisplay\" value=\"1\"$chk onClick=\"toggleDisplayOptions();\" />\n";
+		$html .= "       <label id=\"label_setattributedisplay\" for=\"setattributedisplay\" style=\"color: lightblue;\">$attributedisplay_text<br></label>\n";
+
+		$html .= "       <div id=\"attribute_section\" style=\"display: " . ($attributedisplay ? "inline" : "none") . ";\">\n";
+		$html .= "        <b><u>$options_title:</u></b><br>\n";
+		if ($livetracking) {
+		} else {
+			$html .= "        <div id=\"colorLine\" class=\"wheel\" style=\"display: inline;\">\n";
+			$html .= "         <input type=\"text\" name=\"setlinecolor\" id=\"setlinecolor\" style=\"visibility: hidden; position: absolute;\" value=\"$linecolor\" />\n";
+			$html .= "        </div>\n";
+			$html .= "        <label id=\"label_setlinecolor\" for=\"setlinecolor\">$options_linecolor_text<br></label>\n";
+
+			$chk = ($markertype ? " checked" : "");
+			$html .= "        <input type=\"hidden\" name=\"setmarkertype\" value=\"0\" />\n";
+			$html .= "        <input type=\"checkbox\" name=\"setmarkertype\" id=\"setmarkertype\" value=\"1\"$chk onClick=\"document.form_attributes.submit();\" />\n";
+			$html .= "        <label id=\"label_setmarkertype\" for=\"setmarkertype\">$options_markertype_text<br></label>\n";
+
+			$chk = ($showbearings ? " checked" : "");
+			if ($markertype) {
+				$color    = "color: #ffffff;";
+				$value    = " value=\"1\"";
+				$disabled = "";
+			} else {
+				$color    = "color: #aaaaaa;";
+				$value    = " value=\"0\"";
+				$disabled = " disabled";
+			}
+			$html .= "        <input type=\"hidden\" name=\"setshowbearings\" value=\"0\" />\n";
+			$html .= "        <input type=\"checkbox\" name=\"setshowbearings\" id=\"setshowbearings\" value=\"1\"$chk$disabled onClick=\"document.form_attributes.submit();\" />\n";
+			$html .= "        <label id=\"label_setshowbearings\" for=\"setshowbearings\" style=\"$color\">$options_showbearing_text<br></label>\n";
+		}
+
+		$chk = ($crosshair ? " checked" : "");
+		$html .= "        <input type=\"hidden\" name=\"setcrosshair\" value=\"0\" />\n";
+		$html .= "        <input type=\"checkbox\" name=\"setcrosshair\" id=\"setcrosshair\" value=\"1\"$chk onClick=\"document.form_attributes.submit();\" />\n";
+		$html .= "        <label id=\"label_setcrosshair\" for=\"setcrosshair\">$options_crosshair_text<br></label>\n";
+
+		$chk = ($clickcenter ? " checked" : "");
+		$html .= "        <input type=\"hidden\" name=\"setclickcenter\" value=\"0\" />\n";
+		$html .= "        <input type=\"checkbox\" name=\"setclickcenter\" id=\"setclickcenter\" value=\"1\"$chk onClick=\"document.form_attributes.submit();\" />\n";
+		$html .= "        <label id=\"label_setclickcenter\" for=\"setclickcenter\">$options_clickcenter_text<br></label>\n";
+
+		$html .= "        <label id=\"label_setlanguage\" for=\"setlanguage\">$options_language_text<br></label>\n";
+		$html .= "        <select id=\"setlanguage\" name=\"setlanguage\" class=\"pulldown\" onchange=\"document.form_attributes.submit();\">\n";
+		foreach (array_values($languages) as $lang_entry) {
+			$lang_name = ($lang_entry->en ? strtolower($lang_entry->en) : "english");
+			$html .= "         <option value=\"$lang_name\"" . ($language === $lang_name ? " selected" : "") . ">$lang_entry->full_name</option>\n";
+		}
+		$html .= "        </select><br>\n";
+
+		$html .= "        <label id=\"label_setunits\" for=\"setunits\">$options_units_text<br></label>\n";
+		$html .= "        <select id=\"setunits\" name=\"setunits\" class=\"pulldown\" onchange=\"document.form_attributes.submit();\">\n";
+		$html .= "         <option value=\"imperial\"" . ($units == "imperial" ? " selected" : "") . ">Imperial</option>\n";
+		$html .= "         <option value=\"metric\""   . ($units == "metric"   ? " selected" : "") . ">Metric</option>\n";
+		$html .= "        </select><br>\n";
+
+		$html .= "        <label id=\"label_settileprovider\" for=\"settileprovider\">$options_tileprovider_text<br></label>\n";
+		$html .= "        <select id=\"settileprovider\" name=\"settileprovider\" class=\"pulldown\" onchange=\"document.form_attributes.submit();\">\n";
+		foreach ($tileproviders as $tileprovidername => $tileproviderspecs) {
+			$html .= "         <option value=\"" . $tileprovidername . "\"" . ($tileprovidername == $tileprovider ? " selected" : "") . ">" . $tileprovidername . "</option>\n";
+		}
+		$html .= "        </select><br>\n";
+
+		$chk = ($tilePT ? " checked" : "");
+		$html .= "        <input type=\"hidden\" name=\"settilePT\" value=\"0\" />\n";
+		$html .= "        <input type=\"checkbox\" name=\"settilePT\" id=\"settilePT\" value=\"1\"$chk onClick=\"document.form_attributes.submit();\" />\n";
+		$html .= "        <label id=\"label_settilePT\" for=\"settilePT\">$options_tilePT_text<br></label>\n";
+
+		$html .= "       </div>\n"; // attribute_section
+
+		$html .= "       <br>\n";
+	}
+
+	if ($livetracking) {
+		$tripname = "";
+	} else {
+		$stmt = "SELECT A1.*, (SELECT MIN(A2.DateOccurred) FROM positions A2 WHERE A2.FK_Trips_ID=A1.ID) AS Startdate FROM trips A1 WHERE A1.FK_Users_ID=? ORDER BY Startdate DESC";
+		$foundtrips = $db->exec_sql($stmt, $ID)->fetchAll();
+		if (count($foundtrips) == 0) {
+			$tripID   = $trip_any_text;
+			$tripname = "";
+			$comments = "";
+		} else {
+			$selectedtrip = "";
+			$groupedtrips = false;
+			foreach ($foundtrips as $foundtrip) {
+				list($trippartgroup, $trippartname) = gettripnameparts($foundtrip['Name'], $no_tripgroup_text);
+				if ($trippartgroup != $no_tripgroup_text) $groupedtrips = true;
+				$tripsnameindexed[$trippartgroup][$trippartname] = $foundtrip;
+				$tripsintindexed[$trippartgroup][] = $foundtrip;
+				if ($foundtrip['ID'] == $tripID) $selectedtrip = $foundtrip;
+			}
+
+			if (!isset($tripsintindexed[$tripgroup][0])) {
+				$tripgroup = array_keys($tripsnameindexed)[0];
+			}
+			$anytrip = array("ID" => $trip_any_text, "Name" => $trip_any_text, "FK_Users_ID" => null, "Comments" => null);
+			if ($selectedtrip == "") {
+				if ($tripID == $trip_any_text) {
+					$selectedtrip = $anytrip;
+				} else {
+					$selectedtrip = $tripsintindexed[$tripgroup][0];
+				}
+			}
+
+			$deleteButton = ($selectedtrip['FK_Users_ID'] === $_SESSION['ID']);
+			$tripID   = $selectedtrip['ID'];
+			$tripname = $selectedtrip['Name'];
+			$comments = $selectedtrip['Comments'];
+			if ($tripID != $trip_any_text) list($tripgroup, $dummy) = gettripnameparts($tripname, $no_tripgroup_text);
+			if ($debug1) debug2console("Selected tripID:", $tripID);
+			if ($debug1) debug2console("Selected tripname:", $tripname);
+			if ($debug1) debug2console("Selected tripcomment:", $comments);
+			if ($debug1) debug2console("Selected tripgroup:", $tripgroup);
+
+			$html .= "       <b><u>$trip_title:</u></b><br>\n";
+
+			if ($groupedtrips) {
+				$html .= "       <table>\n";
+				$html .= "        <tr>\n";
+				$html .= "         <td style=\"text-align: left;\">\n";
+				$html .= "          $trip_group:\n";
+				$html .= "         </td>\n";
+				$html .= "         <td style=\"text-align: right;\">\n";
+				$html .= "          <select id=\"settripgroup\" name=\"settripgroup\" class=\"pulldownshorter\" onchange=\"submitTripGroup();\" >\n";
+				foreach ($tripsnameindexed as $tripsgroupname => $tripsarray) {
+					$html .= "           <option value=\"" . $tripsgroupname . "\"" . ($tripsgroupname == $tripgroup ? " selected" : "") . ">" . $tripsgroupname . "</option>\n";
+				}
+				$html .= "          </select>\n";
+				$html .= "         </td>\n";
+				$html .= "        </tr>\n";
+				$html .= "        <tr>\n";
+				$html .= "         <td style=\"text-align: left;\">\n";
+				$html .= "          $trip_name:\n";
+				$html .= "         </td>\n";
+				$html .= "         <td style=\"text-align: right;\">\n";
+				$html .= "          <select id=\"settripID\" name=\"settripID\" class=\"pulldownshorter\" onchange=\"submitTrip();\" >\n";
+			} else {
+				$html .= "       <select id=\"settripID\" name=\"settripID\" class=\"pulldown\" onchange=\"submitTrip();\" >\n";
+			}
+
+			$tripsnameindexed[$tripgroup] = array_merge(array($trip_any_text => $anytrip), $tripsnameindexed[$tripgroup]);
+			foreach ($tripsnameindexed[$tripgroup] as $tripsname => $trip) {
+				list($trippartgroup, $trippartname) = gettripnameparts($tripsname, $no_tripgroup_text);
+				$html .= "           <option value=\"" . $trip['ID'] . "\"" . ($trip['ID'] == $tripID ? " selected" : "") . ">" . $trippartname . "</option>\n";
+			}
+			if ($groupedtrips) {
+				$html .= "          </select>\n";
+				$html .= "         </td>\n";
+				$html .= "        </tr>\n";
+				$html .= "       </table>\n";
+			} else {
+				$html .= "       </select>\n";
+			}
+
+			if ($deleteButton) {
+				$html .= "       <input type=\"button\" class=\"buttonshort\" id=\"deletetripbutton\" value=\"$delete_trip_button_text\" onclick=\"deleteTrip();\" />\n";
+				if ($allowDBchange == "yes") {
+					$html .= "       <input type=\"button\" class=\"buttonshort\" id=\"renametripbutton\" value=\"$rename_trip_button_text\" onclick=\"renameTrip();\" />\n";
+					$html .= "       <br>\n";
+					if ($comments == "") { $dis = " disabled"; $cla = "buttonshortreverse"; } else { $dis = ""; $cla = "buttonshort"; }
+					$html .= "       <input type=\"button\" class=\"" . $cla . "\" id=\"deletecommentsbutton\" value=\"$delete_trip_comments_button_text\"$dis onclick=\"deleteTripComments();\" />\n";
+					$html .= "       <input type=\"button\" class=\"buttonshort\" id=\"changecommentsbutton\" value=\"$change_trip_comments_button_text\" onclick=\"changeTripComments();\" />\n";
+				}
+				$html .= "       <br><br>\n";
+			}
+		}
+	}
+
+	$params = array($ID);
+	if ($livetracking) {
+		$where = "";
+		$limit = "1";
+	} else {
+		$where = "";
+		$limit = "0";
+		if ($tripname !== $trip_any_text) {
+			$where .= " AND FK_Trips_ID=?";
+			$params[] = $tripID;
+		}
+		if ($tripgroup !== $no_tripgroup_text) {
+			$where .= " AND FK_Trips_ID IN (SELECT ID FROM trips WHERE Name LIKE ?)";
+			$params[] = $tripgroup . ":%";
+		}
+
+		if ($filterstartNLS != null && trim($filterstartNLS) != "") {
+			$filterstartDB = date_format(date_create_from_format($dateformat . " " . $timeformat, $filterstartNLS), "Y-m-d H:i:s");
+			$filterendDB   = date_format(date_create_from_format($dateformat . " " . $timeformat, $filterendNLS  ), "Y-m-d H:i:s");
+			$where .= " AND DateOccurred BETWEEN ? AND ?";
+			$params[] = $filterstartDB;
+			$params[] = $filterendDB;
+		}
+	}
+	if ($limit > 0) {
+		$limit = "DESC LIMIT " . $limit;
+	} else {
+		$limit = "";
+	}
+
+	$stmt = "SELECT * FROM positions WHERE FK_Users_ID=?$where ORDER BY DateOccurred $limit";
+	$result = $db->exec_sql($stmt, $params);
+
+	$rounds           = 1;
+	$total_time       = 0;
+	$pcount           = 0;
+	$ccount           = 0;
+	$total_miles      = 0;		$total_kilometers = 0;
+	$speed_mph_max    = 0;		$speed_kph_max    = 0;
+	$speed_mph_min    = 999999;	$speed_kph_min    = 999999;
+	$alt_ft_start     = 0;		$alt_m_start      = 0;
+	$alt_ft_end       = 0;		$alt_m_end        = 0;
+	$alt_ft_max       = 0;		$alt_m_max        = 0;
+	$alt_ft_min       = 999999;	$alt_m_min        = 999999;
+	$alt_ft_tot_desc  = 0;		$alt_m_tot_desc   = 0;
+	$alt_ft_tot_asc   = 0;		$alt_m_tot_asc    = 0;
+	$alt_max_asc      = 0;
+	$alt_max_desc     = 0;
+	$subtract_time    = 0;
+
+	while ($row = $result->fetch()) {
+		$lat    = $row['Latitude'];
+		$lon    = $row['Longitude'];
+		$mph    = $row['Speed'] * 2.2369362920544;
+		$kph    = $row['Speed'] * 3.6;
+		$altft   = $row['Altitude'] * 3.2808399;
+		$altm = $row['Altitude'];
+		if ($row['ImageURL'] != '')
+			$pcount++;
+		if ($row['Comments'] != '')
+			$ccount++;
+		$currdayDB = $row['DateOccurred'];
+
+		if ($rounds == 1) {
+			$filterstartNLS     = date_format(date_create_from_format("Y-m-d H:i:s", $currdayDB), $dateformat . " " . $timeformat);
+			$firstdayDB         = $currdayDB;
+			$alt_ft_start       = $altft;
+			$alt_m_start        = $altm;
+			$alt_ft_end         = $altft;
+			$alt_m_end          = $altm;
+		} else {
+			$leg_miles          = calcDistance($lat, $lon, $holdlat, $holdlon, "m");
+			$leg_feet           = $leg_miles * 5280;
+			$total_miles        += $leg_miles;
+			$total_kilometers   = $total_miles * 1.609344;
+			$alt_ft_end         = $altft;
+			$alt_m_end          = $altm;
+			if ($leg_feet <= 3) $subtract_time += getElapsedTime($holddayDB, $currdayDB);
+			if ($altft - $holdaltft > 0) $alt_ft_tot_asc  += ($altft - $holdaltft);
+			if ($altm  - $holdaltm  > 0) $alt_m_tot_asc   += ($altm  - $holdaltm);
+			if ($altft - $holdaltft < 0) $alt_ft_tot_desc += ($altft - $holdaltft);
+			if ($altm  - $holdaltm  < 0) $alt_m_tot_desc  += ($altm  - $holdaltm);
+			if ($leg_feet > 0) if (($altft - $holdaltft)/$leg_feet > $alt_max_asc)  $alt_max_asc  = ($altft - $holdaltft)/$leg_feet*100;
+			if ($leg_feet > 0) if (($altft - $holdaltft)/$leg_feet < $alt_max_desc) $alt_max_desc = ($altft - $holdaltft)/$leg_feet*100;
+		}
+
+		$holdlat   = $lat;
+		$holdlon   = $lon;
+		$holdaltft = $altft;
+		$holdaltm  = $altm;
+		$holddayDB = $currdayDB;
+		if ($mph > $speed_mph_max) $speed_mph_max = $mph;
+		if ($mph < $speed_mph_min) $speed_mph_min = $mph;
+		if ($kph > $speed_kph_max) $speed_kph_max = $kph;
+		if ($kph < $speed_kph_min) $speed_kph_min = $kph;
+		if ($altft > $alt_ft_max) $alt_ft_max = $altft;
+		if ($altft < $alt_ft_min) $alt_ft_min = $altft;
+		if ($altm > $alt_m_max) $alt_m_max = $altm;
+		if ($altm < $alt_m_min) $alt_m_min = $altm;
+		$rounds++;
+	}
+
+	$rounds--;
+	if ($rounds == 0) {
+		$filterstartNLS = $filterstart;
+		$filterendNLS   = $filterend;
+		$total_time = 0;
+	} else {
+		$filterendNLS = date_format(date_create_from_format("Y-m-d H:i:s", $currdayDB), $dateformat . " " . $timeformat);
+		$total_time = getElapsedTime($firstdayDB, $currdayDB);
+	}
+
+	if ($total_time == 0) $total_time = 0.001;
+	$display_total_time = gmdate("H:i:s", $total_time);
+	$move_time = $total_time - $subtract_time;
+	$display_move_time = gmdate("H:i:s", $move_time);
+	$startday_date = substr($filterstartNLS, 0, 10);
+	$startday_time = substr($filterstartNLS, -8, 8);
+	$endday_date   = substr($filterendNLS, 0, 10);
+	$endday_time   = substr($filterendNLS, -8, 8);
+	$speed_mph_avg = $total_miles      * 3600 / $total_time;
+	$speed_kph_avg = $total_kilometers * 3600 / $total_time;
+	if ($speed_mph_max > 0) $pace_pmi_max = 60 / $speed_mph_max;
+	else                    $pace_pmi_max = 0;
+	if ($speed_mph_min > 0) $pace_pmi_min = 60 / $speed_mph_min;
+	else                    $pace_pmi_min = 0;
+	if ($speed_mph_avg > 0) $pace_pmi_avg = 60 / $speed_mph_avg;
+	else                    $pace_pmi_avg = 0;
+	if ($speed_kph_max > 0) $pace_pkm_max = 60 / $speed_kph_max;
+	else                    $pace_pkm_max = 0;
+	if ($speed_kph_min > 0) $pace_pkm_min = 60 / $speed_kph_min;
+	else                    $pace_pkm_min = 0;
+	if ($speed_kph_avg > 0) $pace_pkm_avg = 60 / $speed_kph_avg;
+	else                    $pace_pkm_avg = 0;
+	$alt_ft_tot_diff = $alt_ft_end - $alt_ft_start;
+	$alt_m_tot_diff  = $alt_m_end  - $alt_m_start;
+
+	if (!$livetracking) {
+		$html .= "       <b><u>$filter_title:</u></b>\n";
+		$html .= "       <select id=\"setfilterwith\" name=\"setfilterwith\" class=\"pulldown\" onchange=\"document.form_attributes.submit();\" form=\"form_attributes\">\n";
+		$html .= "        <option value=\"None\""         . ($filterwith == "None"         ? " selected" : "") . ">$filter_none_text</option>\n";
+		$html .= "        <option value=\"Photo\""        . ($filterwith == "Photo"        ? " selected" : "") . ">$filter_photo_text</option>\n";
+		$html .= "        <option value=\"Comment\""      . ($filterwith == "Comment"      ? " selected" : "") . ">$filter_comment_text</option>\n";
+		$html .= "        <option value=\"PhotoComment\"" . ($filterwith == "PhotoComment" ? " selected" : "") . ">$filter_photo_comment_text</option>\n";
+		$html .= "        <option value=\"Last20\""       . ($filterwith == "Last20"       ? " selected" : "") . ">$filter_last20_text</option>\n";
+		$html .= "       </select>\n";
+
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td style=\"text-align: left;\">\n";
+		$html .= "          $filter_startdate_text:\n";
+		$html .= "         </td>\n";
+		$html .= "         <td style=\"text-align: right;\">\n";
+		$html .= "          <input type=\"text\" class=\"textinputfield\" id=\"setfilterstart\" name=\"setfilterstart\" value=\"$filterstartNLS\">\n";
+		$html .= "         </td>\n";
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td style=\"text-align: left;\">\n";
+		$html .= "          $filter_enddate_text:\n";
+		$html .= "         </td>\n";
+		$html .= "         <td style=\"text-align: right;\">\n";
+		$html .= "          <input type=\"text\" class=\"textinputfield\" id=\"setfilterend\" name=\"setfilterend\" value=\"$filterendNLS\">\n";
+		$html .= "         </td>\n";
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <br><br>\n";
+	}
+
+	if ($livetracking) {
+		$html .= "       <b><u>$reloadoptions_title:</u></b>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td style=\"text-align: right;\">\n";
+		$html .= "          $reloadoptions_interval_text:\n";
+		$html .= "         </td>\n";
+		$html .= "         <td align=\"center\">\n";
+		$html .= "          <input type=\"text\" class=\"intervalinputfield\" name=\"interval\" value=\"-\" size=\"1\" style=\"display: inline-block;\" />\n";
+		$html .= "         </td>\n";
+		$html .= "         <td style=\"text-align: left;\">\n";
+		$html .= "          $reloadoptions_sec_text\n";
+		$html .= "         </td>\n";
+		$html .= "         <td width=\"70%\">\n";
+		$html .= "          <input type=\"button\" class=\"button\" name=\"start\" value=\"$start_timer_text\" style=\"display: inline-block;\" onClick=\"clearTimeout(k); initInterval();\" /><br>\n";
+		$html .= "         </td>\n";
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td style=\"text-align: right;\">\n";
+		$html .= "          $reloadoptions_reloadin_text:\n";
+		$html .= "         </td>\n";
+		$html .= "         <td align=\"center\">\n";
+		$html .= "          <input type=\"text\" class=\"intervalinputfield\" name=\"seconds\" value=\"-\" size=\"1\" style=\"display: inline-block;\" readonly/>\n";
+		$html .= "         </td>\n";
+		$html .= "         <td style=\"text-align: left;\">\n";
+		$html .= "          $reloadoptions_sec_text\n";
+		$html .= "         </td>\n";
+		$html .= "         <td width=\"70%\">\n";
+		$html .= "          <input type=\"button\" class=\"button\" name=\"stop\" value=\"$stop_timer_text\" style=\"display: inline-block;\" onClick=\"clearTimeout(k); document.form_attributes.seconds.value = document.form_attributes.interval.value;\" />\n";
+		$html .= "         </td>\n";
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+
+		$html .= "       <br>\n";
+
+		$html .= "       <b><u>$zoomlevel_title:</u></b>\n";
+		$html .= "       <select id=\"zoomlevel\" name=\"zoomlevel\" class=\"pulldown\">\n";
+		$html .= "        <option value=3"  . ($zoomlevel ==  3 ? " selected" : "") . ">Level 3 ($zoomlevel_world_text)\n";
+		$html .= "        <option value=4"  . ($zoomlevel ==  4 ? " selected" : "") . ">Level 4\n";
+		$html .= "        <option value=5"  . ($zoomlevel ==  5 ? " selected" : "") . ">Level 5 ($zoomlevel_continent_text)\n";
+		$html .= "        <option value=6"  . ($zoomlevel ==  6 ? " selected" : "") . ">Level 6\n";
+		$html .= "        <option value=7"  . ($zoomlevel ==  7 ? " selected" : "") . ">Level 7 ($zoomlevel_country_text)\n";
+		$html .= "        <option value=8"  . ($zoomlevel ==  8 ? " selected" : "") . ">Level 8\n";
+		$html .= "        <option value=9"  . ($zoomlevel ==  9 ? " selected" : "") . ">Level 9 ($zoomlevel_area_text)\n";
+		$html .= "        <option value=10" . ($zoomlevel == 10 ? " selected" : "") . ">Level 10\n";
+		$html .= "        <option value=11" . ($zoomlevel == 11 ? " selected" : "") . ">Level 11 ($zoomlevel_city_text)\n";
+		$html .= "        <option value=12" . ($zoomlevel == 12 ? " selected" : "") . ">Level 12\n";
+		$html .= "        <option value=13" . ($zoomlevel == 13 ? " selected" : "") . ">Level 13 ($zoomlevel_village_text)\n";
+		$html .= "        <option value=14" . ($zoomlevel == 14 ? " selected" : "") . ">Level 14\n";
+		$html .= "        <option value=15" . ($zoomlevel == 15 ? " selected" : "") . ">Level 15 ($zoomlevel_road_text)\n";
+		$html .= "        <option value=16" . ($zoomlevel == 16 ? " selected" : "") . ">Level 16\n";
+		$html .= "        <option value=17" . ($zoomlevel == 17 ? " selected" : "") . ">Level 17 ($zoomlevel_block_text)\n";
+		$html .= "        <option value=18" . ($zoomlevel == 18 ? " selected" : "") . ">Level 18\n";
+		$html .= "        <option value=19" . ($zoomlevel == 19 ? " selected" : "") . ">Level 19 ($zoomlevel_house_text)\n";
+		$html .= "       </select>\n";
+
+		$html .= "   <br><br>\n";
+		if ($units == "metric") {
+			$html .= "       <b>$balloon_speed_text: </b>"          . number_format($kph, 2)              . " $balloon_unit_speed_metric_text<br>\n";
+			$html .= "       <b>$balloon_altitude_text: </b>"       . number_format($altm, 2)             . " $balloon_unit_altitude_metric_text<br>\n";
+			$html .= "       <b>$balloon_total_distance_text: </b>" . number_format($total_kilometers, 2) . " $balloon_unit_distance_metric_text\n";
+		} else {
+			$html .= "       <b>$balloon_speed_text: </b>"          . number_format($mph, 2)              . " $balloon_unit_speed_imperial_text<br>\n";
+			$html .= "       <b>$balloon_altitude_text: </b>"       . number_format($altft, 2)            . " $balloon_unit_altitude_imperial_text<br>\n";
+			$html .= "       <b>$balloon_total_distance_text: </b>" . number_format($total_miles, 2)      . " $balloon_unit_distance_imperial_text\n";
+		}
+	} else {
+		$html .= "       <b><u>$summary_trip_info_title:</u></b>\n";
+		$html .= "       <br>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "          <td><b>$summary_trip_comments_text:</b></td>\n";
+		$html .= "          <td>$comments</td>\n";
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <br>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$balloon_total_distance_text:</b></td>\n";
+		$html .= "         <td>" . (($units == "metric") ? number_format($total_kilometers,2) . " $balloon_unit_distance_metric_text" : number_format($total_miles,2) . " $balloon_unit_distance_imperial_text") . "</td>\n";
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_total_time_text:</b>\n";
+		$html .= "         <td>$display_total_time</td>\n";
+		$html .= "         <td><b>$summary_move_time_text:</b></td>\n";
+		$html .= "         <td>$display_move_time</td>\n";
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <br>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_start_date_time_text:</b></td>\n";
+		$html .= "         <td>$startday_date</td>\n";
+		$html .= "         <td>$startday_time</td>\n";
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_end_date_time_text:</b></td>\n";
+		$html .= "         <td>$endday_date</td>\n";
+		$html .= "         <td>$endday_time</td>\n";
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <br>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>&nbsp;</b></td>\n";
+		$html .= "         <td><b>$summary_max_text</b></td>\n";
+		$html .= "         <td><b>$summary_min_text</b></td>\n";
+		$html .= "         <td><b>$summary_avg_text</b></td>\n";
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_speed_text:</b></td>\n";
+		if ($units == "metric") {
+			$html .= "         <td>" . number_format($speed_kph_max, 2) . " $balloon_unit_speed_metric_text</td>\n";
+			$html .= "         <td>" . number_format($speed_kph_min, 2) . " $balloon_unit_speed_metric_text</td>\n";
+			$html .= "         <td>" . number_format($speed_kph_avg, 2) . " $balloon_unit_speed_metric_text</td>\n";
+		} else {
+			$html .= "         <td>" . number_format($speed_mph_max, 2) . " $balloon_unit_speed_imperial_text</td>\n";
+			$html .= "         <td>" . number_format($speed_mph_min, 2) . " $balloon_unit_speed_imperial_text</td>\n";
+			$html .= "         <td>" . number_format($speed_mph_avg, 2) . " $balloon_unit_speed_imperial_text</td>\n";
+		}
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_pace_text:</b></td>\n";
+		if ($units == "metric") {
+			$html .= "         <td>" . number_format($pace_pkm_max, 2) . " $balloon_unit_pace_metric_text</td>\n";
+			$html .= "         <td>" . number_format($pace_pkm_min, 2) . " $balloon_unit_pace_metric_text</td>\n";
+			$html .= "         <td>" . number_format($pace_pkm_avg, 2) . " $balloon_unit_pace_metric_text</td>\n";
+		} else {
+			$html .= "         <td>" . number_format($pace_pmi_max, 2) . " $balloon_unit_pace_imperial_text</td>\n";
+			$html .= "         <td>" . number_format($pace_pmi_min, 2) . " $balloon_unit_pace_imperial_text</td>\n";
+			$html .= "         <td>" . number_format($pace_pmi_avg, 2) . " $balloon_unit_pace_imperial_text</td>\n";
+		}
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_alt_text:</b></td>\n";
+		if ($units == "metric") {
+			$html .= "         <td>" . number_format($alt_m_max, 0) . " $balloon_unit_altitude_metric_text</td>\n";
+			$html .= "         <td>" . number_format($alt_m_min, 0) . " $balloon_unit_altitude_metric_text</td>\n";
+		} else {
+			$html .= "         <td>" . number_format($alt_ft_max, 0) . " $balloon_unit_altitude_imperial_text</td>\n";
+			$html .= "         <td>" . number_format($alt_ft_min, 0) . " $balloon_unit_altitude_imperial_text</td>\n";
+		}
+		$html .= "         <td><b>&nbsp;</b></td>\n";
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <br>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>&nbsp;</b></td>\n";
+		$html .= "         <td><b>$summary_start_text</b></td>\n";
+		$html .= "         <td><b>$summary_end_text</b></td>\n";
+		$html .= "         <td><b>$summary_diff_text</b></td>\n";
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_alt_text:</b></td>\n";
+		if ($units == "metric") {
+			$html .= "         <td>" . number_format($alt_m_start, 0)    . " $balloon_unit_altitude_metric_text</td>\n";
+			$html .= "         <td>" . number_format($alt_m_end, 0)      . " $balloon_unit_altitude_metric_text</td>\n";
+			$html .= "         <td>" . number_format($alt_m_tot_diff, 0) . " $balloon_unit_altitude_metric_text</td>\n";
+		} else {
+			$html .= "         <td>" . number_format($alt_ft_start, 0)    . " $balloon_unit_altitude_imperial_text</td>\n";
+			$html .= "         <td>" . number_format($alt_ft_end, 0)      . " $balloon_unit_altitude_imperial_text</td>\n";
+			$html .= "         <td>" . number_format($alt_ft_tot_diff, 0) . " $balloon_unit_altitude_imperial_text</td>\n";
+		}
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <br>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>&nbsp;</b></td>\n";
+		$html .= "         <td><b>$summary_total_text</b></td>\n";
+		$html .= "         <td><b>$summary_max_text</b></td>\n";
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		if ($units == "metric") {
+			$html .= "         <td><b>$summary_asc_text:</b></td>\n";
+			$html .= "         <td>" . number_format($alt_m_tot_asc, 0) . " $balloon_unit_altitude_metric_text</td>\n";
+			$html .= "         <td>" . number_format($alt_max_asc, 2)   . " %</td>\n";
+			$html .= "        </tr>\n";
+			$html .= "        <tr>\n";
+			$html .= "         <td><b>$summary_desc_text:</b></td>\n";
+			$html .= "         <td>" . number_format($alt_m_tot_desc, 0) . " $balloon_unit_altitude_metric_text<br>\n";
+			$html .= "         <td>" . number_format($alt_max_desc, 2)   . " %<br>\n";
+		} else {
+			$html .= "         <td><b>$summary_asc_text:</b></td>\n";
+			$html .= "         <td>" . number_format($alt_ft_tot_asc, 0). " $balloon_unit_altitude_imperial_text</d>\n";
+			$html .= "         <td>" . number_format($alt_max_asc, 2)   . " %</td>\n";
+			$html .= "        </tr>\n";
+			$html .= "        <tr>\n";
+			$html .= "         <td><b>$summary_desc_text:</b></td>\n";
+			$html .= "         <td>" . number_format($alt_ft_tot_desc, 0) . " $balloon_unit_altitude_imperial_text</td>\n";
+			$html .= "         <td>" . number_format($alt_max_desc, 2)    . " %</td>\n";
+		}
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <br>\n";
+		$html .= "       <table>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_points_text:</b></td>\n";
+		$html .= "         <td>$rounds</td>\n";
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_waypoint_comments_text:</b></td>\n";
+		$html .= "         <td>$ccount</td>\n";
+		$html .= "        </tr>\n";
+		$html .= "        <tr>\n";
+		$html .= "         <td><b>$summary_photos_text:</b></td>\n";
+		$html .= "         <td>$pcount</td>\n";
+		$html .= "        </tr>\n";
+		$html .= "       </table>\n";
+		$html .= "       <br><br>\n";
+	}
+
+	$html .= "       <input type=\"hidden\" name=\"ID\" value=\"$ID\" />\n";
+	$html .= "       <input type=\"hidden\" name=\"username\" value=\"$username\" />\n";
+	$html .= "       <input type=\"hidden\" name=\"password\" value=\"$password\" />\n";
+	$html .= "      </form>\n"; // form_attributes
+
+	if (!$livetracking) {
+		// 2009-05-07 DMR Add Link to download the currently displayed data. -->
+		$html .= "      <b><u>$downloadtrip_title:</u></b><br>\n";
+		if ($filterstartNLS != null && trim($filterstartNLS) != "") {
+			$filterstartDB = date_format(date_create_from_format($dateformat . " " . $timeformat, $filterstartNLS), "Y-m-d H:i:s");
+			$filterendDB   = date_format(date_create_from_format($dateformat . " " . $timeformat, $filterendNLS  ), "Y-m-d H:i:s");
+		} else {
+			$filterstartDB = "";
+			$filterendDB   = "";
+		}
+		$exportOptions  = "&db=8";
+		$exportOptions .= "&df=" . urlencode($filterstartDB);
+		$exportOptions .= "&dt=" . urlencode($filterendDB);
+		$exportOptions .= "&tn=" . urlencode($tripname);
+		$exportOptions .= "&sb=" . ($showbearings ? "yes" : "no");
+		$html .= "      <form id=\"form_downloadkml\" name=\"form_downloadkml\" method=\"post\" action=\"download.php?a=kml" . $exportOptions . "\" style=\"display: inline;\">\n";
+		$html .= "       <input type=\"hidden\" name=\"ID\" value=\"$ID\" />\n";
+		$html .= "       <input type=\"submit\" class=\"buttonshort\" id=\"downloadkml\" value=\"KML Format\" />\n";
+		$html .= "      </form>\n"; // form_downloadkml
+//		$html .= "      &nbsp;\n";
+		$html .= "      <form id=\"form_downloadgpx\" name=\"form_downloadgpx\" method=\"post\" action=\"download.php?a=gpx" . $exportOptions . "\" style=\"display: inline;\">\n";
+		$html .= "       <input type=\"hidden\" name=\"ID\" value=\"$ID\" />\n";
+		$html .= "       <input type=\"submit\" class=\"buttonshort\" id=\"downloadgpx\" value=\"GPX Format\" />\n";
+		$html .= "      </form>\n"; // form_downloadgpx
+		// 2009-05-07 DMR Add Link to download the currently displayed data. <--
+	}
+	$html .= "      <br><br><br>\n";
+	$html .= "     </div>\n"; // navigationsection
+
+	$html .= "     <script>\n";
+	$html .= "      lang.setCode(\"$lang->code\");\n";
+	if ($livetracking) {
+	} else {
+		$options = "dateFormat: \"$dateformat $timeformat\", locale: \"$lang->code\", enableTime: true, enableSeconds: true, hourIncrement: 1, minuteIncrement: 1, time_24hr: true, shorthandCurrentMonth: true, onClose: function() { document.form_attributes.submit(); }";
+		$html .= "      document.addEventListener(\"DOMContentLoaded\", function() { flatpickr(\"#setfilterstart\", { $options }); })\n";
+		$options = "dateFormat: \"$dateformat $timeformat\", locale: \"$lang->code\", enableTime: true, enableSeconds: true, hourIncrement: 1, minuteIncrement: 1, time_24hr: true, shorthandCurrentMonth: true, onClose: function() { document.form_attributes.submit();   }";
+		$html .= "      document.addEventListener(\"DOMContentLoaded\", function() { flatpickr(\"#setfilterend\",   { $options }); })\n";
+	}
+	$html .= "      cookieAgreement(\n";
+	$html .= "        \"linecolor=$linecolor\", \n";
+	$html .= "        \"showbearings=$showbearings\", \n";
+	$html .= "        \"markertype=$markertype\", \n";
+	$html .= "        \"crosshair=$crosshair\", \n";
+	$html .= "        \"clickcenter=$clickcenter\", \n";
+	$html .= "        \"language=$language\", \n";
+	$html .= "        \"units=$units\", \n";
+	$html .= "        \"tileprovider=$tileprovider\", \n";
+	$html .= "        \"tilePT=$tilePT\", \n";
+	$html .= "        \"tripID=$tripID\", \n";
+	$html .= "        \"tripgroup=$tripgroup\", \n";
+	$html .= "        \"filterwith=$filterwith\", \n";
+	$html .= "        \"filterstart=$filterstart\", \n";
+	$html .= "        \"filterend=$filterend\", \n";
+	$html .= "        \"livetracking=$livetracking\", \n";
+	$html .= "        \"chartdisplay=$chartdisplay\", \n";
+	$html .= "        \"attributedisplay=$attributedisplay\", \n";
+	$html .= "        \"interval=$interval\", \n";
+	$html .= "        \"zoomlevel=$zoomlevel\"\n";
+	$html .= "      );\n";
+
+	$html .= "      var charttype = \"elevation\";\n";
+	$html .= "      var username = \"$username\";\n";
+	$html .= "      var password = \"$password\";\n";
+	$html .= "      var interval = " . ($interval == "-" ? "\"$interval\"" : $interval) . ";\n";
+	if (!$livetracking) {
+		$html .= "      var tripname = \"$tripname\";\n";
+
+		$html .= "      var colorWheel = new iro.ColorPicker(\"#colorLine\", { width: 200, color: \"$linecolor\", handleRadius: 3, display: \"inline-block\", layout: [{component: iro.ui.Slider, options: { sliderType: \"hue\" } }] });\n";
+		$html .= "      colorWheel.on(\"color:change\", function(color, changes){ document.getElementById(\"setlinecolor\").value = color.hexString; document.form_attributes.submit(); });\n";
+	}
+
+	$html .= "      // Leaflet Map API initialisation\n";
+	$html .= "      var map = L.map(\"mapsection\", {center: [0, 0], zoom: 0});\n";
+	$html .= "      L.tileLayer(\"".$tileproviders[$tileprovider]['url'] . "\", {\n";
+	if (isset($tileproviders[$tileprovider]['maxZoom'])) {
+		$html .= "        maxZoom: " . $tileproviders[$tileprovider]['maxZoom'] . ",\n";
+	}
+	$html .= "        attribution: '" . escapeJSString($tileproviders[$tileprovider]['attribution']) . "'\n";
+	$html .= "       }).addTo(map);\n";
+	if ($tilePT) {
+		$html .= "      L.tileLayer('http://openptmap.org/tiles/{z}/{x}/{y}.png', {\n";
+		$html .= "        maxZoom: 17,\n";
+		$html .= "       attribution: 'Map data: &copy; <a href=\"http://www.openptmap.org\">OpenPtMap</a> contributors'\n";
+		$html .= "       }).addTo(map);\n";
+	}
+	$html .= "      var bounds = null;\n";
+	$html .= "      var markers = [];\n";
+	$html .= "      var markersLatLng = [];\n";
+
+	if ($crosshair) {
+		$html .= "      var centerCrosshair = L.icon({iconUrl: 'crosshair.gif', iconSize: [17, 17], iconAnchor: [8, 8],});\n";
+		$html .= "      centerCross = L.marker(map.getCenter(), {icon: centerCrosshair, interactive: false}).addTo(map);\n";
+		$html .= "      function setCenterCross() {\n";
+		$html .= "       centerCross.setLatLng(map.getCenter());\n";
+		$html .= "      };\n";
+		$html .= "      map.on(\"zoom move load viewreset resize zoomlevelchange\", setCenterCross);\n";
+	}
+	if ($clickcenter) {
+		$html .= "      map.on(\"click\", function(e) { map.panTo(e.latlng); });\n";
+	} else {
+		$html .= "      map.off(\"click\");\n";
+	}
+
+	$html .= "      var showBearings  = " . ($showbearings ? "true" : "false") . ";\n";
+	$html .= "      var useMetric     = " . ($units == "metric" ? "true" : "false") . ";\n";
+	$html .= "      var allowDBchange = " . ($allowDBchange == "yes" ? "true" : "false") . ";\n";
+
+	$params = array($ID);
+	$where  = " FK_Users_ID=?";
+	if ($livetracking) {
+		$where .= "";
+		$limit = 1;
+	} else {
+		if ($filterwith == "Photo") {
+			$where .= " AND ImageURL!=''";
+			$limit = 0;
+		} elseif ($filterwith == "Comment") {
+			$where .= " AND Comments!=''";
+			$limit = 0;
+		} elseif ($filterwith == "PhotoComment") {
+			$where .= " AND (Comments!='' OR ImageURL!='')";
+			$limit = 0;
+		} elseif ($filterwith == "Last20") {
+			$where .= "";
+			$limit = 20;
+		} else {
+			$where .= "";
+			$limit = 0;
+		}
+
+		if ($tripname !== $trip_any_text) {
+			$where .= " AND FK_Trips_ID=?";
+			$params[] = $tripID;
+		} else
+		if ($tripgroup !== $no_tripgroup_text) {
+			$where .= " AND FK_Trips_ID IN (SELECT ID from trips WHERE Name LIKE ?)";
+			$params[] = $tripgroup . ":%";
+		} else {
+			$where .= " AND FK_Trips_ID NOT IN (SELECT ID from trips WHERE Name LIKE ?)";
+			$params[] = "%:%";
+		}
+
+		if ($filterstartNLS != null && trim($filterstartNLS) != "") {
+			$filterstartDB = date_format(date_create_from_format($dateformat . " " . $timeformat, $filterstartNLS), "Y-m-d H:i:s");
+			$filterendDB   = date_format(date_create_from_format($dateformat . " " . $timeformat, $filterendNLS  ), "Y-m-d H:i:s");
+			$where .= " AND DateOccurred BETWEEN ? AND ?";
+			$params[] = $filterstartDB;
+			$params[] = $filterendDB;
+		}
+	}
+	if ($limit > 0) {
+		$limit = " DESC LIMIT " . $limit;
+	} else {
+		$limit = "";
+	}
+
+	$stmt = "SELECT positions.*, icons.URL FROM positions LEFT JOIN icons ON positions.FK_Icons_ID=icons.ID WHERE$where ORDER BY DateOccurred$limit";
+	if ($debug1) debug2console("SQL for the Trips:" , $stmt);
+	if ($debug1) debug2console("SQL for the Trips:" , $params);
+	$positions = $db->exec_sql($stmt, $params);
+	$result = $positions->fetchAll();
+	$count = count($result);
+
+	$altsfeet     = "";		$altsmeters   = "";
+	$altfeetmax   = 0;		$altmetersmax = 0;
+	$altfeetmin   = 999999;		$altmetersmin = 999999;
+	$speedsmph    = "";		$speedskph    = "";
+	$speedmphmax  = 0;		$speedkphmax  = 0;
+	$speedmphmin  = 999999;		$speedkphmin  = 999999;
+	$pitchesm     = "";		$pitchesk     = "";
+	$pitchmmax    = 0;		$pitchkmax    = 0;
+	$pitchmmin    = 999999;		$pitchkmin    = 999999;
+
+	$any = ($tripname == $trip_any_text ? "true" : "false");
+	$lasttripID   = "";
+	$lasttripname = "";
+	if ($debug1) debug2console("We have rounds:", $count);
+	for ($rounds = 1; $rounds <= $count; $rounds++) {
+		$row = $result[$rounds - 1];
+		if ($debug1) debug2console("In round:", $rounds);
+		if ($debug1) debug2console("with trip:", $row);
+		$row['ImageURL'] = escapeJSString($row['ImageURL']);
+		$row['Comments'] = escapeJSString($row['Comments']);
+
+		$tripname = $db->exec_sql("SELECT Name FROM trips WHERE ID=?", $row['FK_Trips_ID'])->fetchColumn();
+		$tripname = escapeJSString($tripname);
+		if ($lasttripID != $row['FK_Trips_ID']) {
+			if ($rounds != 1) {
+				$html .= "   trip.end(\"$lasttripname\", \"$linecolor\", $any);\n";
+			}
+			$html .= "      var trip = new Trip(\"" . $tripname . "\", \"" . escapeJSString($username) . "\");\n";
+		}
+
+		if (!is_null($row['URL'])) {
+			$parameter = "'" . $row['URL'] . "'";
+		} elseif ($rounds == 1) {
+			$parameter = "iconGreen";
+		} elseif ($rounds < $count) {
+			if ($markertype) {
+				$parameter = "true";
+			} else{
+				$parameter = "false";
+			}
+		} else {
+			$parameter = "iconRed";
+		}
+
+		$dataParameter = "";
+		if (!is_null($row['Angle']))
+			$dataParameter = ", bearing: " . $row['Angle'];
+
+		$formattedTS  = escapeJSString(date($dateformat . " " . $timeformat, strtotime($row['DateOccurred'])));
+
+		$html .= "      trip.appendMarker({latitude: " . $row['Latitude'] . ", longitude: " . $row['Longitude'] . ", tripname: '" . $tripname . "', timestamp: '" . $row['DateOccurred']. "', speed: " . $row['Speed'] . ", altitude: " . $row['Altitude'] . ", comment: '" . $row['Comments'] . "', photo: '" . $row['ImageURL'] . "'" . $dataParameter . ", formattedTS: '" . $formattedTS . "'}, " . $parameter . ", " . $row['ID']. ");\n";
+
+		$lat   = $row['Latitude'];
+		$lon   = $row['Longitude'];
+		$altft = $row['Altitude'] * 3.2808399;
+		$altm  = $row['Altitude'];
+		$mph   = $row['Speed'] * 2.2369362920544;
+		$kph   = $row['Speed'] * 3.6;
+		if ($rounds == 1) {
+			$total_miles = 0;
+			$pitch       = 0;
+		} else {
+			$leg_miles   = calcDistance($lat, $lon, $holdlat, $holdlon, "m");
+			$leg_feet    = $leg_miles * 5280;
+			$total_miles += $leg_miles;
+			$pitch       = ($leg_feet > 0) ? ($altft - $holdaltft)/$leg_feet*100 : 0;
+		}
+		$total_kilometers   = $total_miles * 1.609344;
+
+		$altsfeet   .= strval($total_miles)      . ":" . strval($altft) . ",";
+		$altsmeters .= strval($total_kilometers) . ":" . strval($altm) . ",";
+		$speedsmph  .= strval($total_miles)      . ":" . strval($mph) . ",";
+		$speedskph  .= strval($total_kilometers) . ":" . strval($kph) . ",";
+		$pitchesm   .= strval($total_miles)      . ":" . strval($pitch) . ",";
+		$pitchesk   .= strval($total_kilometers) . ":" . strval($pitch) . ",";
+
+		$holdlat   = $lat;
+		$holdlon   = $lon;
+		$holdaltft = $altft;
+
+		if ($altft   > $altfeetmax)   $altfeetmax   = $altft;
+		if ($altft   < $altfeetmin)   $altfeetmin   = $altft;
+		if ($altm > $altmetersmax) $altmetersmax = $altm;
+		if ($altm < $altmetersmin) $altmetersmin = $altm;
+		if ($mph    > $speedmphmax)  $speedmphmax  = $mph;
+		if ($mph    < $speedmphmin)  $speedmphmin  = $mph;
+		if ($kph    > $speedkphmax)  $speedkphmax  = $kph;
+		if ($kph    < $speedkphmin)  $speedkphmin  = $kph;
+		if ($pitch  > $pitchmmax)    $pitchmmax    = $pitch;
+		if ($pitch  < $pitchmmin)    $pitchmmin    = $pitch;
+		if ($pitch  > $pitchkmax)    $pitchkmax    = $pitch;
+		if ($pitch  < $pitchkmin)    $pitchkmin    = $pitch;
+
+		$lasttripID   = $row['FK_Trips_ID'];
+		$lasttripname = $tripname;
+	}
+	if ($count != 0) $html .= "      trip.end(\"$lasttripname\", \"$linecolor\", $any);\n";
+
+	if ($units == "metric") {
+		$alts      = $altsmeters;
+		$speeds    = $speedskph;
+		$pitches   = $pitchesk;
+		$altunit   = $balloon_unit_altitude_metric_text;
+		$speedunit = $balloon_unit_speed_metric_text;
+		$altmax    = number_format($altmetersmax, 0);
+		$altmin    = number_format($altmetersmin, 0);
+		$speedmax  = number_format($speedkphmax, 1);
+		$speedmin  = number_format($speedkphmin, 1);
+		$pitchmax  = number_format($pitchkmax, 0);
+		$pitchmin  = number_format($pitchkmin, 0);
+	} else {
+		$alts      = $altsfeet;
+		$speeds    = $speedsmph;
+		$pitches   = $pitchesm;
+		$altunit   = $balloon_unit_altitude_imperial_text;
+		$speedunit = $balloon_unit_speed_imperial_text;
+		$altmax    = number_format($altfeetmax, 0);
+		$altmin    = number_format($altfeetmin, 0);
+		$speedmax  = number_format($speedmphmax, 1);
+		$speedmin  = number_format($speedmphmin, 1);
+		$pitchmax  = number_format($pitchmmax, 0);
+		$pitchmin  = number_format($pitchmmin, 0);
+	}
+	$alts     = substr($alts,    0, -1);
+	$speeds   = substr($speeds,  0, -1);
+	$pitches  = substr($pitches, 0, -1);
+
+	$html .= "      if (bounds == null) {\n";
+	$html .= "       bounds = L.latLngBounds(L.latLng(0, 0).toBounds(12000000));\n";
+	$html .= "      }\n";
+	$html .= "      map.fitBounds(bounds);\n";
+
+	if ($livetracking) {
+		$html .= "      map.setZoom($zoomlevel);\n";
+	}
+	$html .= "     </script>\n";
+
+	$html .= "     <div id=\"chartsection\" style=\"display: none;\">\n";
+	$html .= "      <div style=\"width: 100%; text-align: right;\">\n";  //ROB ???
+	$html .= "       <span id=\"chartelevation\" class=\"charttypeselected\" onclick=\"elevationclick();\">$balloon_altitude_text [$altunit]</span>&nbsp;&nbsp;&nbsp;&nbsp;\n";
+	$html .= "       <span id=\"chartspeed\"     class=\"charttype\"         onclick=\"speedclick();    \">$balloon_speed_text [$speedunit]</span>&nbsp;&nbsp;&nbsp;&nbsp;\n";
+	$html .= "       <span id=\"chartpitch\"     class=\"charttype\"         onclick=\"pitchclick();    \">$balloon_pitch_text [%]</span>\n";
+	$html .= "       &nbsp;&nbsp;&nbsp;\n";
+	$html .= "       <span class=\"chartsparkline\" elevationvalues=\"$alts\" speedvalues=\"$speeds\" pitchvalues=\"$pitches\" sparktype=\"line\" sparklineWidth=\"2\" sparkwidth=\"100%\" sparkheight=\"18.5vh\" sparkspotRadius=\"3\">...</span>\n";
+	$html .= "       <span class=\"chartmax\" id=\"chartaltmax\"   style=\"display: none;\">$altmax</span>\n";
+	$html .= "       <span class=\"chartmax\" id=\"chartspeedmax\" style=\"display: none;\">$speedmax</span>\n";
+	$html .= "       <span class=\"chartmax\" id=\"chartpitchmax\" style=\"display: none;\">$pitchmax</span>\n";
+	$html .= "       <span class=\"chartmin\" id=\"chartaltmin\"   style=\"display: none;\">$altmin</span>\n";
+	$html .= "       <span class=\"chartmin\" id=\"chartspeedmin\" style=\"display: none;\">$speedmin</span>\n";
+	$html .= "       <span class=\"chartmin\" id=\"chartpitchmin\" style=\"display: none;\">$pitchmin</span>\n";
+	$html .= "      </div>\n";
+	$html .= "     </div>\n"; // chartsection
+
+	$html .= "    </td>\n";
+	$html .= "   </tr>\n";
+	$html .= "  </table>\n";
+
+	$html .= "  <script>\n";
+	$html .= "   document.getElementById(\"navigationsectioncell\").style.width = \"$navigationwidth\";\n";
+//	$html .= "   document.getElementById(\"trackmeviewer\").style.display='none';\n";
+//	$html .= "   document.getElementById(\"trackmeviewer\").offsetHeight;\n";
+//	$html .= "   document.getElementById(\"trackmeviewer\").style.display='block';\n";
+	$html .= "   $(document.getElementById(\"trackmeviewer\")).colResizable({liveDrag:true, gripInnerHtml:\"<div class='grip'></div>\", draggingClass:\"dragging\", onResize:navigationwidthchange});\n";
+	$html .= "  </script>\n";
+
+	if ($chartdisplay) {
+		$html .= "  <script>\n";
+		$html .= "   showChart();\n";
+		$html .= "  </script>\n";
 	}
 
 	$html .= "  <!-- <div id=\"footertext\">$footer_text <a href=\"http://forum.xda-developers.com/showthread.php?t=340667\" target=\"_blank\">TrackMe</a></div> -->\n";
-	//google analytics
-	if (isset($googleanalyticsaccount)) {
-		$html .= "  <script type=\"text/javascript\">\n";
-		$html .= "   var gaJsHost = ((\"https:\" == document.location.protocol) ? \"https://ssl.\" : \"http://www.\");\n";
-		$html .= "   document.write(unescape(\"%3Cscript src='\" + gaJsHost + \"google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E\"));\n";
-		$html .= "  </script>\n";
-		$html .= "  <script type=\"text/javascript\">\n";
-		$html .= "   var pageTracker = _gat._getTracker(\"$googleanalyticsaccount\");\n";
-		$html .= "   pageTracker._initData();\n";
-		$html .= "   pageTracker._trackPageview();\n";
-		$html .= "  </script>\n";
-	}
+
+//	if (isset($googleanalyticsaccount)) {
+//		$html .= "   if (getCookieValue(\"cookieconsent_status\") == \"allow\") {\n";
+//		$html .= "    var gaJsHost = ((\"https:\" == document.location.protocol) ? \"https://ssl.\" : \"http://www.\");\n";
+//		$html .= "    document.write(unescape(\"%3Cscript src='\" + gaJsHost + \"google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E\"));\n";
+//		$html .= "   }";
+//		$html .= "  </script>\n";
+//		$html .= "  <script>\n";
+//		$html .= "   if (getCookieValue(\"cookieconsent_status\") == \"allow\") {\n";
+//		$html .= "    var pageTracker = _gat._getTracker(\"$googleanalyticsaccount\");\n";
+//		$html .= "    pageTracker._initData();\n";
+//		$html .= "    pageTracker._trackPageview();\n";
+//		$html .= "   }";
+//		$html .= "  </script>\n";
+//	}
+
 	$html .= " </body>\n";
 	$html .= "</html>\n";
 
-	$db = null;  // Close database
+	$db = null;
 	print $html;
+	exit;
 
 	// Function to calculate distance between points
 	function calcDistance($lat1, $lon1, $lat2, $lon2, $unit) {
 		if ($lat1 == $lat2 && $lon1 == $lon2) { return 0; }
 		$theta = $lon1 - $lon2;
+		if (abs(deg2rad($lat1 - $lat2)) < 0.0000001 && abs(deg2rad($theta)) < 0.0000001) return 0;
 		$dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
 		$dist = acos($dist);
 		$dist = rad2deg($dist);
 		$miles = $dist * 60 * 1.1515;
+		
 		$unit = strtoupper($unit);
-
 		if ($unit == "K") {
 			return ($miles * 1.609344);
 		} elseif ($unit == "N") {
@@ -964,5 +1314,35 @@
 
 	function escapeJSString($str) {
 		return str_replace("'", "\\'", str_replace("\\", "\\\\", $str));
+	}
+
+	function debug2console($prompt, $data) {
+		$output = $data;
+		if (is_array($output)) $output = mapped_implode(",", $output, "=");
+		echo "<script>console.log(\"Debug Objects: $prompt >>>>> $output\");</script>";
+		return;
+	}
+
+	function mapped_implode($glue, $array, $symbol = '=') {
+		return implode($glue, array_map(
+			function($k, $v) use($symbol) {
+				return $k . $symbol . $v;
+			},
+			array_keys($array),
+			array_values($array)
+			)
+		);
+	}
+
+	function gettripnameparts($fulltripname, $no_tripgroup) {
+		$tripnameparts = explode(":", $fulltripname, 2);
+		if (isset($tripnameparts[1])) {
+			$trippartgroup = $tripnameparts[0];
+			$trippartname  = $tripnameparts[1];
+		} else {
+			$trippartgroup = $no_tripgroup;
+			$trippartname  = $tripnameparts[0];
+		}
+		return array($trippartgroup, $trippartname);
 	}
 ?>

@@ -1,11 +1,25 @@
 <?php
-	$lat = urldecode($_GET["lat"]);
-	$long = urldecode($_GET["long"]);
-	$centerlong = urldecode($_GET["centerlong"]);
-	$centerlat = urldecode($_GET["centerlat"]);
-	$w = urldecode($_GET["w"]);
-	$h = urldecode($_GET["h"]);
-	$z = urldecode($_GET["z"]);
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
+	$lat        = $_GET["lat"];
+	$long       = $_GET["long"];
+	$centerlong = $_GET["centerlong"];
+	$centerlat  = $_GET["centerlat"];
+	$w          = $_GET["w"];
+	$h          = $_GET["h"];
+	$z          = $_GET["z"];
 
 	if ($centerlong == "") $centerlong=$long;
 	if ($centerlat == "") $centerlat=$lat;

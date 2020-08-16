@@ -1,162 +1,195 @@
+/*
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
+*/
+
 html {
 background-color:#666666;
-width:100%; height:100%;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
+height:100vh; width:100vw;
+font-family:Verdana, Serif; font-size:10px;
 overflow:hidden;
-margin:0; padding:0;
+margin:0px; padding:0px;
+}
+
+table {
+background-color:#666666;
+width:100%;
+overflow:hidden;
+margin:0px; padding:0px;
+border:0px; border-spacing:0px;
+}
+
+td {
+margin:0px; padding:0px;
+border:0px; border-spacing:0px;
 }
 
 body {
-background-color:#666666; color:#FFFFFF;
-width:100%; height:100%;
-font-family:Verdana, Serif; font-size:10px;
+background-color:#666666;
+height:100vh; width:100vw;
 overflow:hidden;
-margin:0; padding:0;
-}
-
-a {
-background:transparent;
-color:#BBC9F1;
-text-decoration:none;
-}
-
-a:hover {
-background:transparent;
-color:#BBC9F1;
-font-weight:700;
-}
-
-:link,:visited {
-color:#BBC9F1;
+margin:0px; padding:0px;
 }
 
 #mapsection {
 background-color:#666666; color:#000000;
-margin:0; margin-right:165px;
-height:100%;
-font-family:Verdana, Serif; font-size:10px;
-height:100%;
-border:2px solid #666666;
+height:100vh;
+margin:0px; padding:0px;
+border:0px solid #666666;
 z-index:1;
 }
 
 #creditsection {
-position:absolute;
-bottom:3px; left:150px;
-font-family:Verdana, Serif; font-size:10px;
-text-decoration:none;
-margin-left:5px; margin-right:5px;
-text-align:center;
 background-color:rgba(255, 255, 255, 0.7); color:#0078A8;
-z-index:3;
+position:absolute; bottom:1px; left:10px;
+margin-left:5px; margin-right:5px;
+text-decoration:none;
+text-align:center;
+z-index:2;
 }
 
 #navigationsection {
 background-color:#666666; color:#FFFFFF;
+height:100vh;
+margin:0px; margin-left:5px; margin-right:5px; padding:0px;
+border:0px solid #666666;
 text-align:left;
-width:160px; height:100%;
-float:right;
-overflow:auto;
-border:2px solid #666666;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
-margin-top:5px; padding:0;
-}
-
-#configsection {
-background-color:#666666; color:#FFFFFF;
-position:absolute;
-top:40%; left:40%;
-width:350px; height:270px;
-border:2px solid #000000;
-margin-left:5px; margin-right:5px; padding:5px 5px 5px 5px;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
 overflow:auto;
 z-index:5;
+-ms-overflow-style:none;  /* IE and Edge */
+scrollbar-width:none;  /* Firefox */
+}
+
+#chartsection {
+background-color:#FFFFE0;
+position:absolute; bottom:15px; left:5px; right:215px;
+height:20vh;
+border:1px solid #666666;
+z-index:3;
+margin:0px; margin-right:inherit;
 }
 
 #loginsection {
 background-color:#444444; color:#FFFFFF;
-width:50%;
-margin:auto;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
+width:350px;
+padding:20px;
+}
+
+.balloon {
+background-color:#FFFFFF; color:#666666;
 }
 
 .pulldown {
 background-color:#FFFFFF; color:#000000;
-width:150px;
+width:100%;
 white-space:nowrap;
 text-align:left;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
 border:1px; border-style:solid; border-spacing:1px;
-margin-top:1px; padding:0;
+margin-top:1px; padding:0px;
 }
 
-.pulldownshort {
+.pulldownshorter {
 background-color:#FFFFFF; color:#000000;
-width:134px;
+width:100%;
 white-space:nowrap;
 text-align:left;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
 border:1px; border-style:solid; border-spacing:1px;
-margin-top:1px; padding:0;
-}
-
-.pulldownX {
-background-color:#FFFFFF; color:#000000;
-width:12px;
-white-space:nowrap;
-text-align:center;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
-border:1px; border-style:solid; border-spacing:1px;
-margin-top:1px; padding:0;
+margin-top:1px; padding:0px;
 }
 
 .button {
 background-color:#000000; color:#FFFFFF;
-width:150px;
+height:20px; width:100%;
 white-space:nowrap;
 text-align:center;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
-border:1px; border-style:solid; border-spacing:1px;
-margin-top:1px; padding:0;
+border-style:solid; border-spacing:1px;
+margin-top:1px; padding:0px;
+}
+
+.buttonreverse {
+background-color:#AAAAAA; color:#666666;
+height:20px; width:100%;
+white-space:nowrap;
+text-align:center;
+border-style:solid; border-spacing:1px;
+margin-top:1px; padding:0px;
 }
 
 .buttonshort {
 background-color:#000000; color:#FFFFFF;
-width:80px;
+height:20px; width:48%;
 white-space:nowrap;
 text-align:center;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
-border:1px; border-style:solid; border-spacing:1px;
-margin-top:1px; padding:0;
+border-style:solid; border-spacing:1px; border-width:2px;
+margin-top:1px; padding:1px;
 }
 
-.intervalbutton {
-background-color:#000000; color:#FFFFFF;
-width:35px;
+.buttonshortreverse {
+background-color:#AAAAAA; color:#666666;
+height:20px; width:48%;
 white-space:nowrap;
 text-align:center;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
-border:1px; border-style:solid; border-spacing:1px;
-margin-top:1px; padding:0;
+border-style:solid; border-spacing:1px; border-width:2px;
+margin-top:1px; padding:1px;
 }
 
 .intervalinputfield {
 background-color:#E8E8E8;
-width:20px;
+width:40px;
 white-space:nowrap;
 text-align:center;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
-border:1px; border-style:solid; border-spacing:1px;
+border-style:solid; border-spacing:1px;
 margin-top:1px; padding-top:0px;
 }
 
 .textinputfield {
 background-color:#E8E8E8;
-width:150px;
+width:100%;
 white-space:nowrap;
 text-align:center;
-font-family:Verdana, Serif; font-size:10px; font-weight:700;
-border:1px; border-style:solid; border-spacing:1px;
+border-style:solid; border-spacing:1px;
 margin-top:1px; padding-top:0px;
+}
+
+.charttypeselected {
+color:#000000;
+text-align:right;
+}
+.charttype {
+color:#AAAAAA;
+text-align:right;
+}
+
+.chartmax {
+color:#000000;
+position:absolute; bottom:17.2vh; left:10px;
+overflow:auto;
+z-index:4;
+}
+
+.chartmin {
+color:#000000;
+position:absolute; bottom:-0.1vh; left:10px;
+overflow:auto;
+z-index:4;
+}
+
+.grip {
+width:20px; height:15px;
+margin-top:-3px; margin-left:-5px;
+background-image:url('grip.png');
+position:relative;
+z-index:6;
+cursor:ew-resize;
 }

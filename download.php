@@ -1,15 +1,32 @@
 <?php
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
 	session_start();
 
+	if (!ini_get('date.timezone'))
+	{
+		date_default_timezone_set('GMT');
+	}
 	require_once("database.php");
 	require_once("exporter/base.php");
 
-	// DMR didn't see where this was used so removed.
-	//  $requireddb = urldecode($_GET["db"]);
-	//  if ($requireddb == "" || $requireddb < 7) {
-	//      echo "<Result>5</Result>";
-	//      die;
-	//  }
+	$requireddb = $_GET["db"];
+	if ($requireddb == "" || $requireddb < 8) {
+		echo "<Result>5</Result>";
+		die();
+	}
 
 	$db = connect_save();
 	if (is_null($db)) {
@@ -22,12 +39,10 @@
 		die();
 	}
 
-	$action       =           $_GET["a"];
-	//  $username = urldecode($_GET["u"]);
-	//  $password = urldecode($_GET["p"]);
-	$datefrom     = urldecode($_GET["df"]);
-	$dateto       = urldecode($_GET["dt"]);
-	$showbearings = urldecode($_GET["sb"]);
+	$action       = $_GET["a"];
+	$datefrom     = $_GET["df"];
+	$dateto       = $_GET["dt"];
+	$showbearings = $_GET["sb"];
 
 	$userid = $_SESSION["ID"];
 	$tripid = Exporter::normalize($db, $userid, $_GET);

@@ -1,10 +1,23 @@
 <?php
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
 // List of tile/map providers can be exteded here
 // Examples can be found at https://leaflet-extras.github.io/leaflet-providers/preview/
 // "url", "maxZoom" and "attribution" are the minimum requried info to be provided - all other extra will be ignored
-// Add a tile provider definition into the array - double quotes in "url" or "attributuion" needs to be escaped with '\'
-// Optionally some tile provider require an "apikey" or an "access_token" specified. They must be set in the config.php file
+// Add a tile provider definition into the array - double quotes in "url" or "attribution" needs to be escaped with '\'
+// Optionally some tile provider (with *) require an "apikey" or an "access_token" specified. They must be set in the config.php file
 
 $tileproviders = array(
 "OpenStreetMap Mapnik"       => array(	"url" => "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -88,7 +101,7 @@ $tileproviders = array(
 "Esri WorldImagery"          => array(	"url" => "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
 					"maxZoom" => 20,
 					"attribution" => "Tiles &copy; <a href=\"http://www.esri.com/\">Esri</a> &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"),
-"Esri WorldTopoMap"          => array(	"url" => "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", 
+"Esri WorldTopoMap"          => array(	"url" => "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
 					"maxZoom" => 20,
 					"attribution" => "Tiles &copy; <a href=\"http://www.esri.com/\">Esri</a> &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community"),
 "*Thunderforest OpenCycleMap" => array(	"url" => "https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=" . $thunderforestapikey,

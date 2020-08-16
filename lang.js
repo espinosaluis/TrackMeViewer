@@ -1,3 +1,17 @@
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
 var lang = {
 	get: function(key) {
 		var trans = this._get(key);
@@ -29,8 +43,8 @@ var lang = {
 			return this._fallback[key];
 		else {
 			console.log("Key '" + key + "' not loaded (yet), " +
-				"loaded translation: " + (this._trans !== null) +
-				"; loaded fallback " + (this._fallback !== null));
+				"loaded translation: " + (this._trans !== null) + "; " +
+				"loaded fallback: " + (this._fallback !== null));
 			return key;
 		}
 	},
@@ -41,18 +55,20 @@ var lang = {
 		if (code === this._fallbackCode && this._fallback)
 			this._trans = this._fallback;
 		else {
-			query('i18n/' + code + '.json', function(content) {
-				content = JSON.parse(content);
+			execrequest('i18n/' + code + '.json', function(contentAsJSON) {
+				content = JSON.parse(contentAsJSON);
 				if (fallback) {
 					lang._fallbackCode = code;
 					lang._fallback = content;
 				} else {
 					lang._trans = content;
 				}
+				lang._code = code;
 			});
 		}
 	},
 
+	_code: "",
 	_queried: false,
 	_trans: null,
 	_fallback: null,
@@ -60,5 +76,4 @@ var lang = {
 
 };
 
-// Load fallback by default
-lang.setCode("en", true);
+lang.setCode("en", true); // Load fallback by default

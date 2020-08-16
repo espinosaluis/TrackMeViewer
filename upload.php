@@ -1,67 +1,77 @@
 <?php
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
+	require_once("config.php");
 	require_once("database.php");
 
-	$requireddb = urldecode($_GET["db"]);
-	if ($requireddb == "" || $requireddb < 7) {
-		echo "Result:5";
-		die;
-	}
+	function run($connection) {
+		$requireddb = $_GET["db"];
+		if ($requireddb == "" || $requireddb < 8) {
+			return "Result:5";
+		}
 
-	$db = connect_save();
-	if (is_null($db)) {
-		echo "Result:4";
-		die();
-	}
+		$db = connect_save();
+		if (is_null($db)) {
+			return "Result:4";
+		}
 
-	$username = urldecode($_GET["u"]);
-	$password = urldecode($_GET["p"]);
+		$username = $_GET["u"];
+		$password = $_GET["p"];
 
-	$userid = $db->valid_login($username, $password);
-	if ($userid < 0) {
-		echo "Result:1";
-		die;
-	}
+		$userid = $db->valid_login($username, $password);
+		if ($userid < 0) {
+			return "Result:1";
+		}
 
-	$action = urldecode($_GET["a"]);
+		$action = $_GET["a"];
 
-	if ($action == "kml") {
-		if (!file_exists("routes"))
-			mkdir("routes");
+		if ($action == "kml") {
+			if (!file_exists("routes"))
+				mkdir("routes");
 
-		$myfile = "routes/".$username.".kml";
+			$myfile = "routes/".$username.".kml";
 
-		if (move_uploaded_file($_FILES['uploadfile']['tmp_name'], "./$myfile")) {
-			echo"Result:0";
-			die;
-		} else {
-			echo"Result:6";
-			//print_r($_FILES);
-			die;
+			if (move_uploaded_file($_FILES['uploadfile']['tmp_name'], "./$myfile")) {
+				return "Result:0";
+			} else {
+				return "Result:6";
+			}
+		}
+
+		if ($action == "pic") {
+			if (!file_exists("pics"))
+				mkdir("pics");
+
+			$newname = $_GET["newname"];
+
+			$ext = strtolower(substr(strrchr($newname, '.'), 1));
+			if ($ext != "jpg" && $ext != "bmp" && $ext != "gif" && $ext != "png") {
+				return "Result:7";
+			}
+
+			$myfile = "pics/".$newname;
+
+			if (move_uploaded_file($_FILES['uploadfile']['tmp_name'], "./$myfile")) {
+				return "Result:0";
+			} else {
+				return "Result:6|" . var_dump($_FILES);
+			}
 		}
 	}
 
-	if ($action == "pic") {
-		if (!file_exists("pics"))
-			mkdir("pics");
+	// Run by default when included/required
+	echo run(toConnectionArray($DBIP, $DBNAME, $DBUSER, $DBPASS));
 
-		$newname = urldecode($_GET["newname"]);
-
-		$ext = strtolower(substr(strrchr($newname, '.'), 1));
-		if ($ext != "jpg" && $ext != "bmp" && $ext != "gif") {
-			echo "Result:7";
-			die;
-		}
-
-		$myfile = "pics/".$newname;
-
-		if (move_uploaded_file($_FILES['uploadfile']['tmp_name'], "./$myfile")) {
-			echo"Result:0";
-			//print_r($_FILES);
-			die;
-		} else {
-			echo"Result:6";
-			//print_r($_FILES);
-			die;
-		}
-	}
 ?>

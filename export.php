@@ -1,13 +1,27 @@
 <?php
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
 	require_once("database.php");
 	require_once("exporter/base.php");
 
 	header("Content-type: text/xml");
 
-	$requireddb = urldecode($_GET["db"]);
-	if ($requireddb == "" || $requireddb < 7) {
+	$requireddb = $_GET["db"];
+	if ($requireddb == "" || $requireddb < 8) {
 		echo "<Result>5</Result>";
-		die;
+		die();
 	}
 
 	$db = connect_save();
@@ -16,12 +30,12 @@
 		die();
 	}
 
-	$action       =           $_GET["a"];
-	$username     = urldecode($_GET["u"]);
-	$password     = urldecode($_GET["p"]);
-	$datefrom     = urldecode($_GET["df"]);
-	$dateto       = urldecode($_GET["dt"]);
-	$showbearings = urldecode($_GET["sb"]);
+	$action       = $_GET["a"];
+	$username     = $_GET["u"];
+	$password     = $_GET["p"];
+	$datefrom     = $_GET["df"];
+	$dateto       = $_GET["dt"];
+	$showbearings = $_GET["sb"];
 
 
 	$userid = $db->valid_login($username, $password);

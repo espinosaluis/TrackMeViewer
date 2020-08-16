@@ -1,4 +1,18 @@
 <?php
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
 	require_once("base.php");
 
 	class GPXExporter extends Exporter {
@@ -6,7 +20,7 @@
 		public function export($showbearings) {
 			$result = $this->exec_sql(false);
 
-			$n=0;
+			$n = 0;
 			$bounds_lat_min = 0;
 			$bounds_lat_max = 0;
 			$bounds_lon_min = 0;
@@ -21,11 +35,11 @@
 				if (($row['Latitude']>$bounds_lat_max && $bounds_lat_max!=0) || $bounds_lat_max==0) { $bounds_lat_max = $row['Latitude']; }
 				if (($row['Longitude']<$bounds_lon_min && $bounds_lon_min!=0) || $bounds_lon_min==0) { $bounds_lon_min = $row['Longitude']; }
 				if (($row['Longitude']>$bounds_lon_max && $bounds_lon_max!=0) || $bounds_lon_max==0) { $bounds_lon_max = $row['Longitude']; }
-				$speedMPH = number_format($row['Speed']*2.2369362920544,2);
-				$speedKPH = number_format($row['Speed']*3.6,2);
-				$altitudeFeet = number_format($row['Altitude']*3.2808399,2);
-				$altitudeM = number_format($row['Altitude'],2);
-				$angle = number_format($row['Angle'],2);
+				$speedMPH = number_format($row['Speed']*2.2369362920544, 2);
+				$speedKPH = number_format($row['Speed']*3.6, 2);
+				$altitudeFeet = number_format($row['Altitude']*3.2808399, 2);
+				$altitudeM = number_format($row['Altitude'], 2);
+				$angle = number_format($row['Angle'], 2);
 				/*
 				$wptdata.="<wpt lat=\"" . $row['Latitude'] . "\" lon=\"" . $row['Longitude'] . "\">\n";
 				$wptdata.=" <ele>" . $row['Altitude'] . "</ele>\n";

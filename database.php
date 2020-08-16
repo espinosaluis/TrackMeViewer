@@ -1,13 +1,24 @@
 <?php
-	if (!isset($no_config) || !$no_config)
-		require_once("config.php");
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+	// Version: 3.5
+	// Date:    08/15/2020
+	//
+	// For more information go to:
+	// http://forum.xda-developers.com/showthread.php?t=340667
+	//
+	// Please feel free to modify the files to meet your needs.
+	// Post comments and questions to the forum thread above.
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
+	require_once("config.php");
 
 	define('NO_USER', -1);
 	define('LOCKED_USER', -2);
 	define('INVALID_CREDENTIALS', -3);
 
-
-	// Database related functions
 	function toConnectionArray($DBIP, $DBNAME, $DBUSER, $DBPASS) {
 		return array('host' => $DBIP, 'name' => $DBNAME, 'user' => $DBUSER, 'pass' => $DBPASS);
 	}
@@ -29,12 +40,14 @@
 	}
 
 	class TrackMePDO extends PDO {
-
-		function get_count($statement) {
-			$stmt = $this->prepare("SELECT COUNT(*) FROM $statement");
-			$stmt->execute();
-			$result = $stmt->fetchAll();
-			return $result[0][0];
+		function get_count($tablename) {
+			$result = $this->exec_sql("SELECT COUNT(*) FROM " . $tablename);
+			if ($result === false) {
+				return 0;
+			} else {
+				$row = $result->fetchAll();
+				return $row[0][0];
+			}
 		}
 
 		function exec_sql() {
@@ -85,4 +98,5 @@
 			}
 		}
 	}
+
 ?>
