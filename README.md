@@ -36,6 +36,9 @@ It requires a web server with MySQL and PHP.
 ## Client
 You can download the most recent version of the TrackMe client App for Android from the Google App Store.
 
+## Translations
+The translations into French, Italian, Dutch and Slovak were developed via Google Translator.
+
 See also
 --------
 * http://luisespinosa.com
