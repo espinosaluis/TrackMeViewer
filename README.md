@@ -11,32 +11,32 @@ The TrackMeViewer currently only works together with the TrackMe App, an applica
 Please feel free to modify the files to meet your needs.
 Post comments and questions to the forum thread mentioned below.
 
-## Features and Functions added in V3.5
+## Features and Functions added in v3.5
 
 ### For users: 
-o Let the user allow to select the colour for the trip line
-o Use specified Date and Time formats from config.php in all displays
-o Switched to a less complex date and time picker for start and end date/time way point filtering
-o Let the user allow to suppress the position markers, if the trip recording provides to many or too dense positions
-o Remember last trip seen by the user
-o Let the user allow to group trips by choosing proper naming (:) and display groups of trips together ("[Any]")
-o Let the user allow to delete one single Marker Point (position) of a trip from the database
-o Show detailed trip data to the side of the map (resizeable). Things such as: max speed, max altitude, min altitude, descent ascent percentage, moving time, full trip time, etc
-o Let the user allow to scroll through each point of a trip (backward/forward) from the details pop-up
-o Show the latitude and longitude of the Marker Points in the details pop-up in different notations (e.g. 48.86648N, 9°01'30.4"E, 9°5.01304'W)
-o Store user options settings in cookies and ask for allow or deny
-o Issue a warning once a day, when a user modifies a trip, that it will be overwritten with a resynch from the TrackMe App
-o Add a warning when user selects "[Any]" trips
-o Changed "Display Options Show/Hide" check box to toggle option settings and make them to work immediately
+1. Let the user allow to select the colour for the trip line
+2. Use specified Date and Time formats from config.php in all displays
+3. Switched to a less complex date and time picker for start and end date/time way point filtering
+4. Let the user allow to suppress the position markers, if the trip recording provides to many or too dense positions
+5. Remember last trip seen by the user
+6. Let the user allow to group trips by choosing proper naming (:) and display groups of trips together ("[Any]")
+7. Let the user allow to delete one single Marker Point (position) of a trip from the database
+8. Show detailed trip data to the side of the map (resizeable). Things such as: max speed, max altitude, min altitude, descent ascent percentage, moving time, full trip time, etc
+9. Let the user allow to scroll through each point of a trip (backward/forward) from the details pop-up
+10. Show the latitude and longitude of the Marker Points in the details pop-up in different notations (e.g. 48.86648N, 9°01'30.4"E, 9°5.01304'W)
+11. Store user options settings in cookies and ask for allow or deny
+12. Issue a warning once a day, when a user modifies a trip, that it will be overwritten with a resynch from the TrackMe App
+13. Add a warning when user selects "[Any]" trips
+14. Changed "Display Options Show/Hide" check box to toggle option settings and make them to work immediately
 ### For Web App owner:
-o Let the Web App owner to allow to run Apache2 Web Server on any port (not only 80) or path.
-o Let the Web App owner to specify the Web Page title in the config.php
+1. Let the Web App owner to allow to run Apache2 Web Server on any port (not only 80) or path.
+2. Let the Web App owner to specify the Web Page title in the config.php
 ### For maintainer:
-o Removed no longer necessary "None" trip selection
-o Got rid of extra " ... = urldecode($_GET ...". Superglobal $_GET is already decoded
-o Consequently and everywhere use PDO for all database access with bound parameters to prohibit data injection
-o Got rid of "UNDEFINED INDEX " notices issued by php and saved in Apache log file
-o Restructured and reformatted code for better readability and maintenance
+1. Removed no longer necessary "None" trip selection
+2. Got rid of extra " ... = urldecode($_GET ...". Superglobal $_GET is already decoded
+3. Consequently and everywhere use PDO for all database access with bound parameters to prohibit data injection
+4. Got rid of "UNDEFINED INDEX " notices issued by php and saved in Apache log file
+5. Restructured and reformatted code for better readability and maintenance
 
 ## Requirements
 It requires a web server with MySQL and PHP.
