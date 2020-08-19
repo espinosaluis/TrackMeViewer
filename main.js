@@ -1,8 +1,8 @@
 	//////////////////////////////////////////////////////////////////////////////
 	//
 	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
-	// Version: 3.5
-	// Date:    08/15/2020
+	// Version: 3.5a
+	// Date:    08/18/2020
 	//
 	// For more information go to:
 	// http://forum.xda-developers.com/showthread.php?t=340667
@@ -775,7 +775,7 @@ function createMarkerText(data) {
 	}
 	if (data.photo) {
 		html += " <tr>";
-		html += "  <td colspan='2'><a href='/pics/" + data.photo + "' target='_blank'><img src='/pics/" + data.photo + "' width=400 border='1'></a></td>";
+		html += "  <td colspan='2'><a href='" + data.photo + "' target='_blank'><img src='" + data.photo + "' width=400 border='1'></a></td>";
 		html += " </tr>";
 	}
 	html += " <tr>";
