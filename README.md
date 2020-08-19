@@ -12,29 +12,30 @@ Please feel free to modify the files to meet your needs.
 Post comments and questions to the forum thread mentioned below.
 
 ## Features and Functions added in V3.5
-For users:
+
+### For users: 
 o Let the user allow to select the colour for the trip line
 o Use specified Date and Time formats from config.php in all displays
 o Switched to a less complex date and time picker for start and end date/time way point filtering
 o Let the user allow to suppress the position markers, if the trip recording provides to many or too dense positions
 o Remember last trip seen by the user
-o Let the user allow to group trips by choosing proper naming (<groupname>:<tripname>) and display groups of trips together ("[Any]")
+o Let the user allow to group trips by choosing proper naming (:) and display groups of trips together ("[Any]")
 o Let the user allow to delete one single Marker Point (position) of a trip from the database
 o Show detailed trip data to the side of the map (resizeable). Things such as: max speed, max altitude, min altitude, descent ascent percentage, moving time, full trip time, etc
 o Let the user allow to scroll through each point of a trip (backward/forward) from the details pop-up
-o Show the latitude and longitude of the Marker Points in the details pop-up in different notations (e.g. 48.86648N, 9Â°01'30.4"E, 9Â°5.01304'W)
+o Show the latitude and longitude of the Marker Points in the details pop-up in different notations (e.g. 48.86648N, 9°01'30.4"E, 9°5.01304'W)
 o Store user options settings in cookies and ask for allow or deny
 o Issue a warning once a day, when a user modifies a trip, that it will be overwritten with a resynch from the TrackMe App
 o Add a warning when user selects "[Any]" trips
 o Changed "Display Options Show/Hide" check box to toggle option settings and make them to work immediately
-For Web App owner:
+### For Web App owner:
 o Let the Web App owner to allow to run Apache2 Web Server on any port (not only 80) or path.
 o Let the Web App owner to specify the Web Page title in the config.php
-For maintainer:
+### For maintainer:
 o Removed no longer necessary "None" trip selection
 o Got rid of extra " ... = urldecode($_GET ...". Superglobal $_GET is already decoded
-o Consequently and everywhere use PDO for all database access with  bound parameters to prohibit data injection
-o Got rid of "UNDEFINED INDEX <xyz>" notices issued by php and saved in Apache log file
+o Consequently and everywhere use PDO for all database access with bound parameters to prohibit data injection
+o Got rid of "UNDEFINED INDEX " notices issued by php and saved in Apache log file
 o Restructured and reformatted code for better readability and maintenance
 
 ## Requirements
@@ -61,9 +62,6 @@ It requires a web server with MySQL and PHP.
 
 ## Client
 You can download the most recent version of the TrackMe client App for Android from the Google App Store.
-
-## Translations
-The translations into French, Italian, Dutch and Slovak were developed via Google Translator.
 
 See also
 --------
