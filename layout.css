@@ -83,6 +83,7 @@ margin:0px; margin-right:inherit;
 #loginsection {
 background-color:#444444; color:#FFFFFF;
 width:350px;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
 padding:20px;
 }
 
@@ -95,6 +96,7 @@ background-color:#FFFFFF; color:#000000;
 width:100%;
 white-space:nowrap;
 text-align:left;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
 border:1px; border-style:solid; border-spacing:1px;
 margin-top:1px; padding:0px;
 }
@@ -104,6 +106,7 @@ background-color:#FFFFFF; color:#000000;
 width:100%;
 white-space:nowrap;
 text-align:left;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
 border:1px; border-style:solid; border-spacing:1px;
 margin-top:1px; padding:0px;
 }
@@ -113,8 +116,9 @@ background-color:#000000; color:#FFFFFF;
 height:20px; width:100%;
 white-space:nowrap;
 text-align:center;
-border-style:solid; border-spacing:1px;
-margin-top:1px; padding:0px;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
+border:1px; border-style:solid; border-spacing:1px;
+margin-top:1px; padding:0;
 }
 
 .buttonreverse {
@@ -122,8 +126,9 @@ background-color:#AAAAAA; color:#666666;
 height:20px; width:100%;
 white-space:nowrap;
 text-align:center;
-border-style:solid; border-spacing:1px;
-margin-top:1px; padding:0px;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
+border:1px; border-style:solid; border-spacing:1px;
+margin-top:1px; padding:0;
 }
 
 .buttonshort {
@@ -131,8 +136,9 @@ background-color:#000000; color:#FFFFFF;
 height:20px; width:48%;
 white-space:nowrap;
 text-align:center;
-border-style:solid; border-spacing:1px; border-width:2px;
-margin-top:1px; padding:1px;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
+border:1px; border-style:solid; border-spacing:1px;
+margin-top:1px; padding:0;
 }
 
 .buttonshortreverse {
@@ -140,8 +146,9 @@ background-color:#AAAAAA; color:#666666;
 height:20px; width:48%;
 white-space:nowrap;
 text-align:center;
-border-style:solid; border-spacing:1px; border-width:2px;
-margin-top:1px; padding:1px;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
+border:1px; border-style:solid; border-spacing:1px;
+margin-top:1px; padding:0;
 }
 
 .intervalinputfield {
@@ -149,6 +156,7 @@ background-color:#E8E8E8;
 width:40px;
 white-space:nowrap;
 text-align:center;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
 border-style:solid; border-spacing:1px;
 margin-top:1px; padding-top:0px;
 }
@@ -158,6 +166,7 @@ background-color:#E8E8E8;
 width:100%;
 white-space:nowrap;
 text-align:center;
+font-family:Verdana, Serif; font-size:10px; font-weight:700;
 border-style:solid; border-spacing:1px;
 margin-top:1px; padding-top:0px;
 }
