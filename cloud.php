@@ -2,7 +2,7 @@
 	//////////////////////////////////////////////////////////////////////////////
 	//
 	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
-	// Version: 3.5
+	// Version: 3.5a
 	// Date:    08/15/2020
 	//
 	// For more information go to:
@@ -115,7 +115,7 @@
 			$result = $db->exec_sql($sql, $params);
 
 			$output = "";
-			while ($result->fetch()) {
+			while ($row = $result->fetch()) {
 				$output .= $row['ID']."|".$row['Latitude']."|".$row['Longitude']."|".$row['DateOccurred']."|".$row['Accuracy']."|".$row['Distance']."|".$row['DisplayName']."|".$row['Public']."\n";
 			}
 
