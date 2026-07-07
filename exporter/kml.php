@@ -1,18 +1,4 @@
 <?php
-	//////////////////////////////////////////////////////////////////////////////
-	//
-	// TrackMeViewer - Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
-	// Version: 3.5
-	// Date:    08/15/2020
-	//
-	// For more information go to:
-	// http://forum.xda-developers.com/showthread.php?t=340667
-	//
-	// Please feel free to modify the files to meet your needs.
-	// Post comments and questions to the forum thread above.
-	//
-	//////////////////////////////////////////////////////////////////////////////
-
 	require_once("base.php");
 
 	class KMLExporter extends Exporter {
@@ -42,13 +28,13 @@
 			$customicons = "";
 			foreach (array("yellow", "green", "red") as $color) {
 				$id = "Icon" . ucfirst($color);
-				$href = $currentpath . "/mm_20_$color.png";
+				$href = $currentpath . "/images/mm_20_$color.png";
 				$customicons .= $this->create_icon($id, $href, $color === "yellow");
 			}
 
 			for ($angle = 0; $angle < 360; $angle += 45) {
 				$id = "IconArrow$angle";
-				$href = $currentpath . "/arrow$angle.png";
+				$href = $currentpath . "/images/arrow$angle.png";
 				$customicons .= $this->create_icon($id, $href, true);
 			}
 			$result = $this->exec_sql(true);
@@ -71,16 +57,16 @@
 				$this->simulate_old($row);
 				if ($row['FK_Icons_ID'])
 					$iconIds[] = $row['FK_Icons_ID'];
-				$speedMPH = number_format($row['Speed']*2.2369362920544, 2);
-				$speedKPH = number_format($row['Speed']*3.6, 2);
+				$speedMPH = number_format($row['Speed']*2.2369362920544,2);
+				$speedKPH = number_format($row['Speed']*3.6,2);
 				if ($row['Altitude'] > 0) {
-					$altitudeFeet = number_format($row['Altitude']*3.2808399, 2);
-					$altitudeM = number_format($row['Altitude'], 2);
+					$altitudeFeet = number_format($row['Altitude']*3.2808399,2);
+					$altitudeM = number_format($row['Altitude'],2);
 				} else {
-					$altitudeFeet = number_format(0, 2);
-					$altitudeM = number_format(0, 2);
+					$altitudeFeet = number_format(0,2);
+					$altitudeM = number_format(0,2);
 				}
-				$angle = number_format($row['Angle'], 2);
+				$angle = number_format($row['Angle'],2);
 				$is_last = ($count == count($result) - 1); // Last pushpin
 				$row['UnixDateOccured'] = strtotime($row['DateOccurred']);
 
@@ -162,7 +148,7 @@
 							$output .= "(Good)</td>\n";
 						elseif ($row['SignalStrength'] >= $row['SignalStrengthMax'] - $range*4)
 							$output .= "(Poor)</td>\n";
-						else
+						else 
 							$output .= "(Very Poor)</td>\n";
 					}
 					$output .= "      </tr>\n";
@@ -196,9 +182,9 @@
 					$icon = "IconGreen";
 				} elseif ($row['FK_Icons_ID'] == "") {
 					if ($row['Angle'] != "" && $showbearings == "yes") {
-						$direction = (int) (($row['Angle'] - 22.5)/45)%8;
-						$angle = direction * 45;
-						$icon = "IconArrow" . $angle;
+						$direction = (int) (($row['Angle'] - 22.5) / 45) % 8;
+						$direction *= 45;
+						$icon = "IconArrow" . $direction;
 					} else {
 						$icon = "IconYellow";
 					}

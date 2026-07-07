@@ -67,7 +67,7 @@
     "config-intro": "Adjust how the map and dashboard behave for this session.",
     "page-private": "Page has been set to private. User ID and password required for access.",
     "trip-data": "Trip data for:",
-    "login-badge": "TrackMe Server",
+    "login-badge": "Web Viewer",
     "login-username": "User Name",
     "login-password": "Password",
     "login-button": "Log In",

@@ -43,10 +43,6 @@
 	setcookie("tilePT",       $tilePT,       2147483647, "/");
 
 	require_once("language.php");
-	$calendar_lang_file = "lang/calendar-" . $selected_code . ".js";
-	if (!file_exists($calendar_lang_file)) {
-		$calendar_lang_file = "lang/calendar-en.js";
-	}
 
 	if (!isset($tileproviders[$tileprovider])) {
 		$tileprovider = "OSM (OpenStreetMap)";
@@ -59,7 +55,7 @@
 		$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
 		$html .= " <head>\n";
 		$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-		$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+		$html .= "  <link rel=\"shortcut icon\" href=\"images/favicon.ico\">\n";
 		$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
 		$html .= " </head>\n";
 		$html .= " <body>\n";
@@ -104,7 +100,7 @@
 			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
 			$html .= " <head>\n";
 			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-			$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+			$html .= "  <link rel=\"shortcut icon\" href=\"images/favicon.ico\">\n";
 			$html .= "  <title>" . $title_text . "(v" . $version_text . ")</title>\n";
 			$html .= " </head>\n";
 			$html .= " <body>\n";
@@ -112,7 +108,7 @@
 			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
 			$html .= " <head>\n";
 			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-			$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+			$html .= "  <link rel=\"shortcut icon\" href=\"images/favicon.ico\">\n";
 			$html .= "  <title>" . $title_text . "(v" . $version_text . ")</title>\n";
 			$html .= " </head>\n";
 			$html .= " <body>\n";
@@ -156,7 +152,7 @@
 			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
 			$html .= " <head>\n";
 			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-			$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+			$html .= "  <link rel=\"shortcut icon\" href=\"images/favicon.ico\">\n";
 			$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
 			$html .= " </head>\n";
 			$html .= " <body>\n";
@@ -167,7 +163,7 @@
 			$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
 			$html .= " <head>\n";
 			$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"/>\n";
-			$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+			$html .= "  <link rel=\"shortcut icon\" href=\"images/favicon.ico\">\n";
 			$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
 			$html .= " </head>\n";
 			$html .= " <body>\n";
@@ -194,17 +190,13 @@
 				$html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
 				$html .= " <head>\n";
 				$html .= "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n";
-				$html .= "  <link rel=\"shortcut icon\" href=\"favicon.ico\">\n";
+				$html .= "  <link rel=\"shortcut icon\" href=\"images/favicon.ico\">\n";
 				$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
 				$html .= "  <link rel=\"stylesheet\" href=\"layout.css?v=" . @filemtime("layout.css") . "\" type=\"text/css\">\n";
-				$html .= "  <link rel=\"stylesheet\" href=\"calendar-win2k-cold-1.css\" type=\"text/css\">\n";
 				$html .= "  <link rel=\"stylesheet\" href=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet.css\" integrity=\"sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==\" crossorigin=\"\"/>\n";
 				$html .= "  <!-- Make sure you put this AFTER Leaflet's CSS -->\n";
 //	for debugging us this	$html .= "  <script type=\"text/javascript\" src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet-src.js\" integrity=\"sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==\" crossorigin=\"\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet.js\" crossorigin=\"\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"calendar.js\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"" . $calendar_lang_file . "\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"calendar-setup.js\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"main.js\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"lang.js\"></script>\n";
 				$html .= " </head>\n";
@@ -275,6 +267,42 @@
 				$html .= "     }\n";
 				$html .= "    } else {\n";
 				$html .= "     alert('" . $deleteTripSelect . "');\n";
+				$html .= "    }\n";
+				$html .= "   }\n";
+
+				$html .= "   function dateTimeLocalToServer(value) {\n";
+				$html .= "    if (!value) {\n";
+				$html .= "     return \"\";\n";
+				$html .= "    }\n";
+				$html .= "    if (value.length === 16) {\n";
+				$html .= "     value += \":00\";\n";
+				$html .= "    }\n";
+				$html .= "    return value.replace(\"T\", \" \");\n";
+				$html .= "   }\n";
+
+				$html .= "   function serverToDateTimeLocal(value) {\n";
+				$html .= "    if (!value) {\n";
+				$html .= "     return \"\";\n";
+				$html .= "    }\n";
+				$html .= "    return value.replace(\" \", \"T\").slice(0, 16);\n";
+				$html .= "   }\n";
+
+				$html .= "   function syncFilterDateInputs() {\n";
+				$html .= "    var startHidden = document.getElementById(\"startday\");\n";
+				$html .= "    var endHidden = document.getElementById(\"endday\");\n";
+				$html .= "    var startDisplay = document.getElementById(\"startday_display\");\n";
+				$html .= "    var endDisplay = document.getElementById(\"endday_display\");\n";
+				$html .= "    if (!startHidden || !endHidden || !startDisplay || !endDisplay) {\n";
+				$html .= "     return;\n";
+				$html .= "    }\n";
+				$html .= "    startDisplay.value = serverToDateTimeLocal(startHidden.value);\n";
+				$html .= "    endDisplay.value = serverToDateTimeLocal(endHidden.value);\n";
+				$html .= "    var form = document.forms['form_filter'];\n";
+				$html .= "    if (form) {\n";
+				$html .= "     form.addEventListener('submit', function() {\n";
+				$html .= "      startHidden.value = dateTimeLocalToServer(startDisplay.value);\n";
+				$html .= "      endHidden.value = dateTimeLocalToServer(endDisplay.value);\n";
+				$html .= "     });\n";
 				$html .= "    }\n";
 				$html .= "   }\n";
 
@@ -479,11 +507,13 @@
 					$html .= "    <div class=\"filterdategrid\">\n";
 					$html .= "     <div class=\"filterdatefield\">\n";
 					$html .= "      <div class=\"paneltitle paneltitle-sub\">$startdate_text</div>\n";
-					$html .= "      <input type=\"text\" class=\"textinputfield\" id=\"startday\" name=\"startday\" value=\"$startday\">\n";
+					$html .= "      <input type=\"datetime-local\" class=\"textinputfield datetimeinputfield\" id=\"startday_display\" value=\"\">\n";
+					$html .= "      <input type=\"hidden\" id=\"startday\" name=\"startday\" value=\"$startday\">\n";
 					$html .= "     </div>\n";
 					$html .= "     <div class=\"filterdatefield\">\n";
 					$html .= "      <div class=\"paneltitle paneltitle-sub\">$enddate_text</div>\n";
-					$html .= "      <input type=\"text\" class=\"textinputfield\" id=\"endday\" name=\"endday\" value=\"$endday\">\n";
+					$html .= "      <input type=\"datetime-local\" class=\"textinputfield datetimeinputfield\" id=\"endday_display\" value=\"\">\n";
+					$html .= "      <input type=\"hidden\" id=\"endday\" name=\"endday\" value=\"$endday\">\n";
 					$html .= "     </div>\n";
 					$html .= "    </div>\n";
 				}
@@ -555,18 +585,7 @@
 				} else {
 					$html .= "    <input type=\"submit\" class=\"button\" name=\"filter_data\" value=\"$filter_button_text\">\n";
 					$html .= "    <script type=\"text/javascript\">\n";
-					$html .= "     Calendar.setup( {\n";
-					$html .= "      inputField: \"startday\",\n";
-					$html .= "      ifFormat  : \"%Y-%m-%d %H:%M:%S\", \n";
-					$html .= "      showsTime : true, \n";
-					$html .= "      timeFormat: \"24\" \n";
-					$html .= "     });\n";
-					$html .= "     Calendar.setup( {\n";
-					$html .= "      inputField: \"endday\",\n";
-					$html .= "      ifFormat  : \"%Y-%m-%d %H:%M:%S\", \n";
-					$html .= "      showsTime : true, \n";
-					$html .= "      timeFormat: \"24\" \n";
-					$html .= "     });\n";
+					$html .= "     syncFilterDateInputs();\n";
 					$html .= "    </script>\n";
 					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
 					$html .= "    <input type=\"hidden\" name=\"trip\" value=\"$trip\">\n";
@@ -756,7 +775,7 @@
 				}
 
 				if ($crosshair == "yes") {
-					$html .= "   var centerCrosshair = L.icon({iconUrl: 'crosshair.gif', iconSize: [17, 17], iconAnchor: [8, 8],});\n";
+					$html .= "   var centerCrosshair = L.icon({iconUrl: 'images/crosshair.gif', iconSize: [17, 17], iconAnchor: [8, 8],});\n";
 					$html .= "   centerCross = L.marker(map.getCenter(), {icon: centerCrosshair, interactive: false}).addTo(map);\n";
 					$html .= "   function setCenterCross() {\n";
 					$html .= "    centerCross.setLatLng(map.getCenter());\n";
@@ -893,16 +912,17 @@
 				$html .= "   body.loginpage { background:#0f1724; background-image:linear-gradient(135deg, #0f1724 0%, #12263b 55%, #0a1018 100%); color:#eaf2ff; font-family:Segoe UI, Tahoma, Arial, sans-serif; }\n";
 				$html .= "   #loginpagewrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px 20px; box-sizing:border-box; }\n";
 				$html .= "   #loginsection { width:360px; max-width:100%; padding:28px; box-sizing:border-box; background:#111a27; border:1px solid #30445d; border-radius:20px; box-shadow:0 24px 60px rgba(0,0,0,0.45); }\n";
-				$html .= "   #loginsection h1 { margin:0; font-size:34px; line-height:1; font-weight:700; color:#ffffff; }\n";
-				$html .= "   #loginsection .loginbadge { display:block; width:fit-content; margin:0 auto 16px auto; padding:6px 10px; border:1px solid #35567c; border-radius:999px; color:#b7d8ff; background:#16273a; font-size:10px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; }\n";
-				$html .= "   #loginsection .loginversion { margin:10px 0 14px 0; color:#7fb4ff; font-size:12px; font-weight:700; }\n";
-				$html .= "   #loginsection .loginintro { margin:0 0 22px 0; color:#b9c8da; font-size:13px; line-height:1.5; }\n";
+				$html .= "   #loginsection .loginbrand { display:flex; justify-content:center; margin:0 0 8px 0; }\n";
+				$html .= "   #loginsection .loginbrand img { display:block; width:248px; max-width:92%; height:auto; filter:drop-shadow(0 14px 28px rgba(0,0,0,0.28)); }\n";
+				$html .= "   #loginsection .loginbadge { display:block; width:fit-content; margin:0 auto 10px auto; padding:6px 10px; border:1px solid #35567c; border-radius:999px; color:#b7d8ff; background:#16273a; font-size:10px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; }\n";
+				$html .= "   #loginsection .loginversion { margin:0 0 12px 0; color:#7fb4ff; font-size:12px; font-weight:700; text-align:center; }\n";
+				$html .= "   #loginsection .loginintro { margin:0 0 18px 0; color:#b9c8da; font-size:13px; line-height:1.5; }\n";
 				$html .= "   #loginsection .loginfield { margin-bottom:14px; }\n";
 				$html .= "   #loginsection .loginlabel { display:block; margin-bottom:6px; color:#89a0bd; font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; }\n";
 				$html .= "   #loginsection .textinputfield { width:100%; padding:12px 14px; box-sizing:border-box; background:#0d1520; color:#f4f8ff; border:1px solid #58708c; border-radius:12px; font-size:14px; font-weight:600; }\n";
 				$html .= "   #loginsection .button { width:100%; padding:12px 14px; box-sizing:border-box; border:1px solid #89c5ff; border-radius:12px; background:#3378e2; color:#ffffff; font-size:13px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; cursor:pointer; }\n";
 				$html .= "   #loginsection .loginfootnote { margin-top:18px; padding-top:16px; border-top:1px solid #26384e; color:#7890ac; font-size:11px; line-height:1.5; }\n";
-				$html .= "   @media screen and (max-width: 520px) { #loginpagewrap { align-items:flex-start; padding:20px 12px; } #loginsection { padding:24px 20px 20px 20px; border-radius:18px; } #loginsection h1 { font-size:30px; } }\n";
+				$html .= "   @media screen and (max-width: 520px) { #loginpagewrap { align-items:flex-start; padding:20px 12px; } #loginsection { padding:24px 20px 20px 20px; border-radius:18px; } }\n";
 				$html .= "  </style>\n";
 				$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
 				$html .= " </head>\n";
@@ -922,8 +942,8 @@
 				$html .= "  </script>\n";
 				$html .= "  <div id=\"loginpagewrap\">\n";
 				$html .= "   <div id=\"loginsection\">\n";
+				$html .= "    <div class=\"loginbrand\"><img src=\"images/trackme-logo.png\" alt=\"TrackMe\"></div>\n";
 				$html .= "    <div class=\"loginbadge\">" . $lang["login-badge"] . "</div>\n";
-				$html .= "    <h1>$title_text</h1>\n";
 				$html .= "    <div class=\"loginversion\">v" . $version_text . "</div>\n";
 				$html .= "    <p class=\"loginintro\">$page_private</p>\n"; //trackmeIT
 				$html .= "    <form name=\"form_login\" method=\"post\" class=\"loginform\">\n";

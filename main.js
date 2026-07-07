@@ -1,11 +1,11 @@
-var iconRed		= 'red-dot.png';
-var iconGreen		= 'green-dot.png';
-var iconLtBlue		= 'mm_20_gray.png';
-var iconLtYellow	= 'mm_20_yellow.png';
-var iconLtPurple	= 'mm_20_purple.png';
+var iconRed		= 'images/red-dot.png';
+var iconGreen		= 'images/green-dot.png';
+var iconLtBlue		= 'images/mm_20_gray.png';
+var iconLtYellow	= 'images/mm_20_yellow.png';
+var iconLtPurple	= 'images/mm_20_purple.png';
 var arrowIcons		= [];
 for (angle = 0; angle < 360; angle += 45) {
-	arrowIcons.push('arrow' + angle + '.png');
+	arrowIcons.push('images/arrow' + angle + '.png');
 }
 
 function Trip(name, user) {

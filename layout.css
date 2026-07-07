@@ -559,6 +559,15 @@ background-color:rgba(14, 26, 40, 0.96);
 color:#6C839D;
 }
 
+.datetimeinputfield {
+min-height:44px;
+}
+
+.datetimeinputfield::-webkit-calendar-picker-indicator {
+filter:invert(0.92) sepia(0.08) saturate(0.6) hue-rotate(180deg);
+cursor:pointer;
+}
+
 #navigationsection .navpanel {
 display:flex;
 flex-direction:column;
