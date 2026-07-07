@@ -126,7 +126,7 @@ function createMarkerText(data) {
 	}
 	html += " <div class='trackme-balloon-footer'>" + lang.get('balloon-point') + " " + lang.get('balloon-point-val', data.index + 1, data.trip.markers.length) + "</div>";
 	if (data.photo) {
-		html += " <a class='trackme-balloon-photo' href='" + data.photo + "' target='_blank'><img src='" + data.photo + "' alt='Photo'></a>";
+		html += " <a class='trackme-balloon-photo' href='" + data.photo + "' target='_blank'><img src='" + data.photo + "' alt='" + lang.get('photo-alt') + "'></a>";
 	}
 	html += "</div>";
 	return html

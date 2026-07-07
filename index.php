@@ -43,6 +43,10 @@
 	setcookie("tilePT",       $tilePT,       2147483647, "/");
 
 	require_once("language.php");
+	$calendar_lang_file = "lang/calendar-" . $selected_code . ".js";
+	if (!file_exists($calendar_lang_file)) {
+		$calendar_lang_file = "lang/calendar-en.js";
+	}
 
 	if (!isset($tileproviders[$tileprovider])) {
 		$tileprovider = "OSM (OpenStreetMap)";
@@ -199,7 +203,7 @@
 //	for debugging us this	$html .= "  <script type=\"text/javascript\" src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet-src.js\" integrity=\"sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==\" crossorigin=\"\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet.js\" crossorigin=\"\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"calendar.js\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"lang/calendar-en.js\"></script>\n";
+				$html .= "  <script type=\"text/javascript\" src=\"" . $calendar_lang_file . "\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"calendar-setup.js\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"main.js\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"lang.js\"></script>\n";
@@ -212,6 +216,9 @@
 				}
 
 				$html .= "  <script type=\"text/javascript\">\n";
+				$deleteTripConfirm = escapeJSString($lang["delete-trip-confirm"]);
+				$deleteTripSelect = escapeJSString($lang["delete-trip-select"]);
+				$liveMinInterval = escapeJSString($lang["live-min-interval"]);
 				$html .= "   function getValue(varname) {\n";
 				$html .= "    var url = window.location.href;\n";
 				$html .= "    var qparts = url.split(\"?\");\n";
@@ -262,12 +269,12 @@
 				$html .= "   function deleteTrip() {\n";
 				$html .= "    var selTrip = document.getElementById('selTrip').value;\n";
 				$html .= "    if (selTrip != \"$trip_none_text\" && selTrip != \"$trip_any_text\") {\n";
-				$html .= "     if (confirm('Are you sure you want to delete this trip?')) {\n";
+				$html .= "     if (confirm('" . $deleteTripConfirm . "')) {\n";
 				$html .= "      var url = document.location.protocol +'//'+ document.location.hostname + ':' + document.location.port + document.location.pathname + '?deleteTrip='+selTrip;\n";
 				$html .= "      window.location.href = url;\n";
 				$html .= "     }\n";
 				$html .= "    } else {\n";
-				$html .= "     alert('Please select a trip!');\n";
+				$html .= "     alert('" . $deleteTripSelect . "');\n";
 				$html .= "    }\n";
 				$html .= "   }\n";
 
@@ -354,7 +361,7 @@
 					$html .= "      document.form_intervalclock.interval.value = getValue(\"interval\");\n";
 					$html .= "     }\n";
 					$html .= "     if (document.form_intervalclock.interval.value < 10) {\n";
-					$html .= "      alert(\"Minimum interval ist 10 seconds\");\n";
+					$html .= "      alert(\"" . $liveMinInterval . "\");\n";
 					$html .= "      t = 60;\n";
 					$html .= "      document.form_intervalclock.interval.value = 60;\n";
 					$html .= "     } else {\n";
@@ -367,7 +374,7 @@
 					$html .= "     t = t - 1;\n";
 					$html .= "     if (t == 0) {\n";
 					$html .= "      if (document.form_intervalclock.interval.value < 10) {\n";
-					$html .= "       alert(\"Minimum interval is 10 seconds\");\n";
+					$html .= "       alert(\"" . $liveMinInterval . "\");\n";
 					$html .= "       t = 60;\n";
 					$html .= "       document.form_intervalclock.interval.value = 60;\n";
 					$html .= "      } else {\n";
@@ -390,14 +397,14 @@
 					$html .= "    <tr>\n";
 					$html .= "     <td align=right>\n";
 					$html .= "      <form name=\"form_intervalclock\">\n";
-					$html .= "       Interval:\n";
+					$html .= "       " . $lang["live-interval"] . "\n";
 					$html .= "       <input type=\"text\" class=\"intervalinputfield\" name=\"interval\" value=\"-\" size=\"1\">\n";
-					$html .= "       sec.\n";
-					$html .= "       <input type=\"button\" class=\"intervalbutton\" name=\"start\" value=\"Start\" onClick=\"clearTimeout(k); initInterval();\"><br>\n";
-					$html .= "       Reload:\n";
+					$html .= "       " . $lang["live-seconds"] . "\n";
+					$html .= "       <input type=\"button\" class=\"intervalbutton\" name=\"start\" value=\"" . $lang["live-start"] . "\" onClick=\"clearTimeout(k); initInterval();\"><br>\n";
+					$html .= "       " . $lang["live-reload"] . "\n";
 					$html .= "       <input type=\"text\" class=\"intervalinputfield\" name=\"seconds\" value=\"-\" size=\"1\">\n";
-					$html .= "       sec.\n";
-					$html .= "       <input type=\"button\" class=\"intervalbutton\" name=\"stop\" value=\"Stop\" onClick=\"clearTimeout(k); document.form_intervalclock.seconds.value = document.form_intervalclock.interval.value;\">\n";
+					$html .= "       " . $lang["live-seconds"] . "\n";
+					$html .= "       <input type=\"button\" class=\"intervalbutton\" name=\"stop\" value=\"" . $lang["live-stop"] . "\" onClick=\"clearTimeout(k); document.form_intervalclock.seconds.value = document.form_intervalclock.interval.value;\">\n";
 					$html .= "       <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
 					$html .= "      </form>\n";
 					$html .= "     </td>\n";
@@ -409,23 +416,23 @@
 					$html .= "   <div class=\"panelcard panelcard-live\">\n";
 					$html .= "    <div class=\"paneltitle\">$zoomlevel_title</div>\n";
 					$html .= "    <select class=\"pulldown\" name=\"zoom\">\n";
-					$html .= "     <option value=\"-\" selected>Choose Zoomlevel\n";
-					$html .= "     <option value=3>Level 3 (World)\n";
-					$html .= "     <option value=4>Level 4\n";
-					$html .= "     <option value=5>Level 5 (Continent)\n";
-					$html .= "     <option value=6>Level 6\n";
-					$html .= "     <option value=7>Level 7 (Country)\n";
-					$html .= "     <option value=8>Level 8\n";
-					$html .= "     <option value=9>Level 9 (wide Area)\n";
-					$html .= "     <option value=10>Level 10\n";
-					$html .= "     <option value=11>Level 11 (City)\n";
-					$html .= "     <option value=12>Level 12\n";
-					$html .= "     <option value=13>Level 13 (Village)\n";
-					$html .= "     <option value=14>Level 14\n";
-					$html .= "     <option value=15>Level 15 (small road)\n";
-					$html .= "     <option value=16>Level 16\n";
-					$html .= "     <option value=17>Level 17 (Block)\n";
-					$html .= "     <option value=18>Level 18\n";
+					$html .= "     <option value=\"-\" selected>" . $lang["zoom-choose"] . "\n";
+					$html .= "     <option value=3>3\n";
+					$html .= "     <option value=4>4\n";
+					$html .= "     <option value=5>5\n";
+					$html .= "     <option value=6>6\n";
+					$html .= "     <option value=7>7\n";
+					$html .= "     <option value=8>8\n";
+					$html .= "     <option value=9>9\n";
+					$html .= "     <option value=10>10\n";
+					$html .= "     <option value=11>11\n";
+					$html .= "     <option value=12>12\n";
+					$html .= "     <option value=13>13\n";
+					$html .= "     <option value=14>14\n";
+					$html .= "     <option value=15>15\n";
+					$html .= "     <option value=16>16\n";
+					$html .= "     <option value=17>17\n";
+					$html .= "     <option value=18>18\n";
 					$html .= "    </select>\n";
 					$html .= "   </div>\n";
 					$html .= "   </form>\n";
@@ -546,7 +553,7 @@
 
 				if ($livetracking) {
 				} else {
-					$html .= "    <input type=\"submit\" class=\"button\" name=\"filter_data\" value=\"Apply Filters\">\n";
+					$html .= "    <input type=\"submit\" class=\"button\" name=\"filter_data\" value=\"$filter_button_text\">\n";
 					$html .= "    <script type=\"text/javascript\">\n";
 					$html .= "     Calendar.setup( {\n";
 					$html .= "      inputField: \"startday\",\n";
@@ -578,9 +585,9 @@
 						$html .= "   <b>$total_distance_balloon_text: </b>" . number_format($total_miles,2) . " $distance_imperial_unit_balloon_text\n";
 					}
 				} else {
-					$routeContextName = ($tripname == $trip_none_text || $tripname == $trip_any_text) ? "All Routes" : $tripname;
+					$routeContextName = ($tripname == $trip_none_text || $tripname == $trip_any_text) ? $lang["route-all"] : $tripname;
 					$html .= "   <div class=\"panelcard panelcard-summary\">\n";
-					$html .= "    <div class=\"paneltitle\">Route Summary</div>\n";
+					$html .= "    <div class=\"paneltitle\">$summary_title</div>\n";
 					$html .= "   <form name=\"form_trip\" method=\"post\">\n";
 					$html .= "    <select id=\"selTrip\" name=\"trip\" class=\"pulldown\" onchange=\"submitTrip();\" >\n";
 					foreach ($foundTrips as $foundtrip) {
@@ -592,12 +599,12 @@
 					}
 					$html .= "    </select>\n";
 					if ($deleteButton)
-						$html .= "    <input type=\"button\" class=\"deletebutton\" value=\"Delete\" onclick=\"deleteTrip();\">\n";
+						$html .= "    <input type=\"button\" class=\"deletebutton\" value=\"" . $lang["delete-button"] . "\" onclick=\"deleteTrip();\">\n";
 					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
 					$html .= "   </form>\n";
 					$html .= "    <div class=\"routehero routehero-inline\">\n";
 					$html .= "     <div class=\"routehero-name\">" . $routeContextName . "</div>\n";
-					$html .= "     <div class=\"routehero-range\">$startday to $endday</div>\n";
+					$html .= "     <div class=\"routehero-range\">$startday " . $lang["date-range-separator"] . " $endday</div>\n";
 					$html .= "    </div>\n";
 					if ($units == "metric") {
 						$html .= "    <div class=\"summaryhero\"><div class=\"summaryhero-label\">$total_distance_balloon_text</div><div class=\"summaryhero-value\">" . number_format($total_kilometers,2) . " <span class=\"summaryhero-unit\">$distance_metric_unit_balloon_text</span></div></div>\n";
@@ -625,11 +632,11 @@
 					$ExportOptions .= "&sb=" . $showbearings; //0=no 1=Yes
 					$html .= "   <form name=\"form_download\" method=\"post\" action=\"download.php?a=kml" . $ExportOptions . "\">\n";
 					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "    <input type=\"submit\" class=\"button\" id=\"downloadkml\" value=\"KML Format\">\n";
+					$html .= "    <input type=\"submit\" class=\"button\" id=\"downloadkml\" value=\"" . $lang["download-kml"] . "\">\n";
 					$html .= "   </form>\n";
 					$html .= "   <form name=\"form_download\" method=\"post\" action=\"download.php?a=gpx" . $ExportOptions . "\">\n";
 					$html .= "    <input type=\"hidden\" name=\"ID\" value=\"$ID\">\n";
-					$html .= "    <input type=\"submit\" class=\"button\" id=\"downloadgpx\" value=\"GPX Format\">\n";
+					$html .= "    <input type=\"submit\" class=\"button\" id=\"downloadgpx\" value=\"" . $lang["download-gpx"] . "\">\n";
 					$html .= "   </form>\n";
 					$html .= "   </div>\n";
 					// 2009-05-07 DMR Add Link to download the currently displayed data. <--
@@ -642,7 +649,7 @@
 				$html .= "  <div id=\"configbackdrop\" style=\"display:none;\" onclick=\"showInfo();\"></div>\n";
 				$html .= "  <div id=\"configsection\" style=\"display:none;\">\n";
 				$html .= "   <div class=\"configtitle\">$display_options_title_text</div>\n";
-				$html .= "   <div class=\"configintro\">Adjust how the map and dashboard behave for this session.</div>\n";
+				$html .= "   <div class=\"configintro\">" . $lang["config-intro"] . "</div>\n";
 				$html .= "   <form name=\"form_options\" method=\"post\" class=\"configform\">\n";
 				$html .= "    <input type=\"hidden\" name=\"action\" value=\"form_options\">\n";
 				if ($showbearings == "yes") {
@@ -915,7 +922,7 @@
 				$html .= "  </script>\n";
 				$html .= "  <div id=\"loginpagewrap\">\n";
 				$html .= "   <div id=\"loginsection\">\n";
-				$html .= "    <div class=\"loginbadge\">TrackMe Server</div>\n";
+				$html .= "    <div class=\"loginbadge\">" . $lang["login-badge"] . "</div>\n";
 				$html .= "    <h1>$title_text</h1>\n";
 				$html .= "    <div class=\"loginversion\">v" . $version_text . "</div>\n";
 				$html .= "    <p class=\"loginintro\">$page_private</p>\n"; //trackmeIT
@@ -930,7 +937,7 @@
 				$html .= "     </div>\n";
 				$html .= "     <div class=\"loginaction\"><input type=\"submit\" class=\"button\" value=\"$login_button_text\"></div>\n";
 				$html .= "    </form>\n";
-				$html .= "    <div class=\"loginfootnote\">Secure access to your tracking history and live maps.</div>\n";
+				$html .= "    <div class=\"loginfootnote\">" . $lang["login-footnote"] . "</div>\n";
 				$html .= "   </div>\n";
 				$html .= "  </div>\n";
 			}
