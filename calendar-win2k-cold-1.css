@@ -3,6 +3,8 @@
 .calendar {
   position: relative;
   display: none;
+  width: auto !important;
+  max-width: none !important;
   border-top: 2px solid #fff;
   border-right: 2px solid #000;
   border-bottom: 2px solid #000;
@@ -16,6 +18,11 @@
 }
 
 .calendar table {
+  width: auto !important;
+  max-width: none !important;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
   border-top: 1px solid #000;
   border-right: 1px solid #fff;
   border-bottom: 1px solid #fff;
@@ -30,12 +37,24 @@
 /* Header part -- contains navigation buttons and day names. */
 
 .calendar .button { /* "<<", "<", ">", ">>" buttons have this class */
+  width: auto !important;
+  min-width: 0;
+  white-space: nowrap;
   text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: none;
+  border-radius: 0;
   padding: 1px;
   border-top: 1px solid #fff;
   border-right: 1px solid #000;
   border-bottom: 1px solid #000;
   border-left: 1px solid #fff;
+  background: #c8d0d4;
+  color: #000;
+  font-family: tahoma,verdana,sans-serif;
+  font-size: 11px;
+  font-weight: normal;
 }
 
 .calendar .nav {
@@ -43,6 +62,8 @@
 }
 
 .calendar thead .title { /* This holds the current "month, year" */
+  width: auto !important;
+  white-space: nowrap;
   font-weight: bold;
   padding: 1px;
   border: 1px solid #000;
