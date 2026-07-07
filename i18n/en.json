@@ -6,7 +6,7 @@
     "title": "TrackMe Display",
     "footer": "Tracking information provided by",
     "incomplete-install": "Installation not completed correctly! The files install.php and database.sql still exists in the TrackMe folder. Delete install.php and database.sql from the TrackMe folder to enable this map display.",
-    "no-data": "One or more TrackMe tables in your database are empty. You must generate data by running the TrackMe application on your Windows Mobile device before the map display will work properly.",
+    "no-data": "One or more TrackMe tables in your database are empty. Generate data by running the TrackMe app and syncing positions before the map display will work properly.",
     "database-fail": "Failed to connect to database. Display terminated.",
     "delete-trip-title": "Failed to delete trip.",
     "delete-trip-wrong-id": "No such trip id",

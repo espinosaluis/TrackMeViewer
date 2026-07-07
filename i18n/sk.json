@@ -6,7 +6,7 @@
     "title": "TrackMe Display",
     "footer": "Sledovacie inform&aacute;cie poskytuje",
     "incomplete-install": "In&scaron;tal&aacute;cia &uacute;spe&scaron;ne ukoncen&aacute;. Vyma&zcaron;te s&uacute;bory install.php a database.sql v adres&aacute;ri TrackMe pre spr&aacute;vnu funkcnost TrackMe Display.",
-    "no-data": "Jedna alebo viac TrackMe tabuliek vo Va&scaron;ej datab&aacute;ze s&uacute; pr&aacute;zdne. Mus&iacute;te vygenerovat d&aacute;ta pomocou aplik&aacute;cie TrackMe na Va&scaron;om Windows Mobile ziariaden&iacute;, aby t&aacute;to aplik&aacute;cia spr&aacute;vne fungovala.",
+    "no-data": "Jedna alebo viac TrackMe tabuliek vo Va&scaron;ej datab&aacute;ze s&uacute; pr&aacute;zdne. Mus&iacute;te vygenerovat d&aacute;ta pomocou aplik&aacute;cie TrackMe a zosynchronizovat polohy, aby t&aacute;to aplik&aacute;cia spr&aacute;vne fungovala.",
     "database-fail": "Zlyhalo pripojenie k datab&aacute;ze. In&scaron;tal&aacute;cia preru&scaron;en&aacute;.",
     "delete-trip-title": "Cestu sa nepodarilo odstr&aacute;nit.",
     "delete-trip-wrong-id": "Tak&eacute; ID cesty neexistuje",

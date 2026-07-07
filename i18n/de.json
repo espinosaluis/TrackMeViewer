@@ -6,7 +6,7 @@
     "title": "TrackMe Anzeige",
     "footer": "Die Tracking Information wurde bereitgestellt von ",
     "incomplete-install": "Installation wurde nicht erfolgreich beendet! Die Intallationsdateien index.php und database.sql befinden sich noch im TrackMe Ordner. Um die Kartenanzeige zu aktivieren, bitte die Dateien install.php und database.sql aus dem TrackMe Ordner entfernen.",
-    "no-data": "Eine oder mehrere Tabellen in der Datenbank sind leer. TrackMe muss mindestens einmal auf dem mobilen Ger&&auml;t gelaufen sein.",
+    "no-data": "Eine oder mehrere Tabellen in der Datenbank sind leer. Sie m&uuml;ssen zuerst Daten mit der TrackMe-App erzeugen und Positionen synchronisieren, damit die Kartenansicht korrekt funktioniert.",
     "database-fail": "Fehler bei Verbindung zur Datenbank. Die Anzeige wurde abgebrochen.",
     "delete-trip-title": "Strecke konnte nicht gel&ouml;scht werden.",
     "delete-trip-wrong-id": "Die ID existiert nicht",

@@ -6,7 +6,7 @@
     "title": "TrackMe Display",
     "footer": "Tracking informatie verzorgd door ",
     "incomplete-install": "Installatie niet volledig uitgevoerd! De bestanden install.php en database.sql bestaan in de TrackMe map. Verwijder install.php en database.sql uit de TrackMe map om gebruik te maken van Trackme.",
-    "no-data": "Een of meer TrackMe tabbellen in de database zijn leeg. Je moet eerst gegevens genereren met de TrackMe applicatie op je Windows Mobile apparaat voordat de kaart weergegeven kan worden.",
+    "no-data": "Een of meer TrackMe tabbellen in de database zijn leeg. Je moet eerst gegevens genereren met de TrackMe-app en posities synchroniseren voordat de kaart weergegeven kan worden.",
     "database-fail": "Verbinding maken met database mislukt. Weergeven afgebroken.",
     "delete-trip-title": "Reis kon niet worden verwijderd.",
     "delete-trip-wrong-id": "Geen reis met deze id",

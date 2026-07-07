@@ -168,7 +168,7 @@
 		$html .= "  You MUST delete the install.php and database.sql files before the map page will display.\n";
 		$html .= "  Once you delete install.php you can <a href=\"index.php\">click here</a> to view your custom map.<br>\n";
 		$html .= "  <br>\n";
-		$html .= "  If you have not installed the application on your Windows Mobile Professional device you can download the latest version <a href=\"http://luisespinosa.com/bin/trackme/TrackMe.CAB\">here</a><br>\n";
+		$html .= "  Install the TrackMe Android app and point it to this server to start uploading tracking data.<br>\n";
 		$html .= "  <br>\n";
 		$html .= "  <br>\n";
 	} else {

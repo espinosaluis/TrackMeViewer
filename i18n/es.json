@@ -6,7 +6,7 @@
     "title": "Visor TrackMe",
     "footer": "Informacion proporcionada por",
     "incomplete-install": "&iexcl;No se pudo completar la instalaci&oacute;n correctamente! Los ficheros install.php y database.sql a&uacute;n existen en el directorio TrackMe. Borre los archivos install.php y database.sql del directorio para poder utilizar este m&oacute;dulo.",
-    "no-data": "Una o m&aacute;s tablas de TrackMe en la base de datos est&aacute;n vac&iacute;as. Debe generar datos con la aplicaci&oacute;n TrackMe en su dispositivo Windows Mobile antes de que el mapa funcione correctamente.",
+    "no-data": "Una o m&aacute;s tablas de TrackMe en la base de datos est&aacute;n vac&iacute;as. Debe generar datos con la aplicaci&oacute;n TrackMe y sincronizar posiciones antes de que el mapa funcione correctamente.",
     "database-fail": "Error al conectar a la base de datos. Proceso abortado.",
     "delete-trip-title": "No se pudo eliminar el trayecto.",
     "delete-trip-wrong-id": "No existe ese id de trayecto",

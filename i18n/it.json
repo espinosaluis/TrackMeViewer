@@ -6,7 +6,7 @@
     "title": "Visualizzatore TrackMe",
     "footer": "Informazioni di Tracciamento fornite da",
     "incomplete-install": "Installazione non completata correttamente! I files install.php e database.sql sono ancora presenti nella cartella TrackMe. Eliminare install.php e database.sql dalla cartella TrackMe per abilitare questa finestra della mappa.",
-    "no-data": "Una o pi&ugrave; tabelle di TrackMe nel tuo database sono vuote. Devi generare dati utilizzando l'applicazione TrackMe sul tuo dispositivo Windows Mobile prima che la mappa venga visualizzata correttamente.",
+    "no-data": "Una o pi&ugrave; tabelle di TrackMe nel tuo database sono vuote. Devi generare dati usando l'applicazione TrackMe e sincronizzando le posizioni prima che la mappa venga visualizzata correttamente.",
     "database-fail": "Connessione al database fallita. Schermata terminata.",
     "delete-trip-title": "Impossibile eliminare il viaggio.",
     "delete-trip-wrong-id": "ID del viaggio inesistente",

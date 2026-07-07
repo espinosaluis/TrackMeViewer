@@ -6,7 +6,7 @@
     "title": "Affichage TrackMe",
     "footer": "Suivi fourni par",
     "incomplete-install": "Installation non termin&egrave;e ! Les fichiers install.php et database.sql sont toujours pr&egrave;sents dans le dossier TrackMe. Effacez install.php et database.sql dans le dossier TrackMe pour afficher la carte.",
-    "no-data": "Une ou plusieurs tables TrackMe sont vides. Vous devez envoyer des positions depuis votre appareil Windows Mobile pour que l'affichage de la carte fonctionne correctement.",
+    "no-data": "Une ou plusieurs tables TrackMe sont vides. Vous devez envoyer des positions avec l'application TrackMe avant que l'affichage de la carte fonctionne correctement.",
     "database-fail": "Echec de connexion &agrave; la base de donn&egrave;es. Affichage annul&egrave;.",
     "delete-trip-title": "Impossible de supprimer le trajet.",
     "delete-trip-wrong-id": "Identifiant de trajet introuvable",
