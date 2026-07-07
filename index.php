@@ -743,7 +743,7 @@
 
 				$html .= "  <div id=\"mapsection\"></div>\n";
 
-				$html .= "  <div id=\"creditsection\">Powered by <a href=\"http://www.luisespinosa.com/trackme_eng.html\">TrackMe (v" . $version_text . ")</a> by <a href=\"http://www.luisespinosa.com/central_eng.php\">Luis Espinosa & friends</a></div>\n";
+				$html .= "  <div id=\"creditsection\">Powered by <a href=\"http://www.luisespinosa.com\">TrackMe (v" . $version_text . ")</a> by <a href=\"https://github.com/espinosaluis/TrackMeViewer\">Luis Espinosa & friends</a></div>\n";
 
 				$html .= "  <script type=\"text/javascript\">\n";
 				$html .= "   // Leaflet Map API initialisation\n";

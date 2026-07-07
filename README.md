@@ -4,7 +4,7 @@ TrackMeViewer is the PHP/MySQL web viewer for TrackMe. It lets you browse record
 
 ## Current status
 
-- Viewer version: `3.5`
+- Viewer version: `4.0`
 - Android app version in this repository: `7.0.0`
 - Primary client platform: Android
 
