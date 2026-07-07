@@ -1,71 +1,63 @@
 # TrackMeViewer
 
-* Version: 3.5
-* Date:    08/15/2020
+* Version: 3.1
+* Date: 05/05/2020
 
-Browser/MySQL/PHP based Application to display trips recorded by TrackMe App on Android
+Web viewer for TrackMe app compatible with Android, Windows Phone and Windows Mobile clients
 
-This is a simple description to help you get TrackMeViewer running on your own server. 
-The TrackMeViewer currently only works together with the TrackMe App, an application built by Luis Espinosa (_LEM_) on XDA Developers.
+This is a simple script to help you get TrackMe running on your own server. I take no credit for any of the work done on TrackMe, 
+an application built by Luis Espinosa (_LEM_) on XDA Developers.
 
 Please feel free to modify the files to meet your needs.
 Post comments and questions to the forum thread mentioned below.
-
-## Features and Functions added in v3.5
-
-### For users: 
-1. Let the user allow to select the colour for the trip line
-2. Use specified Date and Time formats from config.php in all displays
-3. Switched to a less complex date and time picker for start and end date/time way point filtering
-4. Let the user allow to suppress the position markers, if the trip recording provides to many or too dense positions
-5. Remember last trip seen by the user
-6. Let the user allow to group trips by choosing proper naming (:) and display groups of trips together ("[Any]")
-7. Let the user allow to delete one single Marker Point (position) of a trip from the database
-8. Show detailed trip data to the side of the map (resizeable). Things such as: max speed, max altitude, min altitude, descent ascent percentage, moving time, full trip time, etc
-9. Let the user allow to scroll through each point of a trip (backward/forward) from the details pop-up
-10. Show the latitude and longitude of the Marker Points in the details pop-up in different notations (e.g. 48.86648N, 9°01'30.4"E, 9°5.01304'W)
-11. Store user options settings in cookies and ask for allow or deny
-12. Issue a warning once a day, when a user modifies a trip, that it will be overwritten with a resynch from the TrackMe App
-13. Add a warning when user selects "[Any]" trips
-14. Changed "Display Options Show/Hide" check box to toggle option settings and make them to work immediately
-### For Web App owner:
-1. Let the Web App owner to allow to run Apache2 Web Server on any port (not only 80) or path.
-2. Let the Web App owner to specify the Web Page title in the config.php
-### For maintainer:
-1. Removed no longer necessary "None" trip selection
-2. Got rid of extra " ... = urldecode($_GET ...". Superglobal $_GET is already decoded
-3. Consequently and everywhere use PDO for all database access with bound parameters to prohibit data injection
-4. Got rid of "UNDEFINED INDEX " notices issued by php and saved in Apache log file
-5. Restructured and reformatted code for better readability and maintenance
 
 ## Requirements
 It requires a web server with MySQL and PHP.
 
 ## Installation
-1. FTP all of the files from the Zip to a folder on your web server. The examples here will use the folder "trackme".
-   Please note that folder names are CaSE sENsiTiVE!!! This folder must be writeable or the config file will not be built correctly.
-   If you choose to not make the folder writeable, that is fine. You just need to manually configure the config.php file before using.
+1. FTP all of the files from the Zip to a folder on your web server. In my examples I will use the folder "trackme". 
+   Please note that folder names are CaSE sENsiTiVE!!! This folder must be writeable or the config file will not be built correctly. 
+   If you choose to not make the folder writeable that is fine, you just need to manually configure the config.php file before uploading. 
    The fields in the file are clearly marked.
-2. In the same folder as the php files, create a new folder called "routes".
-3. In the same folder as the php files, create a new folder called "pics" and CHMOD it to 777.
-4. Using your MySQL access (e.g. phpMyAdmin), create a database with any name, which will house the tables created by the install script.
+2. In the same folder as the php files create a new folder called "routes".
+3. In the same folder as the php files create a new folder called "pics" and CHMOD it to 777.
+4. Using your MySQL access create a database which will house the tables created by the install script.
 5. Make sure the user account you want to use for the installer has access to create tables in that database.
-6. Optionally get API Keys and/or Access Tokens from various map tile providers. See their correspnding develpers pages for links and procedures.
-   Check the config.php file for a list of such provider requireing keys and tokens.
-7. Open your browser for the Installer to generate or update the config.php.
-8. Browse to your web server and folder, specifying the install.php file, e.g.: http://www.yourdomain.com/trackme/install.php
-9. Fill in the blanks with the database access information used above.
+6. Optionally get a Google Maps API key from here: http://www.google.com/apis/maps/signup.html or any other apikey or access tokens requrired by the tile providers.
+7. Open your browser. I only tested this installer from Internet Explorer 7.0.
+8. Browse to your web server and folder, specifying the install.php file. Example: http://www.yourdomain.com/trackme/install.php
+9. Fill in the blanks with the database information used above, name of the folder where you uploaded all of the php files, the API key(s), 
+   and all of the other configuration settings.
 10. Click the "Complete Installation" button.
 11. If you got errors, go back and try again, making note of the errors and fix them.
-12. If you didn't get errors, delete or rename both the install.php and database.sql files.
+12. If you didn't get errors, delete both the install.php and database.sql files.
 
 
 ## Client
-You can download the most recent version of the TrackMe client App for Android from the Google App Store.
+You can download the most recent version of the TrackMe client here:
+
+1. Android: https://play.google.com/store/apps/details?id=LEM.TrackMe
+2. Windows Mobile: http://forum.xda-developers.com/showthread.php?t=340667
+3. Windows Phone 7: http://www.windowsphone.com/en-us/store/app/trackme/8ebd20c9-1d80-e011-986b-78e7d1fa76f8
+
+## Usage on Windows Mobile
+1. Now you need to grab the CAB file and install TrackMe on your Windows Mobile Professional device. 
+   You can get the latest CAB file here: http://luisespinosa.com/bin/trackme/TrackMe.CAB
+2. Once you install it, start it up and click MENU -> CONFIG.
+3. Make sure the GPS tab is configured correctly for your GPS device.
+4. On the REMOTE tab put in the account name and password you want to use. It doesn't matter what you use, 
+   the account will be created for you when you start the GPS tracking.
+5. The server section of the REMOTE tab should be your server that you just installed the php files on. 
+   Make sure you also specify the subfolder name with a leading /. This folder name should be the same folder where you uploaded the php files in step 1.
+6. On the REALTIME TRACKING tab select the REMOTE option.
+7. Click OK.
+8. Click START. If the application is configured correctly it should try to get a fix from the GPS and start uploading position information.
+9. Open your browser and point it to your server and folder like this: http://www.yourdomain.com/trackme
+10. With any luck you should get a map with your points plotted. If not, post in the XDA Developers forum listed above and we will try to help you out.
+
 
 See also
 --------
 * http://luisespinosa.com
-* http://forum.xda-developers.com/showthread.php?t=340667
 
 Thanks again to Luis Espinosa for developing and maintaining the application and for taking comments and feedback to drive his development.
