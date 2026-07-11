@@ -197,8 +197,8 @@
 				$html .= "  <!-- Make sure you put this AFTER Leaflet's CSS -->\n";
 //	for debugging us this	$html .= "  <script type=\"text/javascript\" src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet-src.js\" integrity=\"sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==\" crossorigin=\"\"></script>\n";
 				$html .= "  <script type=\"text/javascript\" src=\"https://unpkg.com/leaflet@1.6.0/dist/leaflet.js\" crossorigin=\"\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"main.js\"></script>\n";
-				$html .= "  <script type=\"text/javascript\" src=\"lang.js\"></script>\n";
+				$html .= "  <script type=\"text/javascript\" src=\"main.js?v=" . @filemtime("main.js") . "\"></script>\n";
+				$html .= "  <script type=\"text/javascript\" src=\"lang.js?v=" . @filemtime("lang.js") . "\"></script>\n";
 				$html .= " </head>\n";
 
 				if ($livetracking) {
@@ -910,10 +910,10 @@
 				$html .= "  <style type=\"text/css\">\n";
 				$html .= "   html, body { margin:0; padding:0; min-height:100%; }\n";
 				$html .= "   body.loginpage { background:#0f1724; background-image:linear-gradient(135deg, #0f1724 0%, #12263b 55%, #0a1018 100%); color:#eaf2ff; font-family:Segoe UI, Tahoma, Arial, sans-serif; }\n";
-				$html .= "   #loginpagewrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px 20px; box-sizing:border-box; }\n";
+				$html .= "   #loginpagewrap { min-height:100vh; min-height:100svh; min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:32px 20px; box-sizing:border-box; }\n";
 				$html .= "   #loginsection { width:360px; max-width:100%; padding:28px; box-sizing:border-box; background:#111a27; border:1px solid #30445d; border-radius:20px; box-shadow:0 24px 60px rgba(0,0,0,0.45); }\n";
 				$html .= "   #loginsection .loginbrand { display:flex; justify-content:center; margin:0 0 8px 0; }\n";
-				$html .= "   #loginsection .loginbrand img { display:block; width:248px; max-width:92%; height:auto; filter:drop-shadow(0 14px 28px rgba(0,0,0,0.28)); }\n";
+				$html .= "   #loginsection .loginbrand img { display:block; width:216px; max-width:84%; height:auto; filter:drop-shadow(0 14px 28px rgba(0,0,0,0.28)); }\n";
 				$html .= "   #loginsection .loginbadge { display:block; width:fit-content; margin:0 auto 10px auto; padding:6px 10px; border:1px solid #35567c; border-radius:999px; color:#b7d8ff; background:#16273a; font-size:10px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; }\n";
 				$html .= "   #loginsection .loginversion { margin:0 0 12px 0; color:#7fb4ff; font-size:12px; font-weight:700; text-align:center; }\n";
 				$html .= "   #loginsection .loginintro { margin:0 0 18px 0; color:#b9c8da; font-size:13px; line-height:1.5; }\n";
@@ -922,7 +922,7 @@
 				$html .= "   #loginsection .textinputfield { width:100%; padding:12px 14px; box-sizing:border-box; background:#0d1520; color:#f4f8ff; border:1px solid #58708c; border-radius:12px; font-size:14px; font-weight:600; }\n";
 				$html .= "   #loginsection .button { width:100%; padding:12px 14px; box-sizing:border-box; border:1px solid #89c5ff; border-radius:12px; background:#3378e2; color:#ffffff; font-size:13px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; cursor:pointer; }\n";
 				$html .= "   #loginsection .loginfootnote { margin-top:18px; padding-top:16px; border-top:1px solid #26384e; color:#7890ac; font-size:11px; line-height:1.5; }\n";
-				$html .= "   @media screen and (max-width: 520px) { #loginpagewrap { align-items:flex-start; padding:20px 12px; } #loginsection { padding:24px 20px 20px 20px; border-radius:18px; } }\n";
+				$html .= "   @media screen and (max-width: 520px) { #loginpagewrap { align-items:flex-start; padding:16px 10px; } #loginsection { padding:18px 16px 16px 16px; border-radius:18px; } #loginsection .loginbrand { margin-bottom:6px; } #loginsection .loginbrand img { width:172px; max-width:72%; } #loginsection .loginbadge { margin-bottom:8px; padding:5px 9px; } #loginsection .loginversion { margin-bottom:8px; } #loginsection .loginintro { margin-bottom:14px; font-size:12px; line-height:1.4; } #loginsection .loginfield { margin-bottom:10px; } #loginsection .loginlabel { margin-bottom:5px; } #loginsection .textinputfield, #loginsection .button { padding:11px 12px; } #loginsection .loginfootnote { margin-top:14px; padding-top:12px; font-size:10px; line-height:1.4; } }\n";
 				$html .= "  </style>\n";
 				$html .= "  <title>$title_text (v" . $version_text . ")</title>\n";
 				$html .= " </head>\n";
