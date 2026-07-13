@@ -115,6 +115,7 @@ CREATE TABLE `users` (
 CREATE TABLE `cloud` (
   `ID` varchar(255) NOT NULL,
   `DisplayName` varchar(255) default NULL,
+  `IconName` varchar(64) default NULL,
   `Latitude` double NOT NULL,
   `Longitude` double NOT NULL,
   `Altitude` double default NULL,
