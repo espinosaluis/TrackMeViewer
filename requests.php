@@ -230,13 +230,11 @@
 			(isset($_GET["iconname"])) ? $iconname          = urldecode($_GET["iconname"]) : $iconname          = "";
 			(isset($_GET["comments"])) ? $comments          = urldecode($_GET["comments"]) : $comments          = "";
 			(isset($_GET["imageurl"])) ? $imageurl          = urldecode($_GET["imageurl"]) : $imageurl          = "";
-			(isset($_GET["cid"]))      ? $cellid            = urldecode($_GET["cid"])      : $cellid            = "";
 			(isset($_GET["ss"]))       ? $signalstrength    = urldecode($_GET["ss"])       : $signalstrength    = "";
 			(isset($_GET["ssmax"]))    ? $signalstrengthmax = urldecode($_GET["ssmax"])    : $signalstrengthmax = "";
 			(isset($_GET["ssmin"]))    ? $signalstrengthmin = urldecode($_GET["ssmin"])    : $signalstrengthmin = "";
 			(isset($_GET["bs"]))       ? $batterystatus     = urldecode($_GET["bs"])       : $batterystatus     = "";
 			(isset($_GET["upss"]))     ? $uploadss          = urldecode($_GET["upss"])     : $uploadss          = "";
-			(isset($_GET["upcellext"]))? $upcellext         = urldecode($_GET["upcellext"]): $upcellext         = "";
 
 			$iconid = "null";
 			if ($iconname != "" ) {
@@ -302,29 +300,6 @@
 			if (!$result) {
 				echo "Result:7|".mysql_error();
 				die();
-			}
-
-			if ($upcellext == 1 && $cellid != "") {
-				$sql = "INSERT INTO cellids (CellID, Latitude, Longitude, Signalstrength, Signalstrengthmax, Signalstrengthmin) VALUES ('$cellid', '$lat', '$long', ";
-
-				if ($signalstrength == "")
-					$sqlc.= "null, ";
-				else
-					$sql .= $signalstrength.", ";
-
-				if ($signalstrengthmax == "")
-					$sql .= "null, ";
-				else
-					$sql .= $signalstrengthmax.", ";
-
-				if ($signalstrengthmin == "")
-					$sql .= "null";
-				else
-					$sql .= $signalstrengthmin;
-
-				$sql.=")";
-
-				mysql_query($sql);
 			}
 
 			echo "Result:0";

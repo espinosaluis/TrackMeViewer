@@ -11,28 +11,6 @@
 --	// Post comments and questions to the forum thread above.
 --	//
 --	//////////////////////////////////////////////////////////////////////////////
---
--- Table structure for table `cellids`
---
-
---
--- Table structure for table `cellids`
---
-
-CREATE TABLE `cellids` (
-  `ID` int(11) NOT NULL auto_increment,
-  `CellID` varchar(255) NOT NULL,
-  `Latitude` double NOT NULL,
-  `Longitude` double NOT NULL,
-  `DateAdded` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  `SignalStrength` int(11) default NULL,
-  `SignalStrengthMax` int(11) default NULL,
-  `SignalStrengthMin` int(11) default NULL,
-  PRIMARY KEY  (`ID`),
-  KEY `Index_CellID` (`CellID`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
 
 --
 -- Table structure for table `icons`
@@ -114,8 +92,6 @@ CREATE TABLE `users` (
 
 CREATE TABLE `cloud` (
   `ID` varchar(255) NOT NULL,
-  `DisplayName` varchar(255) default NULL,
-  `IconName` varchar(64) default NULL,
   `Latitude` double NOT NULL,
   `Longitude` double NOT NULL,
   `Altitude` double default NULL,
@@ -123,7 +99,6 @@ CREATE TABLE `cloud` (
   `Angle` double default NULL,
   `Accuracy` double default NULL,
   `DateOccurred` timestamp NOT NULL default '0000-00-00 00:00:00',
-  `Public` tinyint(4) NOT NULL default '1',
   PRIMARY KEY  (`ID`),
   KEY `DateOccurred` (`DateOccurred`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
