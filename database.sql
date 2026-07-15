@@ -91,7 +91,8 @@ CREATE TABLE `users` (
 
 
 CREATE TABLE `cloud` (
-  `ID` varchar(255) NOT NULL,
+  `ID` int(11) NOT NULL auto_increment,
+  `DeviceID` varchar(255) NOT NULL,
   `Latitude` double NOT NULL,
   `Longitude` double NOT NULL,
   `Altitude` double default NULL,
@@ -100,7 +101,20 @@ CREATE TABLE `cloud` (
   `Accuracy` double default NULL,
   `DateOccurred` timestamp NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (`ID`),
+  KEY `Index_DeviceID_DateOccurred` (`DeviceID`,`DateOccurred`),
+  KEY `Index_DeviceID_ID` (`DeviceID`,`ID`),
   KEY `DateOccurred` (`DateOccurred`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE `cloud_requests` (
+  `ID` int(11) NOT NULL auto_increment,
+  `TargetDeviceID` varchar(255) NOT NULL,
+  `RequesterDeviceID` varchar(255) NOT NULL,
+  `Command` varchar(16) NOT NULL,
+  `DateRequested` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`ID`),
+  KEY `Index_TargetDeviceID_ID` (`TargetDeviceID`,`ID`),
+  KEY `Index_TargetDeviceID_DateRequested` (`TargetDeviceID`,`DateRequested`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
