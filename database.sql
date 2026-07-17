@@ -99,6 +99,7 @@ CREATE TABLE `cloud` (
   `Speed` double default NULL,
   `Angle` double default NULL,
   `Accuracy` double default NULL,
+  `BatteryStatus` tinyint(4) default NULL,
   `DateOccurred` timestamp NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (`ID`),
   KEY `Index_DeviceID_DateOccurred` (`DeviceID`,`DateOccurred`),

@@ -47,9 +47,10 @@
 		$altitude = isset($_GET["al"]) ? mysql_real_escape_string(urldecode($_GET["al"])) : "";
 		$speed = isset($_GET["sp"]) ? mysql_real_escape_string(urldecode($_GET["sp"])) : "";
 		$angle = isset($_GET["an"]) ? mysql_real_escape_string(urldecode($_GET["an"])) : "";
+		$battery = isset($_GET["ba"]) ? intval($_GET["ba"]) : "";
 		$dateoccurred = urldecode($_GET["do"]);
 
-		$sql = "INSERT INTO cloud (DeviceID, Latitude, Longitude, Altitude, Speed, Angle, DateOccurred, Accuracy) VALUES ('$id', '$lat', '$long', ";
+		$sql = "INSERT INTO cloud (DeviceID, Latitude, Longitude, Altitude, Speed, Angle, DateOccurred, Accuracy, BatteryStatus) VALUES ('$id', '$lat', '$long', ";
 
 		if ($altitude <> "")
 			$sql .= "'$altitude', ";
@@ -69,7 +70,12 @@
 		$sql .= ", '$dateoccurred', ";
 
 		if ($acc <> "")
-			$sql .= "'$acc')";
+			$sql .= "'$acc', ";
+		else
+			$sql .= "null, ";
+
+		if ($battery !== "")
+			$sql .= "'$battery')";
 		else
 			$sql .= "null)";
 
@@ -112,7 +118,7 @@
 
 		$sql  = "SELECT 'C' AS EntryType, (DEGREES(ACOS(SIN(RADIANS(A1.Latitude)) * SIN(RADIANS(".$lat.")) +";
 		$sql .= "COS(RADIANS(A1.Latitude)) * COS(RADIANS(".$lat.")) * COS(RADIANS(A1.Longitude - ".$long."))) * 60 * 1.1515 * 1.609344";
-		$sql .= ")) AS Distance, A1.DeviceID, A1.Latitude, A1.Longitude, A1.Accuracy, A1.DateOccurred, A1.Speed, A1.Altitude";
+		$sql .= ")) AS Distance, A1.DeviceID, A1.Latitude, A1.Longitude, A1.Accuracy, A1.DateOccurred, A1.Speed, A1.Altitude, A1.BatteryStatus";
 		$sql .= " FROM cloud A1";
 		$sql .= " INNER JOIN (SELECT DeviceID, MAX(ID) AS MaxID FROM cloud";
 		if ($datefrom != "")
@@ -123,13 +129,13 @@
 
 		$result = mysql_query($sql);
 		while ($row=mysql_fetch_array($result)) {
-			$output.=$row['EntryType']."|".$row['DeviceID']."|".$row['Latitude']."|".$row['Longitude']."|".$row['DateOccurred']."|".$row['Accuracy']."|".$row['Distance']."|".$row['Speed']."|".$row['Altitude'];
+			$output.=$row['EntryType']."|".$row['DeviceID']."|".$row['Latitude']."|".$row['Longitude']."|".$row['DateOccurred']."|".$row['Accuracy']."|".$row['Distance']."|".$row['Speed']."|".$row['Altitude']."|".$row['BatteryStatus'];
 			$output.="\n";
 		}
 
 		$sql  = "SELECT 'T' AS EntryType, (DEGREES(ACOS(SIN(RADIANS(Latitude)) * SIN(RADIANS(".$lat.")) +";
 		$sql .= "COS(RADIANS(Latitude)) * COS(RADIANS(".$lat.")) * COS(RADIANS(Longitude - ".$long."))) * 60 * 1.1515 * 1.609344";
-		$sql .= ")) AS Distance, DeviceID, Latitude, Longitude, Accuracy, DateOccurred, Speed, Altitude";
+		$sql .= ")) AS Distance, DeviceID, Latitude, Longitude, Accuracy, DateOccurred, Speed, Altitude, BatteryStatus";
 		$sql .= " FROM cloud WHERE DeviceID<>'".$id."'";
 
 		if ($datefrom != "")
@@ -141,7 +147,7 @@
 
 		$result = mysql_query($sql);
 		while ($row=mysql_fetch_array($result)) {
-			$output.=$row['EntryType']."|".$row['DeviceID']."|".$row['Latitude']."|".$row['Longitude']."|".$row['DateOccurred']."|".$row['Accuracy']."|".$row['Distance']."|".$row['Speed']."|".$row['Altitude'];
+			$output.=$row['EntryType']."|".$row['DeviceID']."|".$row['Latitude']."|".$row['Longitude']."|".$row['DateOccurred']."|".$row['Accuracy']."|".$row['Distance']."|".$row['Speed']."|".$row['Altitude']."|".$row['BatteryStatus'];
 			$output.="\n";
 		}
 
